@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Lolalytics Champion Rankings</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --background: #f7f8fa;
+      --foreground: #18202a;
+      --surface: #ffffff;
+      --surface-alt: #eef1f5;
+      --muted: #5d6875;
+      --border: #cfd6de;
+      --accent: #1769aa;
+      --accent-soft: #dceeff;
+      --focus: #1476c6;
+      --shadow: rgba(20, 30, 40, 0.1);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --background: #12171d;
+        --foreground: #e7ecf2;
+        --surface: #1a2129;
+        --surface-alt: #222b35;
+        --muted: #a7b1bd;
+        --border: #3b4653;
+        --accent: #67b7f7;
+        --accent-soft: #193d59;
+        --focus: #77c4ff;
+        --shadow: rgba(0, 0, 0, 0.3);
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--foreground);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    main {
+      width: 100%;
+      padding: 24px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      font-weight: 600;
+    }
+
+    .metadata {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 18px;
+      margin: 8px 0 18px;
+      color: var(--muted);
+    }
+
+    .metadata a {
+      color: var(--accent);
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: start;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    button,
+    summary,
+    input {
+      font: inherit;
+    }
+
+    button,
+    summary {
+      color: var(--foreground);
+    }
+
+    button {
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      background: var(--surface);
+      padding: 7px 10px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: var(--surface-alt);
+    }
+
+    button:focus-visible,
+    summary:focus-visible,
+    input:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    details {
+      position: relative;
+    }
+
+    summary {
+      list-style: none;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      background: var(--surface);
+      padding: 7px 10px;
+      cursor: pointer;
+    }
+
+    summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .column-picker {
+      position: absolute;
+      z-index: 6;
+      top: calc(100% + 5px);
+      left: 0;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(145px, 1fr));
+      gap: 7px 14px;
+      min-width: 330px;
+      max-height: min(460px, 70vh);
+      overflow: auto;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      box-shadow: 0 8px 24px var(--shadow);
+    }
+
+    .column-picker label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      white-space: nowrap;
+    }
+
+    .result-count {
+      align-self: center;
+      color: var(--muted);
+    }
+
+    .table-wrap {
+      max-width: 100%;
+      overflow: auto;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    table {
+      width: max-content;
+      min-width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--border);
+      padding: 8px 10px;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    thead th {
+      position: sticky;
+      z-index: 3;
+      background: var(--surface-alt);
+    }
+
+    thead tr:first-child th {
+      top: 0;
+    }
+
+    thead tr.filters th {
+      top: 38px;
+      padding: 5px;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    tbody tr:hover td {
+      background: var(--accent-soft);
+    }
+
+    .rank-column {
+      width: 54px;
+      min-width: 54px;
+      text-align: right;
+    }
+
+    .champion-column {
+      position: sticky;
+      left: 0;
+      z-index: 2;
+      min-width: 145px;
+      text-align: left;
+      background: var(--surface);
+      box-shadow: 1px 0 0 var(--border);
+    }
+
+    thead .champion-column {
+      z-index: 5;
+      background: var(--surface-alt);
+    }
+
+    tbody tr:hover .champion-column {
+      background: var(--accent-soft);
+    }
+
+    .metric-column {
+      min-width: 144px;
+    }
+
+    .sort-button {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      padding: 2px;
+      text-align: right;
+      font-weight: 600;
+    }
+
+    .sort-button:hover {
+      background: transparent;
+      color: var(--accent);
+    }
+
+    .sort-indicator {
+      display: inline-block;
+      width: 1em;
+      color: var(--accent);
+    }
+
+    .filter-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+    }
+
+    .filter-pair input {
+      width: 64px;
+      min-width: 0;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--surface);
+      color: var(--foreground);
+      padding: 4px;
+      text-align: right;
+    }
+
+    .empty-state {
+      padding: 28px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    @media (max-width: 600px) {
+      main {
+        padding: 14px;
+      }
+
+      .column-picker {
+        position: fixed;
+        top: auto;
+        right: 14px;
+        bottom: 14px;
+        left: 14px;
+        grid-template-columns: 1fr;
+        min-width: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Lolalytics Champion Rankings</h1>
+    <div class="metadata" id="metadata"></div>
+
+    <div class="toolbar">
+      <details>
+        <summary>Columns</summary>
+        <div class="column-picker" id="column-picker"></div>
+      </details>
+      <button type="button" id="clear-filters">Clear filters</button>
+      <span class="result-count" id="result-count" aria-live="polite"></span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead id="table-head"></thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <script id="ranking-data" type="application/json">__LOLALYTICS_DATA__</script>
+  <script>
+    (() => {
+      "use strict";
+
+      const dataset = JSON.parse(document.getElementById("ranking-data").textContent);
+      const metadata = document.getElementById("metadata");
+      const columnPicker = document.getElementById("column-picker");
+      const clearFilters = document.getElementById("clear-filters");
+      const resultCount = document.getElementById("result-count");
+      const tableHead = document.getElementById("table-head");
+      const tableBody = document.getElementById("table-body");
+      const visible = new Set(dataset.metrics.map((metric) => metric.key));
+      const filters = new Map(
+        dataset.metrics.map((metric) => [metric.key, { min: null, max: null }])
+      );
+      let sort = null;
+
+      function titleCase(value) {
+        return value
+          .replaceAll("_plus", "+")
+          .replaceAll("_", " ")
+          .replace(/\b\w/g, (letter) => letter.toUpperCase());
+      }
+
+      function renderMetadata() {
+        const generated = new Date(dataset.generated_at).toLocaleString();
+        const items = [
+          `${titleCase(dataset.filters.lane)} lane`,
+          titleCase(dataset.filters.tier),
+          dataset.filters.region === "all" ? "Global" : dataset.filters.region.toUpperCase(),
+          dataset.filters.period === "current"
+            ? "Current patch"
+            : dataset.filters.period.includes(".")
+              ? `Patch ${dataset.filters.period}`
+              : `Rolling ${dataset.filters.period} days`,
+          dataset.filters.queue,
+          `${dataset.champions.length} champions`,
+          `Generated ${generated}`
+        ];
+        for (const text of items) {
+          const span = document.createElement("span");
+          span.textContent = text;
+          metadata.appendChild(span);
+        }
+        const link = document.createElement("a");
+        link.href = dataset.source_url;
+        link.textContent = "Source";
+        link.target = "_blank";
+        link.rel = "noreferrer";
+        metadata.appendChild(link);
+      }
+
+      function clearMetricFilter(key) {
+        filters.set(key, { min: null, max: null });
+        document.querySelectorAll(`input[data-filter="${key}"]`).forEach((input) => {
+          input.value = "";
+        });
+      }
+
+      function renderColumnPicker() {
+        for (const metric of dataset.metrics) {
+          const label = document.createElement("label");
+          const input = document.createElement("input");
+          input.type = "checkbox";
+          input.checked = true;
+          input.dataset.column = metric.key;
+          input.addEventListener("change", () => {
+            if (input.checked) {
+              visible.add(metric.key);
+            } else {
+              visible.delete(metric.key);
+              clearMetricFilter(metric.key);
+              if (sort?.key === metric.key) {
+                sort = null;
+              }
+            }
+            renderTable();
+          });
+          label.append(input, document.createTextNode(metric.label));
+          columnPicker.appendChild(label);
+        }
+      }
+
+      function sortRows(rows) {
+        if (!sort) {
+          return rows.sort((a, b) => a.source_order - b.source_order);
+        }
+        const direction = sort.direction === "desc" ? -1 : 1;
+        return rows.sort((a, b) => {
+          const difference =
+            a.values[sort.key].value - b.values[sort.key].value;
+          return difference === 0
+            ? a.source_order - b.source_order
+            : difference * direction;
+        });
+      }
+
+      function filteredRows() {
+        return dataset.champions.filter((champion) =>
+          dataset.metrics.every((metric) => {
+            const bounds = filters.get(metric.key);
+            const value = champion.values[metric.key].value;
+            return (
+              (bounds.min === null || value >= bounds.min) &&
+              (bounds.max === null || value <= bounds.max)
+            );
+          })
+        );
+      }
+
+      function setSort(key) {
+        if (sort?.key === key) {
+          sort.direction = sort.direction === "desc" ? "asc" : "desc";
+        } else {
+          sort = { key, direction: "desc" };
+        }
+        renderTable();
+      }
+
+      function makeMetricHeader(metric) {
+        const th = document.createElement("th");
+        th.className = "metric-column";
+        th.dataset.metric = metric.key;
+        th.setAttribute(
+          "aria-sort",
+          sort?.key === metric.key
+            ? sort.direction === "desc" ? "descending" : "ascending"
+            : "none"
+        );
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "sort-button";
+        button.addEventListener("click", () => setSort(metric.key));
+
+        const label = document.createElement("span");
+        label.textContent = metric.label;
+        const indicator = document.createElement("span");
+        indicator.className = "sort-indicator";
+        indicator.textContent =
+          sort?.key === metric.key
+            ? sort.direction === "desc" ? "↓" : "↑"
+            : "";
+        button.append(label, document.createTextNode(" "), indicator);
+        th.appendChild(button);
+        return th;
+      }
+
+      function makeFilterHeader(metric) {
+        const th = document.createElement("th");
+        th.className = "metric-column";
+        th.dataset.metric = metric.key;
+        const pair = document.createElement("div");
+        pair.className = "filter-pair";
+
+        for (const bound of ["min", "max"]) {
+          const input = document.createElement("input");
+          input.type = "number";
+          input.step = "any";
+          input.inputMode = "decimal";
+          input.placeholder = bound;
+          input.dataset.filter = metric.key;
+          input.setAttribute("aria-label", `${metric.label} ${bound}imum`);
+          input.addEventListener("input", () => {
+            const current = filters.get(metric.key);
+            current[bound] =
+              input.value.trim() === "" ? null : Number(input.value);
+            renderBody();
+          });
+          pair.appendChild(input);
+        }
+        th.appendChild(pair);
+        return th;
+      }
+
+      function renderHead() {
+        tableHead.replaceChildren();
+
+        const labels = document.createElement("tr");
+        const rank = document.createElement("th");
+        rank.className = "rank-column";
+        rank.scope = "col";
+        rank.textContent = "#";
+        const champion = document.createElement("th");
+        champion.className = "champion-column";
+        champion.scope = "col";
+        champion.textContent = "Champion";
+        labels.append(rank, champion);
+        for (const metric of dataset.metrics) {
+          if (visible.has(metric.key)) {
+            labels.appendChild(makeMetricHeader(metric));
+          }
+        }
+
+        const inputs = document.createElement("tr");
+        inputs.className = "filters";
+        const rankSpacer = document.createElement("th");
+        rankSpacer.className = "rank-column";
+        const championSpacer = document.createElement("th");
+        championSpacer.className = "champion-column";
+        inputs.append(rankSpacer, championSpacer);
+        for (const metric of dataset.metrics) {
+          if (visible.has(metric.key)) {
+            inputs.appendChild(makeFilterHeader(metric));
+          }
+        }
+
+        tableHead.append(labels, inputs);
+      }
+
+      function renderBody() {
+        tableBody.replaceChildren();
+        const rows = sortRows(filteredRows());
+        resultCount.textContent = `${rows.length} of ${dataset.champions.length} champions`;
+
+        if (rows.length === 0) {
+          const row = document.createElement("tr");
+          const cell = document.createElement("td");
+          cell.className = "empty-state";
+          cell.colSpan = visible.size + 2;
+          cell.textContent = "No champions match the current filters.";
+          row.appendChild(cell);
+          tableBody.appendChild(row);
+          return;
+        }
+
+        rows.forEach((champion, index) => {
+          const row = document.createElement("tr");
+          const rank = document.createElement("td");
+          rank.className = "rank-column";
+          rank.textContent = String(index + 1);
+          const name = document.createElement("td");
+          name.className = "champion-column";
+          name.textContent = champion.name;
+          row.append(rank, name);
+
+          for (const metric of dataset.metrics) {
+            if (!visible.has(metric.key)) {
+              continue;
+            }
+            const cell = document.createElement("td");
+            cell.dataset.metric = metric.key;
+            cell.textContent = champion.values[metric.key].display;
+            row.appendChild(cell);
+          }
+          tableBody.appendChild(row);
+        });
+      }
+
+      function renderTable() {
+        renderHead();
+        renderBody();
+      }
+
+      clearFilters.addEventListener("click", () => {
+        for (const metric of dataset.metrics) {
+          clearMetricFilter(metric.key);
+        }
+        renderBody();
+      });
+
+      renderMetadata();
+      renderColumnPicker();
+      renderTable();
+    })();
+  </script>
+</body>
+</html>

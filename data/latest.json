@@ -1,0 +1,5850 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-17T17:21:28.657772Z",
+  "filters": {
+    "lane": "middle",
+    "tier": "emerald_plus",
+    "region": "all",
+    "period": "30",
+    "queue": "Ranked Solo/Duo"
+  },
+  "source_url": "https://lolalytics.com/lol/tierlist/?lane=middle&tier=emerald_plus&region=all&patch=30",
+  "metrics": [
+    {
+      "key": "physical_damage",
+      "label": "Physical Damage"
+    },
+    {
+      "key": "magic_damage",
+      "label": "Magic Damage"
+    },
+    {
+      "key": "true_damage",
+      "label": "True Damage"
+    },
+    {
+      "key": "total_damage",
+      "label": "Total Damage"
+    },
+    {
+      "key": "damage_taken",
+      "label": "Damage Taken"
+    },
+    {
+      "key": "healing",
+      "label": "Healing"
+    },
+    {
+      "key": "kills",
+      "label": "Kills"
+    },
+    {
+      "key": "deaths",
+      "label": "Deaths"
+    },
+    {
+      "key": "assists",
+      "label": "Assists"
+    },
+    {
+      "key": "max_kill_spree",
+      "label": "Max Kill Spree"
+    },
+    {
+      "key": "gold",
+      "label": "Gold"
+    },
+    {
+      "key": "minions_killed",
+      "label": "Minions Killed"
+    },
+    {
+      "key": "jungle_cs",
+      "label": "Jungle CS"
+    }
+  ],
+  "champions": [
+    {
+      "name": "Sylas",
+      "slug": "sylas",
+      "source_order": 0,
+      "values": {
+        "physical_damage": {
+          "value": 693,
+          "display": "693"
+        },
+        "magic_damage": {
+          "value": 23680,
+          "display": "23,680"
+        },
+        "true_damage": {
+          "value": 1602,
+          "display": "1,602"
+        },
+        "total_damage": {
+          "value": 25977,
+          "display": "25,977"
+        },
+        "damage_taken": {
+          "value": 35175,
+          "display": "35,175"
+        },
+        "healing": {
+          "value": 9727,
+          "display": "9,727"
+        },
+        "kills": {
+          "value": 8.26,
+          "display": "8.26"
+        },
+        "deaths": {
+          "value": 6.96,
+          "display": "6.96"
+        },
+        "assists": {
+          "value": 6.75,
+          "display": "6.75"
+        },
+        "max_kill_spree": {
+          "value": 3.76,
+          "display": "3.76"
+        },
+        "gold": {
+          "value": 11715,
+          "display": "11,715"
+        },
+        "minions_killed": {
+          "value": 170.36,
+          "display": "170.36"
+        },
+        "jungle_cs": {
+          "value": 2.56,
+          "display": "2.56"
+        }
+      }
+    },
+    {
+      "name": "Vladimir",
+      "slug": "vladimir",
+      "source_order": 1,
+      "values": {
+        "physical_damage": {
+          "value": 949,
+          "display": "949"
+        },
+        "magic_damage": {
+          "value": 27904,
+          "display": "27,904"
+        },
+        "true_damage": {
+          "value": 523,
+          "display": "523"
+        },
+        "total_damage": {
+          "value": 29378,
+          "display": "29,378"
+        },
+        "damage_taken": {
+          "value": 37774,
+          "display": "37,774"
+        },
+        "healing": {
+          "value": 33673,
+          "display": "33,673"
+        },
+        "kills": {
+          "value": 7.19,
+          "display": "7.19"
+        },
+        "deaths": {
+          "value": 5.61,
+          "display": "5.61"
+        },
+        "assists": {
+          "value": 5.91,
+          "display": "5.91"
+        },
+        "max_kill_spree": {
+          "value": 3.64,
+          "display": "3.64"
+        },
+        "gold": {
+          "value": 12469,
+          "display": "12,469"
+        },
+        "minions_killed": {
+          "value": 214,
+          "display": "214"
+        },
+        "jungle_cs": {
+          "value": 2.88,
+          "display": "2.88"
+        }
+      }
+    },
+    {
+      "name": "Locke",
+      "slug": "locke",
+      "source_order": 2,
+      "values": {
+        "physical_damage": {
+          "value": 1425,
+          "display": "1,425"
+        },
+        "magic_damage": {
+          "value": 23266,
+          "display": "23,266"
+        },
+        "true_damage": {
+          "value": 2861,
+          "display": "2,861"
+        },
+        "total_damage": {
+          "value": 27554,
+          "display": "27,554"
+        },
+        "damage_taken": {
+          "value": 30388,
+          "display": "30,388"
+        },
+        "healing": {
+          "value": 11717,
+          "display": "11,717"
+        },
+        "kills": {
+          "value": 11.92,
+          "display": "11.92"
+        },
+        "deaths": {
+          "value": 7.17,
+          "display": "7.17"
+        },
+        "assists": {
+          "value": 4.73,
+          "display": "4.73"
+        },
+        "max_kill_spree": {
+          "value": 5.17,
+          "display": "5.17"
+        },
+        "gold": {
+          "value": 13069,
+          "display": "13,069"
+        },
+        "minions_killed": {
+          "value": 175.75,
+          "display": "175.75"
+        },
+        "jungle_cs": {
+          "value": 3.17,
+          "display": "3.17"
+        }
+      }
+    },
+    {
+      "name": "Riven",
+      "slug": "riven",
+      "source_order": 3,
+      "values": {
+        "physical_damage": {
+          "value": 21124,
+          "display": "21,124"
+        },
+        "magic_damage": {
+          "value": 34,
+          "display": "34"
+        },
+        "true_damage": {
+          "value": 1305,
+          "display": "1,305"
+        },
+        "total_damage": {
+          "value": 22464,
+          "display": "22,464"
+        },
+        "damage_taken": {
+          "value": 27206,
+          "display": "27,206"
+        },
+        "healing": {
+          "value": 8683,
+          "display": "8,683"
+        },
+        "kills": {
+          "value": 7.87,
+          "display": "7.87"
+        },
+        "deaths": {
+          "value": 6.48,
+          "display": "6.48"
+        },
+        "assists": {
+          "value": 5.33,
+          "display": "5.33"
+        },
+        "max_kill_spree": {
+          "value": 3.69,
+          "display": "3.69"
+        },
+        "gold": {
+          "value": 13243,
+          "display": "13,243"
+        },
+        "minions_killed": {
+          "value": 198.84,
+          "display": "198.84"
+        },
+        "jungle_cs": {
+          "value": 5.31,
+          "display": "5.31"
+        }
+      }
+    },
+    {
+      "name": "Katarina",
+      "slug": "katarina",
+      "source_order": 4,
+      "values": {
+        "physical_damage": {
+          "value": 5577,
+          "display": "5,577"
+        },
+        "magic_damage": {
+          "value": 20635,
+          "display": "20,635"
+        },
+        "true_damage": {
+          "value": 2067,
+          "display": "2,067"
+        },
+        "total_damage": {
+          "value": 28281,
+          "display": "28,281"
+        },
+        "damage_taken": {
+          "value": 27860,
+          "display": "27,860"
+        },
+        "healing": {
+          "value": 6133,
+          "display": "6,133"
+        },
+        "kills": {
+          "value": 10.61,
+          "display": "10.61"
+        },
+        "deaths": {
+          "value": 7,
+          "display": "7"
+        },
+        "assists": {
+          "value": 5.82,
+          "display": "5.82"
+        },
+        "max_kill_spree": {
+          "value": 4.72,
+          "display": "4.72"
+        },
+        "gold": {
+          "value": 12947,
+          "display": "12,947"
+        },
+        "minions_killed": {
+          "value": 182.2,
+          "display": "182.2"
+        },
+        "jungle_cs": {
+          "value": 1.96,
+          "display": "1.96"
+        }
+      }
+    },
+    {
+      "name": "Syndra",
+      "slug": "syndra",
+      "source_order": 5,
+      "values": {
+        "physical_damage": {
+          "value": 892,
+          "display": "892"
+        },
+        "magic_damage": {
+          "value": 24417,
+          "display": "24,417"
+        },
+        "true_damage": {
+          "value": 1965,
+          "display": "1,965"
+        },
+        "total_damage": {
+          "value": 27277,
+          "display": "27,277"
+        },
+        "damage_taken": {
+          "value": 20827,
+          "display": "20,827"
+        },
+        "healing": {
+          "value": 2445,
+          "display": "2,445"
+        },
+        "kills": {
+          "value": 7.01,
+          "display": "7.01"
+        },
+        "deaths": {
+          "value": 6.08,
+          "display": "6.08"
+        },
+        "assists": {
+          "value": 6.62,
+          "display": "6.62"
+        },
+        "max_kill_spree": {
+          "value": 3.29,
+          "display": "3.29"
+        },
+        "gold": {
+          "value": 12932,
+          "display": "12,932"
+        },
+        "minions_killed": {
+          "value": 218.78,
+          "display": "218.78"
+        },
+        "jungle_cs": {
+          "value": 1.9,
+          "display": "1.9"
+        }
+      }
+    },
+    {
+      "name": "Xerath",
+      "slug": "xerath",
+      "source_order": 6,
+      "values": {
+        "physical_damage": {
+          "value": 686,
+          "display": "686"
+        },
+        "magic_damage": {
+          "value": 29789,
+          "display": "29,789"
+        },
+        "true_damage": {
+          "value": 478,
+          "display": "478"
+        },
+        "total_damage": {
+          "value": 30955,
+          "display": "30,955"
+        },
+        "damage_taken": {
+          "value": 18110,
+          "display": "18,110"
+        },
+        "healing": {
+          "value": 1996,
+          "display": "1,996"
+        },
+        "kills": {
+          "value": 7.49,
+          "display": "7.49"
+        },
+        "deaths": {
+          "value": 5.28,
+          "display": "5.28"
+        },
+        "assists": {
+          "value": 8.58,
+          "display": "8.58"
+        },
+        "max_kill_spree": {
+          "value": 3.82,
+          "display": "3.82"
+        },
+        "gold": {
+          "value": 12528,
+          "display": "12,528"
+        },
+        "minions_killed": {
+          "value": 207.32,
+          "display": "207.32"
+        },
+        "jungle_cs": {
+          "value": 1.49,
+          "display": "1.49"
+        }
+      }
+    },
+    {
+      "name": "Viktor",
+      "slug": "viktor",
+      "source_order": 7,
+      "values": {
+        "physical_damage": {
+          "value": 708,
+          "display": "708"
+        },
+        "magic_damage": {
+          "value": 28124,
+          "display": "28,124"
+        },
+        "true_damage": {
+          "value": 344,
+          "display": "344"
+        },
+        "total_damage": {
+          "value": 29178,
+          "display": "29,178"
+        },
+        "damage_taken": {
+          "value": 20632,
+          "display": "20,632"
+        },
+        "healing": {
+          "value": 2378,
+          "display": "2,378"
+        },
+        "kills": {
+          "value": 5.95,
+          "display": "5.95"
+        },
+        "deaths": {
+          "value": 5.87,
+          "display": "5.87"
+        },
+        "assists": {
+          "value": 7.3,
+          "display": "7.3"
+        },
+        "max_kill_spree": {
+          "value": 2.91,
+          "display": "2.91"
+        },
+        "gold": {
+          "value": 12050,
+          "display": "12,050"
+        },
+        "minions_killed": {
+          "value": 214.47,
+          "display": "214.47"
+        },
+        "jungle_cs": {
+          "value": 2.06,
+          "display": "2.06"
+        }
+      }
+    },
+    {
+      "name": "Zed",
+      "slug": "zed",
+      "source_order": 8,
+      "values": {
+        "physical_damage": {
+          "value": 26664,
+          "display": "26,664"
+        },
+        "magic_damage": {
+          "value": 1109,
+          "display": "1,109"
+        },
+        "true_damage": {
+          "value": 2124,
+          "display": "2,124"
+        },
+        "total_damage": {
+          "value": 29898,
+          "display": "29,898"
+        },
+        "damage_taken": {
+          "value": 24934,
+          "display": "24,934"
+        },
+        "healing": {
+          "value": 4665,
+          "display": "4,665"
+        },
+        "kills": {
+          "value": 8.8,
+          "display": "8.8"
+        },
+        "deaths": {
+          "value": 6.48,
+          "display": "6.48"
+        },
+        "assists": {
+          "value": 5.62,
+          "display": "5.62"
+        },
+        "max_kill_spree": {
+          "value": 3.91,
+          "display": "3.91"
+        },
+        "gold": {
+          "value": 13587,
+          "display": "13,587"
+        },
+        "minions_killed": {
+          "value": 194.46,
+          "display": "194.46"
+        },
+        "jungle_cs": {
+          "value": 3.77,
+          "display": "3.77"
+        }
+      }
+    },
+    {
+      "name": "Ahri",
+      "slug": "ahri",
+      "source_order": 9,
+      "values": {
+        "physical_damage": {
+          "value": 1781,
+          "display": "1,781"
+        },
+        "magic_damage": {
+          "value": 18670,
+          "display": "18,670"
+        },
+        "true_damage": {
+          "value": 5442,
+          "display": "5,442"
+        },
+        "total_damage": {
+          "value": 25894,
+          "display": "25,894"
+        },
+        "damage_taken": {
+          "value": 24031,
+          "display": "24,031"
+        },
+        "healing": {
+          "value": 6647,
+          "display": "6,647"
+        },
+        "kills": {
+          "value": 7.07,
+          "display": "7.07"
+        },
+        "deaths": {
+          "value": 5.69,
+          "display": "5.69"
+        },
+        "assists": {
+          "value": 7.66,
+          "display": "7.66"
+        },
+        "max_kill_spree": {
+          "value": 3.49,
+          "display": "3.49"
+        },
+        "gold": {
+          "value": 12245,
+          "display": "12,245"
+        },
+        "minions_killed": {
+          "value": 207.56,
+          "display": "207.56"
+        },
+        "jungle_cs": {
+          "value": 1.24,
+          "display": "1.24"
+        }
+      }
+    },
+    {
+      "name": "Hwei",
+      "slug": "hwei",
+      "source_order": 10,
+      "values": {
+        "physical_damage": {
+          "value": 1090,
+          "display": "1,090"
+        },
+        "magic_damage": {
+          "value": 27576,
+          "display": "27,576"
+        },
+        "true_damage": {
+          "value": 323,
+          "display": "323"
+        },
+        "total_damage": {
+          "value": 28991,
+          "display": "28,991"
+        },
+        "damage_taken": {
+          "value": 21370,
+          "display": "21,370"
+        },
+        "healing": {
+          "value": 2632,
+          "display": "2,632"
+        },
+        "kills": {
+          "value": 6.24,
+          "display": "6.24"
+        },
+        "deaths": {
+          "value": 5.87,
+          "display": "5.87"
+        },
+        "assists": {
+          "value": 8.19,
+          "display": "8.19"
+        },
+        "max_kill_spree": {
+          "value": 3.08,
+          "display": "3.08"
+        },
+        "gold": {
+          "value": 12075,
+          "display": "12,075"
+        },
+        "minions_killed": {
+          "value": 209.35,
+          "display": "209.35"
+        },
+        "jungle_cs": {
+          "value": 1.73,
+          "display": "1.73"
+        }
+      }
+    },
+    {
+      "name": "Fizz",
+      "slug": "fizz",
+      "source_order": 11,
+      "values": {
+        "physical_damage": {
+          "value": 2905,
+          "display": "2,905"
+        },
+        "magic_damage": {
+          "value": 20040,
+          "display": "20,040"
+        },
+        "true_damage": {
+          "value": 2342,
+          "display": "2,342"
+        },
+        "total_damage": {
+          "value": 25290,
+          "display": "25,290"
+        },
+        "damage_taken": {
+          "value": 24088,
+          "display": "24,088"
+        },
+        "healing": {
+          "value": 3498,
+          "display": "3,498"
+        },
+        "kills": {
+          "value": 9.45,
+          "display": "9.45"
+        },
+        "deaths": {
+          "value": 6.42,
+          "display": "6.42"
+        },
+        "assists": {
+          "value": 5.64,
+          "display": "5.64"
+        },
+        "max_kill_spree": {
+          "value": 4.3,
+          "display": "4.3"
+        },
+        "gold": {
+          "value": 13161,
+          "display": "13,161"
+        },
+        "minions_killed": {
+          "value": 191.07,
+          "display": "191.07"
+        },
+        "jungle_cs": {
+          "value": 1.87,
+          "display": "1.87"
+        }
+      }
+    },
+    {
+      "name": "Ekko",
+      "slug": "ekko",
+      "source_order": 12,
+      "values": {
+        "physical_damage": {
+          "value": 2949,
+          "display": "2,949"
+        },
+        "magic_damage": {
+          "value": 20256,
+          "display": "20,256"
+        },
+        "true_damage": {
+          "value": 2950,
+          "display": "2,950"
+        },
+        "total_damage": {
+          "value": 26158,
+          "display": "26,158"
+        },
+        "damage_taken": {
+          "value": 30755,
+          "display": "30,755"
+        },
+        "healing": {
+          "value": 8941,
+          "display": "8,941"
+        },
+        "kills": {
+          "value": 8.47,
+          "display": "8.47"
+        },
+        "deaths": {
+          "value": 6.01,
+          "display": "6.01"
+        },
+        "assists": {
+          "value": 5.55,
+          "display": "5.55"
+        },
+        "max_kill_spree": {
+          "value": 4.07,
+          "display": "4.07"
+        },
+        "gold": {
+          "value": 12798,
+          "display": "12,798"
+        },
+        "minions_killed": {
+          "value": 196.43,
+          "display": "196.43"
+        },
+        "jungle_cs": {
+          "value": 3.36,
+          "display": "3.36"
+        }
+      }
+    },
+    {
+      "name": "Akali",
+      "slug": "akali",
+      "source_order": 13,
+      "values": {
+        "physical_damage": {
+          "value": 1580,
+          "display": "1,580"
+        },
+        "magic_damage": {
+          "value": 23328,
+          "display": "23,328"
+        },
+        "true_damage": {
+          "value": 2022,
+          "display": "2,022"
+        },
+        "total_damage": {
+          "value": 26932,
+          "display": "26,932"
+        },
+        "damage_taken": {
+          "value": 29153,
+          "display": "29,153"
+        },
+        "healing": {
+          "value": 6275,
+          "display": "6,275"
+        },
+        "kills": {
+          "value": 9.16,
+          "display": "9.16"
+        },
+        "deaths": {
+          "value": 6.09,
+          "display": "6.09"
+        },
+        "assists": {
+          "value": 5.01,
+          "display": "5.01"
+        },
+        "max_kill_spree": {
+          "value": 4.26,
+          "display": "4.26"
+        },
+        "gold": {
+          "value": 12348,
+          "display": "12,348"
+        },
+        "minions_killed": {
+          "value": 188.93,
+          "display": "188.93"
+        },
+        "jungle_cs": {
+          "value": 0.89,
+          "display": "0.89"
+        }
+      }
+    },
+    {
+      "name": "Twisted Fate",
+      "slug": "twistedfate",
+      "source_order": 14,
+      "values": {
+        "physical_damage": {
+          "value": 2284,
+          "display": "2,284"
+        },
+        "magic_damage": {
+          "value": 18232,
+          "display": "18,232"
+        },
+        "true_damage": {
+          "value": 504,
+          "display": "504"
+        },
+        "total_damage": {
+          "value": 21021,
+          "display": "21,021"
+        },
+        "damage_taken": {
+          "value": 24961,
+          "display": "24,961"
+        },
+        "healing": {
+          "value": 4848,
+          "display": "4,848"
+        },
+        "kills": {
+          "value": 5.1,
+          "display": "5.1"
+        },
+        "deaths": {
+          "value": 5.71,
+          "display": "5.71"
+        },
+        "assists": {
+          "value": 9.32,
+          "display": "9.32"
+        },
+        "max_kill_spree": {
+          "value": 2.5,
+          "display": "2.5"
+        },
+        "gold": {
+          "value": 12625,
+          "display": "12,625"
+        },
+        "minions_killed": {
+          "value": 198.8,
+          "display": "198.8"
+        },
+        "jungle_cs": {
+          "value": 1.56,
+          "display": "1.56"
+        }
+      }
+    },
+    {
+      "name": "Naafiri",
+      "slug": "naafiri",
+      "source_order": 15,
+      "values": {
+        "physical_damage": {
+          "value": 24825,
+          "display": "24,825"
+        },
+        "magic_damage": {
+          "value": 1035,
+          "display": "1,035"
+        },
+        "true_damage": {
+          "value": 2387,
+          "display": "2,387"
+        },
+        "total_damage": {
+          "value": 28248,
+          "display": "28,248"
+        },
+        "damage_taken": {
+          "value": 27273,
+          "display": "27,273"
+        },
+        "healing": {
+          "value": 6895,
+          "display": "6,895"
+        },
+        "kills": {
+          "value": 9.38,
+          "display": "9.38"
+        },
+        "deaths": {
+          "value": 6.57,
+          "display": "6.57"
+        },
+        "assists": {
+          "value": 6.14,
+          "display": "6.14"
+        },
+        "max_kill_spree": {
+          "value": 4.19,
+          "display": "4.19"
+        },
+        "gold": {
+          "value": 13067,
+          "display": "13,067"
+        },
+        "minions_killed": {
+          "value": 196.14,
+          "display": "196.14"
+        },
+        "jungle_cs": {
+          "value": 5.23,
+          "display": "5.23"
+        }
+      }
+    },
+    {
+      "name": "Lux",
+      "slug": "lux",
+      "source_order": 16,
+      "values": {
+        "physical_damage": {
+          "value": 1411,
+          "display": "1,411"
+        },
+        "magic_damage": {
+          "value": 24652,
+          "display": "24,652"
+        },
+        "true_damage": {
+          "value": 948,
+          "display": "948"
+        },
+        "total_damage": {
+          "value": 27013,
+          "display": "27,013"
+        },
+        "damage_taken": {
+          "value": 18231,
+          "display": "18,231"
+        },
+        "healing": {
+          "value": 2043,
+          "display": "2,043"
+        },
+        "kills": {
+          "value": 7.13,
+          "display": "7.13"
+        },
+        "deaths": {
+          "value": 5.72,
+          "display": "5.72"
+        },
+        "assists": {
+          "value": 8.65,
+          "display": "8.65"
+        },
+        "max_kill_spree": {
+          "value": 3.53,
+          "display": "3.53"
+        },
+        "gold": {
+          "value": 12380,
+          "display": "12,380"
+        },
+        "minions_killed": {
+          "value": 207.25,
+          "display": "207.25"
+        },
+        "jungle_cs": {
+          "value": 1.54,
+          "display": "1.54"
+        }
+      }
+    },
+    {
+      "name": "Vex",
+      "slug": "vex",
+      "source_order": 17,
+      "values": {
+        "physical_damage": {
+          "value": 1689,
+          "display": "1,689"
+        },
+        "magic_damage": {
+          "value": 25447,
+          "display": "25,447"
+        },
+        "true_damage": {
+          "value": 1011,
+          "display": "1,011"
+        },
+        "total_damage": {
+          "value": 28150,
+          "display": "28,150"
+        },
+        "damage_taken": {
+          "value": 21414,
+          "display": "21,414"
+        },
+        "healing": {
+          "value": 2843,
+          "display": "2,843"
+        },
+        "kills": {
+          "value": 8.18,
+          "display": "8.18"
+        },
+        "deaths": {
+          "value": 6.61,
+          "display": "6.61"
+        },
+        "assists": {
+          "value": 7.53,
+          "display": "7.53"
+        },
+        "max_kill_spree": {
+          "value": 3.66,
+          "display": "3.66"
+        },
+        "gold": {
+          "value": 12343,
+          "display": "12,343"
+        },
+        "minions_killed": {
+          "value": 196.21,
+          "display": "196.21"
+        },
+        "jungle_cs": {
+          "value": 1.24,
+          "display": "1.24"
+        }
+      }
+    },
+    {
+      "name": "Lissandra",
+      "slug": "lissandra",
+      "source_order": 18,
+      "values": {
+        "physical_damage": {
+          "value": 1221,
+          "display": "1,221"
+        },
+        "magic_damage": {
+          "value": 22666,
+          "display": "22,666"
+        },
+        "true_damage": {
+          "value": 1034,
+          "display": "1,034"
+        },
+        "total_damage": {
+          "value": 24923,
+          "display": "24,923"
+        },
+        "damage_taken": {
+          "value": 25528,
+          "display": "25,528"
+        },
+        "healing": {
+          "value": 4514,
+          "display": "4,514"
+        },
+        "kills": {
+          "value": 6.35,
+          "display": "6.35"
+        },
+        "deaths": {
+          "value": 6.56,
+          "display": "6.56"
+        },
+        "assists": {
+          "value": 8.98,
+          "display": "8.98"
+        },
+        "max_kill_spree": {
+          "value": 2.88,
+          "display": "2.88"
+        },
+        "gold": {
+          "value": 12082,
+          "display": "12,082"
+        },
+        "minions_killed": {
+          "value": 207.29,
+          "display": "207.29"
+        },
+        "jungle_cs": {
+          "value": 1.6,
+          "display": "1.6"
+        }
+      }
+    },
+    {
+      "name": "Singed",
+      "slug": "singed",
+      "source_order": 19,
+      "values": {
+        "physical_damage": {
+          "value": 1014,
+          "display": "1,014"
+        },
+        "magic_damage": {
+          "value": 20591,
+          "display": "20,591"
+        },
+        "true_damage": {
+          "value": 673,
+          "display": "673"
+        },
+        "total_damage": {
+          "value": 22280,
+          "display": "22,280"
+        },
+        "damage_taken": {
+          "value": 33170,
+          "display": "33,170"
+        },
+        "healing": {
+          "value": 6228,
+          "display": "6,228"
+        },
+        "kills": {
+          "value": 5.45,
+          "display": "5.45"
+        },
+        "deaths": {
+          "value": 5.57,
+          "display": "5.57"
+        },
+        "assists": {
+          "value": 9.97,
+          "display": "9.97"
+        },
+        "max_kill_spree": {
+          "value": 2.7,
+          "display": "2.7"
+        },
+        "gold": {
+          "value": 12172,
+          "display": "12,172"
+        },
+        "minions_killed": {
+          "value": 216.48,
+          "display": "216.48"
+        },
+        "jungle_cs": {
+          "value": 1.22,
+          "display": "1.22"
+        }
+      }
+    },
+    {
+      "name": "Diana",
+      "slug": "diana",
+      "source_order": 20,
+      "values": {
+        "physical_damage": {
+          "value": 2271,
+          "display": "2,271"
+        },
+        "magic_damage": {
+          "value": 23293,
+          "display": "23,293"
+        },
+        "true_damage": {
+          "value": 1892,
+          "display": "1,892"
+        },
+        "total_damage": {
+          "value": 27458,
+          "display": "27,458"
+        },
+        "damage_taken": {
+          "value": 23962,
+          "display": "23,962"
+        },
+        "healing": {
+          "value": 2634,
+          "display": "2,634"
+        },
+        "kills": {
+          "value": 8.68,
+          "display": "8.68"
+        },
+        "deaths": {
+          "value": 7.1,
+          "display": "7.1"
+        },
+        "assists": {
+          "value": 5.95,
+          "display": "5.95"
+        },
+        "max_kill_spree": {
+          "value": 3.74,
+          "display": "3.74"
+        },
+        "gold": {
+          "value": 12867,
+          "display": "12,867"
+        },
+        "minions_killed": {
+          "value": 189.92,
+          "display": "189.92"
+        },
+        "jungle_cs": {
+          "value": 6.72,
+          "display": "6.72"
+        }
+      }
+    },
+    {
+      "name": "Tryndamere",
+      "slug": "tryndamere",
+      "source_order": 21,
+      "values": {
+        "physical_damage": {
+          "value": 22752,
+          "display": "22,752"
+        },
+        "magic_damage": {
+          "value": 87,
+          "display": "87"
+        },
+        "true_damage": {
+          "value": 3011,
+          "display": "3,011"
+        },
+        "total_damage": {
+          "value": 25851,
+          "display": "25,851"
+        },
+        "damage_taken": {
+          "value": 38360,
+          "display": "38,360"
+        },
+        "healing": {
+          "value": 18033,
+          "display": "18,033"
+        },
+        "kills": {
+          "value": 7.81,
+          "display": "7.81"
+        },
+        "deaths": {
+          "value": 6.77,
+          "display": "6.77"
+        },
+        "assists": {
+          "value": 4.65,
+          "display": "4.65"
+        },
+        "max_kill_spree": {
+          "value": 3.34,
+          "display": "3.34"
+        },
+        "gold": {
+          "value": 13719,
+          "display": "13,719"
+        },
+        "minions_killed": {
+          "value": 217.35,
+          "display": "217.35"
+        },
+        "jungle_cs": {
+          "value": 14.06,
+          "display": "14.06"
+        }
+      }
+    },
+    {
+      "name": "Garen",
+      "slug": "garen",
+      "source_order": 22,
+      "values": {
+        "physical_damage": {
+          "value": 18166,
+          "display": "18,166"
+        },
+        "magic_damage": {
+          "value": 55,
+          "display": "55"
+        },
+        "true_damage": {
+          "value": 5451,
+          "display": "5,451"
+        },
+        "total_damage": {
+          "value": 23673,
+          "display": "23,673"
+        },
+        "damage_taken": {
+          "value": 33789,
+          "display": "33,789"
+        },
+        "healing": {
+          "value": 3522,
+          "display": "3,522"
+        },
+        "kills": {
+          "value": 7.65,
+          "display": "7.65"
+        },
+        "deaths": {
+          "value": 5.62,
+          "display": "5.62"
+        },
+        "assists": {
+          "value": 4.75,
+          "display": "4.75"
+        },
+        "max_kill_spree": {
+          "value": 3.77,
+          "display": "3.77"
+        },
+        "gold": {
+          "value": 13418,
+          "display": "13,418"
+        },
+        "minions_killed": {
+          "value": 220.71,
+          "display": "220.71"
+        },
+        "jungle_cs": {
+          "value": 5.27,
+          "display": "5.27"
+        }
+      }
+    },
+    {
+      "name": "Talon",
+      "slug": "talon",
+      "source_order": 23,
+      "values": {
+        "physical_damage": {
+          "value": 25514,
+          "display": "25,514"
+        },
+        "magic_damage": {
+          "value": 221,
+          "display": "221"
+        },
+        "true_damage": {
+          "value": 1979,
+          "display": "1,979"
+        },
+        "total_damage": {
+          "value": 27716,
+          "display": "27,716"
+        },
+        "damage_taken": {
+          "value": 28921,
+          "display": "28,921"
+        },
+        "healing": {
+          "value": 6215,
+          "display": "6,215"
+        },
+        "kills": {
+          "value": 9.41,
+          "display": "9.41"
+        },
+        "deaths": {
+          "value": 6.91,
+          "display": "6.91"
+        },
+        "assists": {
+          "value": 5.96,
+          "display": "5.96"
+        },
+        "max_kill_spree": {
+          "value": 4.05,
+          "display": "4.05"
+        },
+        "gold": {
+          "value": 12966,
+          "display": "12,966"
+        },
+        "minions_killed": {
+          "value": 196.7,
+          "display": "196.7"
+        },
+        "jungle_cs": {
+          "value": 5.01,
+          "display": "5.01"
+        }
+      }
+    },
+    {
+      "name": "Pantheon",
+      "slug": "pantheon",
+      "source_order": 24,
+      "values": {
+        "physical_damage": {
+          "value": 25332,
+          "display": "25,332"
+        },
+        "magic_damage": {
+          "value": 825,
+          "display": "825"
+        },
+        "true_damage": {
+          "value": 1955,
+          "display": "1,955"
+        },
+        "total_damage": {
+          "value": 28115,
+          "display": "28,115"
+        },
+        "damage_taken": {
+          "value": 27642,
+          "display": "27,642"
+        },
+        "healing": {
+          "value": 5470,
+          "display": "5,470"
+        },
+        "kills": {
+          "value": 9.14,
+          "display": "9.14"
+        },
+        "deaths": {
+          "value": 6.94,
+          "display": "6.94"
+        },
+        "assists": {
+          "value": 6.82,
+          "display": "6.82"
+        },
+        "max_kill_spree": {
+          "value": 4.02,
+          "display": "4.02"
+        },
+        "gold": {
+          "value": 12394,
+          "display": "12,394"
+        },
+        "minions_killed": {
+          "value": 170.22,
+          "display": "170.22"
+        },
+        "jungle_cs": {
+          "value": 2.57,
+          "display": "2.57"
+        }
+      }
+    },
+    {
+      "name": "Akshan",
+      "slug": "akshan",
+      "source_order": 25,
+      "values": {
+        "physical_damage": {
+          "value": 23859,
+          "display": "23,859"
+        },
+        "magic_damage": {
+          "value": 2443,
+          "display": "2,443"
+        },
+        "true_damage": {
+          "value": 1501,
+          "display": "1,501"
+        },
+        "total_damage": {
+          "value": 27805,
+          "display": "27,805"
+        },
+        "damage_taken": {
+          "value": 23660,
+          "display": "23,660"
+        },
+        "healing": {
+          "value": 5098,
+          "display": "5,098"
+        },
+        "kills": {
+          "value": 9.81,
+          "display": "9.81"
+        },
+        "deaths": {
+          "value": 6.76,
+          "display": "6.76"
+        },
+        "assists": {
+          "value": 5.6,
+          "display": "5.6"
+        },
+        "max_kill_spree": {
+          "value": 4.37,
+          "display": "4.37"
+        },
+        "gold": {
+          "value": 13391,
+          "display": "13,391"
+        },
+        "minions_killed": {
+          "value": 193.89,
+          "display": "193.89"
+        },
+        "jungle_cs": {
+          "value": 3.05,
+          "display": "3.05"
+        }
+      }
+    },
+    {
+      "name": "Kassadin",
+      "slug": "kassadin",
+      "source_order": 26,
+      "values": {
+        "physical_damage": {
+          "value": 2984,
+          "display": "2,984"
+        },
+        "magic_damage": {
+          "value": 21625,
+          "display": "21,625"
+        },
+        "true_damage": {
+          "value": 1762,
+          "display": "1,762"
+        },
+        "total_damage": {
+          "value": 26373,
+          "display": "26,373"
+        },
+        "damage_taken": {
+          "value": 31113,
+          "display": "31,113"
+        },
+        "healing": {
+          "value": 6757,
+          "display": "6,757"
+        },
+        "kills": {
+          "value": 7.96,
+          "display": "7.96"
+        },
+        "deaths": {
+          "value": 5.57,
+          "display": "5.57"
+        },
+        "assists": {
+          "value": 5.56,
+          "display": "5.56"
+        },
+        "max_kill_spree": {
+          "value": 4.05,
+          "display": "4.05"
+        },
+        "gold": {
+          "value": 13022,
+          "display": "13,022"
+        },
+        "minions_killed": {
+          "value": 200.83,
+          "display": "200.83"
+        },
+        "jungle_cs": {
+          "value": 1.85,
+          "display": "1.85"
+        }
+      }
+    },
+    {
+      "name": "Olaf",
+      "slug": "olaf",
+      "source_order": 27,
+      "values": {
+        "physical_damage": {
+          "value": 20352,
+          "display": "20,352"
+        },
+        "magic_damage": {
+          "value": 58,
+          "display": "58"
+        },
+        "true_damage": {
+          "value": 7176,
+          "display": "7,176"
+        },
+        "total_damage": {
+          "value": 27588,
+          "display": "27,588"
+        },
+        "damage_taken": {
+          "value": 35455,
+          "display": "35,455"
+        },
+        "healing": {
+          "value": 18714,
+          "display": "18,714"
+        },
+        "kills": {
+          "value": 8.53,
+          "display": "8.53"
+        },
+        "deaths": {
+          "value": 7.08,
+          "display": "7.08"
+        },
+        "assists": {
+          "value": 4.89,
+          "display": "4.89"
+        },
+        "max_kill_spree": {
+          "value": 3.71,
+          "display": "3.71"
+        },
+        "gold": {
+          "value": 13262,
+          "display": "13,262"
+        },
+        "minions_killed": {
+          "value": 204.2,
+          "display": "204.2"
+        },
+        "jungle_cs": {
+          "value": 5.78,
+          "display": "5.78"
+        }
+      }
+    },
+    {
+      "name": "Annie",
+      "slug": "annie",
+      "source_order": 28,
+      "values": {
+        "physical_damage": {
+          "value": 1002,
+          "display": "1,002"
+        },
+        "magic_damage": {
+          "value": 24808,
+          "display": "24,808"
+        },
+        "true_damage": {
+          "value": 1349,
+          "display": "1,349"
+        },
+        "total_damage": {
+          "value": 27161,
+          "display": "27,161"
+        },
+        "damage_taken": {
+          "value": 20813,
+          "display": "20,813"
+        },
+        "healing": {
+          "value": 2287,
+          "display": "2,287"
+        },
+        "kills": {
+          "value": 7,
+          "display": "7"
+        },
+        "deaths": {
+          "value": 6.78,
+          "display": "6.78"
+        },
+        "assists": {
+          "value": 8.14,
+          "display": "8.14"
+        },
+        "max_kill_spree": {
+          "value": 3.03,
+          "display": "3.03"
+        },
+        "gold": {
+          "value": 11821,
+          "display": "11,821"
+        },
+        "minions_killed": {
+          "value": 185.9,
+          "display": "185.9"
+        },
+        "jungle_cs": {
+          "value": 1.12,
+          "display": "1.12"
+        }
+      }
+    },
+    {
+      "name": "Qiyana",
+      "slug": "qiyana",
+      "source_order": 29,
+      "values": {
+        "physical_damage": {
+          "value": 22566,
+          "display": "22,566"
+        },
+        "magic_damage": {
+          "value": 2082,
+          "display": "2,082"
+        },
+        "true_damage": {
+          "value": 2313,
+          "display": "2,313"
+        },
+        "total_damage": {
+          "value": 26962,
+          "display": "26,962"
+        },
+        "damage_taken": {
+          "value": 25837,
+          "display": "25,837"
+        },
+        "healing": {
+          "value": 4670,
+          "display": "4,670"
+        },
+        "kills": {
+          "value": 9.05,
+          "display": "9.05"
+        },
+        "deaths": {
+          "value": 7,
+          "display": "7"
+        },
+        "assists": {
+          "value": 5.81,
+          "display": "5.81"
+        },
+        "max_kill_spree": {
+          "value": 3.95,
+          "display": "3.95"
+        },
+        "gold": {
+          "value": 12747,
+          "display": "12,747"
+        },
+        "minions_killed": {
+          "value": 186.26,
+          "display": "186.26"
+        },
+        "jungle_cs": {
+          "value": 5.13,
+          "display": "5.13"
+        }
+      }
+    },
+    {
+      "name": "Yasuo",
+      "slug": "yasuo",
+      "source_order": 30,
+      "values": {
+        "physical_damage": {
+          "value": 21119,
+          "display": "21,119"
+        },
+        "magic_damage": {
+          "value": 2071,
+          "display": "2,071"
+        },
+        "true_damage": {
+          "value": 985,
+          "display": "985"
+        },
+        "total_damage": {
+          "value": 24177,
+          "display": "24,177"
+        },
+        "damage_taken": {
+          "value": 28272,
+          "display": "28,272"
+        },
+        "healing": {
+          "value": 7795,
+          "display": "7,795"
+        },
+        "kills": {
+          "value": 6.69,
+          "display": "6.69"
+        },
+        "deaths": {
+          "value": 7.49,
+          "display": "7.49"
+        },
+        "assists": {
+          "value": 5.43,
+          "display": "5.43"
+        },
+        "max_kill_spree": {
+          "value": 2.84,
+          "display": "2.84"
+        },
+        "gold": {
+          "value": 12683,
+          "display": "12,683"
+        },
+        "minions_killed": {
+          "value": 216.14,
+          "display": "216.14"
+        },
+        "jungle_cs": {
+          "value": 8.41,
+          "display": "8.41"
+        }
+      }
+    },
+    {
+      "name": "Galio",
+      "slug": "galio",
+      "source_order": 31,
+      "values": {
+        "physical_damage": {
+          "value": 441,
+          "display": "441"
+        },
+        "magic_damage": {
+          "value": 19866,
+          "display": "19,866"
+        },
+        "true_damage": {
+          "value": 625,
+          "display": "625"
+        },
+        "total_damage": {
+          "value": 20934,
+          "display": "20,934"
+        },
+        "damage_taken": {
+          "value": 27856,
+          "display": "27,856"
+        },
+        "healing": {
+          "value": 3647,
+          "display": "3,647"
+        },
+        "kills": {
+          "value": 4.73,
+          "display": "4.73"
+        },
+        "deaths": {
+          "value": 5.5,
+          "display": "5.5"
+        },
+        "assists": {
+          "value": 10.5,
+          "display": "10.5"
+        },
+        "max_kill_spree": {
+          "value": 2.36,
+          "display": "2.36"
+        },
+        "gold": {
+          "value": 10888,
+          "display": "10,888"
+        },
+        "minions_killed": {
+          "value": 183.58,
+          "display": "183.58"
+        },
+        "jungle_cs": {
+          "value": 0.87,
+          "display": "0.87"
+        }
+      }
+    },
+    {
+      "name": "Veigar",
+      "slug": "veigar",
+      "source_order": 32,
+      "values": {
+        "physical_damage": {
+          "value": 755,
+          "display": "755"
+        },
+        "magic_damage": {
+          "value": 26286,
+          "display": "26,286"
+        },
+        "true_damage": {
+          "value": 588,
+          "display": "588"
+        },
+        "total_damage": {
+          "value": 27631,
+          "display": "27,631"
+        },
+        "damage_taken": {
+          "value": 23537,
+          "display": "23,537"
+        },
+        "healing": {
+          "value": 3709,
+          "display": "3,709"
+        },
+        "kills": {
+          "value": 7.21,
+          "display": "7.21"
+        },
+        "deaths": {
+          "value": 6.01,
+          "display": "6.01"
+        },
+        "assists": {
+          "value": 6.27,
+          "display": "6.27"
+        },
+        "max_kill_spree": {
+          "value": 3.39,
+          "display": "3.39"
+        },
+        "gold": {
+          "value": 13104,
+          "display": "13,104"
+        },
+        "minions_killed": {
+          "value": 217.93,
+          "display": "217.93"
+        },
+        "jungle_cs": {
+          "value": 3.67,
+          "display": "3.67"
+        }
+      }
+    },
+    {
+      "name": "Quinn",
+      "slug": "quinn",
+      "source_order": 33,
+      "values": {
+        "physical_damage": {
+          "value": 26261,
+          "display": "26,261"
+        },
+        "magic_damage": {
+          "value": 147,
+          "display": "147"
+        },
+        "true_damage": {
+          "value": 2468,
+          "display": "2,468"
+        },
+        "total_damage": {
+          "value": 28878,
+          "display": "28,878"
+        },
+        "damage_taken": {
+          "value": 25485,
+          "display": "25,485"
+        },
+        "healing": {
+          "value": 4932,
+          "display": "4,932"
+        },
+        "kills": {
+          "value": 10.05,
+          "display": "10.05"
+        },
+        "deaths": {
+          "value": 7.49,
+          "display": "7.49"
+        },
+        "assists": {
+          "value": 6.99,
+          "display": "6.99"
+        },
+        "max_kill_spree": {
+          "value": 4.2,
+          "display": "4.2"
+        },
+        "gold": {
+          "value": 13266,
+          "display": "13,266"
+        },
+        "minions_killed": {
+          "value": 181.41,
+          "display": "181.41"
+        },
+        "jungle_cs": {
+          "value": 7,
+          "display": "7"
+        }
+      }
+    },
+    {
+      "name": "Anivia",
+      "slug": "anivia",
+      "source_order": 34,
+      "values": {
+        "physical_damage": {
+          "value": 1491,
+          "display": "1,491"
+        },
+        "magic_damage": {
+          "value": 20374,
+          "display": "20,374"
+        },
+        "true_damage": {
+          "value": 1197,
+          "display": "1,197"
+        },
+        "total_damage": {
+          "value": 23064,
+          "display": "23,064"
+        },
+        "damage_taken": {
+          "value": 31105,
+          "display": "31,105"
+        },
+        "healing": {
+          "value": 5924,
+          "display": "5,924"
+        },
+        "kills": {
+          "value": 5.52,
+          "display": "5.52"
+        },
+        "deaths": {
+          "value": 5.06,
+          "display": "5.06"
+        },
+        "assists": {
+          "value": 7.86,
+          "display": "7.86"
+        },
+        "max_kill_spree": {
+          "value": 2.98,
+          "display": "2.98"
+        },
+        "gold": {
+          "value": 11861,
+          "display": "11,861"
+        },
+        "minions_killed": {
+          "value": 207.95,
+          "display": "207.95"
+        },
+        "jungle_cs": {
+          "value": 3.22,
+          "display": "3.22"
+        }
+      }
+    },
+    {
+      "name": "Ambessa",
+      "slug": "ambessa",
+      "source_order": 35,
+      "values": {
+        "physical_damage": {
+          "value": 25397,
+          "display": "25,397"
+        },
+        "magic_damage": {
+          "value": 114,
+          "display": "114"
+        },
+        "true_damage": {
+          "value": 1919,
+          "display": "1,919"
+        },
+        "total_damage": {
+          "value": 27432,
+          "display": "27,432"
+        },
+        "damage_taken": {
+          "value": 29192,
+          "display": "29,192"
+        },
+        "healing": {
+          "value": 8564,
+          "display": "8,564"
+        },
+        "kills": {
+          "value": 7.67,
+          "display": "7.67"
+        },
+        "deaths": {
+          "value": 6.49,
+          "display": "6.49"
+        },
+        "assists": {
+          "value": 5.61,
+          "display": "5.61"
+        },
+        "max_kill_spree": {
+          "value": 3.48,
+          "display": "3.48"
+        },
+        "gold": {
+          "value": 12453,
+          "display": "12,453"
+        },
+        "minions_killed": {
+          "value": 194.22,
+          "display": "194.22"
+        },
+        "jungle_cs": {
+          "value": 4.71,
+          "display": "4.71"
+        }
+      }
+    },
+    {
+      "name": "Zilean",
+      "slug": "zilean",
+      "source_order": 36,
+      "values": {
+        "physical_damage": {
+          "value": 1382,
+          "display": "1,382"
+        },
+        "magic_damage": {
+          "value": 14390,
+          "display": "14,390"
+        },
+        "true_damage": {
+          "value": 365,
+          "display": "365"
+        },
+        "total_damage": {
+          "value": 16139,
+          "display": "16,139"
+        },
+        "damage_taken": {
+          "value": 23341,
+          "display": "23,341"
+        },
+        "healing": {
+          "value": 10472,
+          "display": "10,472"
+        },
+        "kills": {
+          "value": 2.97,
+          "display": "2.97"
+        },
+        "deaths": {
+          "value": 4.31,
+          "display": "4.31"
+        },
+        "assists": {
+          "value": 12.08,
+          "display": "12.08"
+        },
+        "max_kill_spree": {
+          "value": 1.57,
+          "display": "1.57"
+        },
+        "gold": {
+          "value": 10387,
+          "display": "10,387"
+        },
+        "minions_killed": {
+          "value": 180.8,
+          "display": "180.8"
+        },
+        "jungle_cs": {
+          "value": 0.68,
+          "display": "0.68"
+        }
+      }
+    },
+    {
+      "name": "Gwen",
+      "slug": "gwen",
+      "source_order": 37,
+      "values": {
+        "physical_damage": {
+          "value": 2596,
+          "display": "2,596"
+        },
+        "magic_damage": {
+          "value": 20325,
+          "display": "20,325"
+        },
+        "true_damage": {
+          "value": 3852,
+          "display": "3,852"
+        },
+        "total_damage": {
+          "value": 26774,
+          "display": "26,774"
+        },
+        "damage_taken": {
+          "value": 30041,
+          "display": "30,041"
+        },
+        "healing": {
+          "value": 7338,
+          "display": "7,338"
+        },
+        "kills": {
+          "value": 6.93,
+          "display": "6.93"
+        },
+        "deaths": {
+          "value": 6.12,
+          "display": "6.12"
+        },
+        "assists": {
+          "value": 4.44,
+          "display": "4.44"
+        },
+        "max_kill_spree": {
+          "value": 3.19,
+          "display": "3.19"
+        },
+        "gold": {
+          "value": 14139,
+          "display": "14,139"
+        },
+        "minions_killed": {
+          "value": 209.03,
+          "display": "209.03"
+        },
+        "jungle_cs": {
+          "value": 4.02,
+          "display": "4.02"
+        }
+      }
+    },
+    {
+      "name": "Yone",
+      "slug": "yone",
+      "source_order": 38,
+      "values": {
+        "physical_damage": {
+          "value": 19144,
+          "display": "19,144"
+        },
+        "magic_damage": {
+          "value": 3944,
+          "display": "3,944"
+        },
+        "true_damage": {
+          "value": 3508,
+          "display": "3,508"
+        },
+        "total_damage": {
+          "value": 26598,
+          "display": "26,598"
+        },
+        "damage_taken": {
+          "value": 31084,
+          "display": "31,084"
+        },
+        "healing": {
+          "value": 9926,
+          "display": "9,926"
+        },
+        "kills": {
+          "value": 6.86,
+          "display": "6.86"
+        },
+        "deaths": {
+          "value": 7.15,
+          "display": "7.15"
+        },
+        "assists": {
+          "value": 5.29,
+          "display": "5.29"
+        },
+        "max_kill_spree": {
+          "value": 3.01,
+          "display": "3.01"
+        },
+        "gold": {
+          "value": 12650,
+          "display": "12,650"
+        },
+        "minions_killed": {
+          "value": 213.03,
+          "display": "213.03"
+        },
+        "jungle_cs": {
+          "value": 9.32,
+          "display": "9.32"
+        }
+      }
+    },
+    {
+      "name": "LeBlanc",
+      "slug": "leblanc",
+      "source_order": 39,
+      "values": {
+        "physical_damage": {
+          "value": 1368,
+          "display": "1,368"
+        },
+        "magic_damage": {
+          "value": 23078,
+          "display": "23,078"
+        },
+        "true_damage": {
+          "value": 2369,
+          "display": "2,369"
+        },
+        "total_damage": {
+          "value": 26817,
+          "display": "26,817"
+        },
+        "damage_taken": {
+          "value": 23770,
+          "display": "23,770"
+        },
+        "healing": {
+          "value": 3931,
+          "display": "3,931"
+        },
+        "kills": {
+          "value": 8.84,
+          "display": "8.84"
+        },
+        "deaths": {
+          "value": 5.63,
+          "display": "5.63"
+        },
+        "assists": {
+          "value": 6.35,
+          "display": "6.35"
+        },
+        "max_kill_spree": {
+          "value": 4.34,
+          "display": "4.34"
+        },
+        "gold": {
+          "value": 12246,
+          "display": "12,246"
+        },
+        "minions_killed": {
+          "value": 185.55,
+          "display": "185.55"
+        },
+        "jungle_cs": {
+          "value": 1.09,
+          "display": "1.09"
+        }
+      }
+    },
+    {
+      "name": "Kalista",
+      "slug": "kalista",
+      "source_order": 40,
+      "values": {
+        "physical_damage": {
+          "value": 22022,
+          "display": "22,022"
+        },
+        "magic_damage": {
+          "value": 2665,
+          "display": "2,665"
+        },
+        "true_damage": {
+          "value": 1752,
+          "display": "1,752"
+        },
+        "total_damage": {
+          "value": 26441,
+          "display": "26,441"
+        },
+        "damage_taken": {
+          "value": 24985,
+          "display": "24,985"
+        },
+        "healing": {
+          "value": 6397,
+          "display": "6,397"
+        },
+        "kills": {
+          "value": 8.13,
+          "display": "8.13"
+        },
+        "deaths": {
+          "value": 7.41,
+          "display": "7.41"
+        },
+        "assists": {
+          "value": 4.9,
+          "display": "4.9"
+        },
+        "max_kill_spree": {
+          "value": 3.62,
+          "display": "3.62"
+        },
+        "gold": {
+          "value": 13376,
+          "display": "13,376"
+        },
+        "minions_killed": {
+          "value": 211.75,
+          "display": "211.75"
+        },
+        "jungle_cs": {
+          "value": 9.24,
+          "display": "9.24"
+        }
+      }
+    },
+    {
+      "name": "Gragas",
+      "slug": "gragas",
+      "source_order": 41,
+      "values": {
+        "physical_damage": {
+          "value": 1611,
+          "display": "1,611"
+        },
+        "magic_damage": {
+          "value": 23679,
+          "display": "23,679"
+        },
+        "true_damage": {
+          "value": 1528,
+          "display": "1,528"
+        },
+        "total_damage": {
+          "value": 26819,
+          "display": "26,819"
+        },
+        "damage_taken": {
+          "value": 29579,
+          "display": "29,579"
+        },
+        "healing": {
+          "value": 9909,
+          "display": "9,909"
+        },
+        "kills": {
+          "value": 7.31,
+          "display": "7.31"
+        },
+        "deaths": {
+          "value": 5.9,
+          "display": "5.9"
+        },
+        "assists": {
+          "value": 7.01,
+          "display": "7.01"
+        },
+        "max_kill_spree": {
+          "value": 3.52,
+          "display": "3.52"
+        },
+        "gold": {
+          "value": 12218,
+          "display": "12,218"
+        },
+        "minions_killed": {
+          "value": 189.32,
+          "display": "189.32"
+        },
+        "jungle_cs": {
+          "value": 2.9,
+          "display": "2.9"
+        }
+      }
+    },
+    {
+      "name": "Cho'Gath",
+      "slug": "chogath",
+      "source_order": 42,
+      "values": {
+        "physical_damage": {
+          "value": 2736,
+          "display": "2,736"
+        },
+        "magic_damage": {
+          "value": 15443,
+          "display": "15,443"
+        },
+        "true_damage": {
+          "value": 6782,
+          "display": "6,782"
+        },
+        "total_damage": {
+          "value": 24963,
+          "display": "24,963"
+        },
+        "damage_taken": {
+          "value": 38368,
+          "display": "38,368"
+        },
+        "healing": {
+          "value": 9630,
+          "display": "9,630"
+        },
+        "kills": {
+          "value": 7.61,
+          "display": "7.61"
+        },
+        "deaths": {
+          "value": 5.77,
+          "display": "5.77"
+        },
+        "assists": {
+          "value": 6.13,
+          "display": "6.13"
+        },
+        "max_kill_spree": {
+          "value": 3.77,
+          "display": "3.77"
+        },
+        "gold": {
+          "value": 12333,
+          "display": "12,333"
+        },
+        "minions_killed": {
+          "value": 198.09,
+          "display": "198.09"
+        },
+        "jungle_cs": {
+          "value": 6.54,
+          "display": "6.54"
+        }
+      }
+    },
+    {
+      "name": "Zoe",
+      "slug": "zoe",
+      "source_order": 43,
+      "values": {
+        "physical_damage": {
+          "value": 2067,
+          "display": "2,067"
+        },
+        "magic_damage": {
+          "value": 20776,
+          "display": "20,776"
+        },
+        "true_damage": {
+          "value": 4527,
+          "display": "4,527"
+        },
+        "total_damage": {
+          "value": 27372,
+          "display": "27,372"
+        },
+        "damage_taken": {
+          "value": 20589,
+          "display": "20,589"
+        },
+        "healing": {
+          "value": 2954,
+          "display": "2,954"
+        },
+        "kills": {
+          "value": 7.52,
+          "display": "7.52"
+        },
+        "deaths": {
+          "value": 5.76,
+          "display": "5.76"
+        },
+        "assists": {
+          "value": 7.42,
+          "display": "7.42"
+        },
+        "max_kill_spree": {
+          "value": 3.71,
+          "display": "3.71"
+        },
+        "gold": {
+          "value": 11861,
+          "display": "11,861"
+        },
+        "minions_killed": {
+          "value": 186.95,
+          "display": "186.95"
+        },
+        "jungle_cs": {
+          "value": 1.23,
+          "display": "1.23"
+        }
+      }
+    },
+    {
+      "name": "Kayle",
+      "slug": "kayle",
+      "source_order": 44,
+      "values": {
+        "physical_damage": {
+          "value": 4605,
+          "display": "4,605"
+        },
+        "magic_damage": {
+          "value": 17696,
+          "display": "17,696"
+        },
+        "true_damage": {
+          "value": 392,
+          "display": "392"
+        },
+        "total_damage": {
+          "value": 22695,
+          "display": "22,695"
+        },
+        "damage_taken": {
+          "value": 25673,
+          "display": "25,673"
+        },
+        "healing": {
+          "value": 10056,
+          "display": "10,056"
+        },
+        "kills": {
+          "value": 6.13,
+          "display": "6.13"
+        },
+        "deaths": {
+          "value": 5.61,
+          "display": "5.61"
+        },
+        "assists": {
+          "value": 6.06,
+          "display": "6.06"
+        },
+        "max_kill_spree": {
+          "value": 3,
+          "display": "3"
+        },
+        "gold": {
+          "value": 13037,
+          "display": "13,037"
+        },
+        "minions_killed": {
+          "value": 230.07,
+          "display": "230.07"
+        },
+        "jungle_cs": {
+          "value": 8.72,
+          "display": "8.72"
+        }
+      }
+    },
+    {
+      "name": "Swain",
+      "slug": "swain",
+      "source_order": 45,
+      "values": {
+        "physical_damage": {
+          "value": 1526,
+          "display": "1,526"
+        },
+        "magic_damage": {
+          "value": 24761,
+          "display": "24,761"
+        },
+        "true_damage": {
+          "value": 451,
+          "display": "451"
+        },
+        "total_damage": {
+          "value": 26739,
+          "display": "26,739"
+        },
+        "damage_taken": {
+          "value": 35637,
+          "display": "35,637"
+        },
+        "healing": {
+          "value": 13294,
+          "display": "13,294"
+        },
+        "kills": {
+          "value": 5.78,
+          "display": "5.78"
+        },
+        "deaths": {
+          "value": 5.7,
+          "display": "5.7"
+        },
+        "assists": {
+          "value": 9.63,
+          "display": "9.63"
+        },
+        "max_kill_spree": {
+          "value": 2.98,
+          "display": "2.98"
+        },
+        "gold": {
+          "value": 11594,
+          "display": "11,594"
+        },
+        "minions_killed": {
+          "value": 194.94,
+          "display": "194.94"
+        },
+        "jungle_cs": {
+          "value": 1.27,
+          "display": "1.27"
+        }
+      }
+    },
+    {
+      "name": "Neeko",
+      "slug": "neeko",
+      "source_order": 46,
+      "values": {
+        "physical_damage": {
+          "value": 1481,
+          "display": "1,481"
+        },
+        "magic_damage": {
+          "value": 22204,
+          "display": "22,204"
+        },
+        "true_damage": {
+          "value": 964,
+          "display": "964"
+        },
+        "total_damage": {
+          "value": 24651,
+          "display": "24,651"
+        },
+        "damage_taken": {
+          "value": 22852,
+          "display": "22,852"
+        },
+        "healing": {
+          "value": 3040,
+          "display": "3,040"
+        },
+        "kills": {
+          "value": 6.7,
+          "display": "6.7"
+        },
+        "deaths": {
+          "value": 5.83,
+          "display": "5.83"
+        },
+        "assists": {
+          "value": 7.96,
+          "display": "7.96"
+        },
+        "max_kill_spree": {
+          "value": 3.19,
+          "display": "3.19"
+        },
+        "gold": {
+          "value": 11849,
+          "display": "11,849"
+        },
+        "minions_killed": {
+          "value": 188.04,
+          "display": "188.04"
+        },
+        "jungle_cs": {
+          "value": 2.11,
+          "display": "2.11"
+        }
+      }
+    },
+    {
+      "name": "Malzahar",
+      "slug": "malzahar",
+      "source_order": 47,
+      "values": {
+        "physical_damage": {
+          "value": 585,
+          "display": "585"
+        },
+        "magic_damage": {
+          "value": 24888,
+          "display": "24,888"
+        },
+        "true_damage": {
+          "value": 400,
+          "display": "400"
+        },
+        "total_damage": {
+          "value": 25875,
+          "display": "25,875"
+        },
+        "damage_taken": {
+          "value": 21246,
+          "display": "21,246"
+        },
+        "healing": {
+          "value": 2042,
+          "display": "2,042"
+        },
+        "kills": {
+          "value": 5.22,
+          "display": "5.22"
+        },
+        "deaths": {
+          "value": 6.24,
+          "display": "6.24"
+        },
+        "assists": {
+          "value": 7.95,
+          "display": "7.95"
+        },
+        "max_kill_spree": {
+          "value": 2.33,
+          "display": "2.33"
+        },
+        "gold": {
+          "value": 12722,
+          "display": "12,722"
+        },
+        "minions_killed": {
+          "value": 233.58,
+          "display": "233.58"
+        },
+        "jungle_cs": {
+          "value": 3.64,
+          "display": "3.64"
+        }
+      }
+    },
+    {
+      "name": "Vel'Koz",
+      "slug": "velkoz",
+      "source_order": 48,
+      "values": {
+        "physical_damage": {
+          "value": 543,
+          "display": "543"
+        },
+        "magic_damage": {
+          "value": 21652,
+          "display": "21,652"
+        },
+        "true_damage": {
+          "value": 8042,
+          "display": "8,042"
+        },
+        "total_damage": {
+          "value": 30239,
+          "display": "30,239"
+        },
+        "damage_taken": {
+          "value": 20319,
+          "display": "20,319"
+        },
+        "healing": {
+          "value": 2401,
+          "display": "2,401"
+        },
+        "kills": {
+          "value": 7.01,
+          "display": "7.01"
+        },
+        "deaths": {
+          "value": 6.03,
+          "display": "6.03"
+        },
+        "assists": {
+          "value": 7.4,
+          "display": "7.4"
+        },
+        "max_kill_spree": {
+          "value": 3.35,
+          "display": "3.35"
+        },
+        "gold": {
+          "value": 12301,
+          "display": "12,301"
+        },
+        "minions_killed": {
+          "value": 205.45,
+          "display": "205.45"
+        },
+        "jungle_cs": {
+          "value": 1.65,
+          "display": "1.65"
+        }
+      }
+    },
+    {
+      "name": "Heimerdinger",
+      "slug": "heimerdinger",
+      "source_order": 49,
+      "values": {
+        "physical_damage": {
+          "value": 974,
+          "display": "974"
+        },
+        "magic_damage": {
+          "value": 30631,
+          "display": "30,631"
+        },
+        "true_damage": {
+          "value": 659,
+          "display": "659"
+        },
+        "total_damage": {
+          "value": 32265,
+          "display": "32,265"
+        },
+        "damage_taken": {
+          "value": 22073,
+          "display": "22,073"
+        },
+        "healing": {
+          "value": 2744,
+          "display": "2,744"
+        },
+        "kills": {
+          "value": 5.85,
+          "display": "5.85"
+        },
+        "deaths": {
+          "value": 6.37,
+          "display": "6.37"
+        },
+        "assists": {
+          "value": 6.38,
+          "display": "6.38"
+        },
+        "max_kill_spree": {
+          "value": 2.56,
+          "display": "2.56"
+        },
+        "gold": {
+          "value": 12444,
+          "display": "12,444"
+        },
+        "minions_killed": {
+          "value": 209.95,
+          "display": "209.95"
+        },
+        "jungle_cs": {
+          "value": 3.63,
+          "display": "3.63"
+        }
+      }
+    },
+    {
+      "name": "Kled",
+      "slug": "kled",
+      "source_order": 50,
+      "values": {
+        "physical_damage": {
+          "value": 22632,
+          "display": "22,632"
+        },
+        "magic_damage": {
+          "value": 1521,
+          "display": "1,521"
+        },
+        "true_damage": {
+          "value": 1607,
+          "display": "1,607"
+        },
+        "total_damage": {
+          "value": 25762,
+          "display": "25,762"
+        },
+        "damage_taken": {
+          "value": 37994,
+          "display": "37,994"
+        },
+        "healing": {
+          "value": 7141,
+          "display": "7,141"
+        },
+        "kills": {
+          "value": 8.16,
+          "display": "8.16"
+        },
+        "deaths": {
+          "value": 6.31,
+          "display": "6.31"
+        },
+        "assists": {
+          "value": 7.14,
+          "display": "7.14"
+        },
+        "max_kill_spree": {
+          "value": 3.8,
+          "display": "3.8"
+        },
+        "gold": {
+          "value": 12841,
+          "display": "12,841"
+        },
+        "minions_killed": {
+          "value": 184.03,
+          "display": "184.03"
+        },
+        "jungle_cs": {
+          "value": 3.58,
+          "display": "3.58"
+        }
+      }
+    },
+    {
+      "name": "Jayce",
+      "slug": "jayce",
+      "source_order": 51,
+      "values": {
+        "physical_damage": {
+          "value": 22513,
+          "display": "22,513"
+        },
+        "magic_damage": {
+          "value": 4538,
+          "display": "4,538"
+        },
+        "true_damage": {
+          "value": 1484,
+          "display": "1,484"
+        },
+        "total_damage": {
+          "value": 28537,
+          "display": "28,537"
+        },
+        "damage_taken": {
+          "value": 23724,
+          "display": "23,724"
+        },
+        "healing": {
+          "value": 4079,
+          "display": "4,079"
+        },
+        "kills": {
+          "value": 7.68,
+          "display": "7.68"
+        },
+        "deaths": {
+          "value": 6.75,
+          "display": "6.75"
+        },
+        "assists": {
+          "value": 6.59,
+          "display": "6.59"
+        },
+        "max_kill_spree": {
+          "value": 3.44,
+          "display": "3.44"
+        },
+        "gold": {
+          "value": 13172,
+          "display": "13,172"
+        },
+        "minions_killed": {
+          "value": 207.42,
+          "display": "207.42"
+        },
+        "jungle_cs": {
+          "value": 4.97,
+          "display": "4.97"
+        }
+      }
+    },
+    {
+      "name": "Sett",
+      "slug": "sett",
+      "source_order": 52,
+      "values": {
+        "physical_damage": {
+          "value": 19384,
+          "display": "19,384"
+        },
+        "magic_damage": {
+          "value": 108,
+          "display": "108"
+        },
+        "true_damage": {
+          "value": 6370,
+          "display": "6,370"
+        },
+        "total_damage": {
+          "value": 25863,
+          "display": "25,863"
+        },
+        "damage_taken": {
+          "value": 39076,
+          "display": "39,076"
+        },
+        "healing": {
+          "value": 6037,
+          "display": "6,037"
+        },
+        "kills": {
+          "value": 7.01,
+          "display": "7.01"
+        },
+        "deaths": {
+          "value": 6.87,
+          "display": "6.87"
+        },
+        "assists": {
+          "value": 5.85,
+          "display": "5.85"
+        },
+        "max_kill_spree": {
+          "value": 3.01,
+          "display": "3.01"
+        },
+        "gold": {
+          "value": 12382,
+          "display": "12,382"
+        },
+        "minions_killed": {
+          "value": 188.6,
+          "display": "188.6"
+        },
+        "jungle_cs": {
+          "value": 3.08,
+          "display": "3.08"
+        }
+      }
+    },
+    {
+      "name": "Irelia",
+      "slug": "irelia",
+      "source_order": 53,
+      "values": {
+        "physical_damage": {
+          "value": 18476,
+          "display": "18,476"
+        },
+        "magic_damage": {
+          "value": 5870,
+          "display": "5,870"
+        },
+        "true_damage": {
+          "value": 1108,
+          "display": "1,108"
+        },
+        "total_damage": {
+          "value": 25456,
+          "display": "25,456"
+        },
+        "damage_taken": {
+          "value": 33634,
+          "display": "33,634"
+        },
+        "healing": {
+          "value": 13089,
+          "display": "13,089"
+        },
+        "kills": {
+          "value": 7.9,
+          "display": "7.9"
+        },
+        "deaths": {
+          "value": 7.73,
+          "display": "7.73"
+        },
+        "assists": {
+          "value": 4.65,
+          "display": "4.65"
+        },
+        "max_kill_spree": {
+          "value": 3.3,
+          "display": "3.3"
+        },
+        "gold": {
+          "value": 13618,
+          "display": "13,618"
+        },
+        "minions_killed": {
+          "value": 231.81,
+          "display": "231.81"
+        },
+        "jungle_cs": {
+          "value": 5.69,
+          "display": "5.69"
+        }
+      }
+    },
+    {
+      "name": "Mordekaiser",
+      "slug": "mordekaiser",
+      "source_order": 54,
+      "values": {
+        "physical_damage": {
+          "value": 3005,
+          "display": "3,005"
+        },
+        "magic_damage": {
+          "value": 21285,
+          "display": "21,285"
+        },
+        "true_damage": {
+          "value": 1160,
+          "display": "1,160"
+        },
+        "total_damage": {
+          "value": 25452,
+          "display": "25,452"
+        },
+        "damage_taken": {
+          "value": 34313,
+          "display": "34,313"
+        },
+        "healing": {
+          "value": 10981,
+          "display": "10,981"
+        },
+        "kills": {
+          "value": 7.42,
+          "display": "7.42"
+        },
+        "deaths": {
+          "value": 6.23,
+          "display": "6.23"
+        },
+        "assists": {
+          "value": 5.42,
+          "display": "5.42"
+        },
+        "max_kill_spree": {
+          "value": 3.49,
+          "display": "3.49"
+        },
+        "gold": {
+          "value": 12225,
+          "display": "12,225"
+        },
+        "minions_killed": {
+          "value": 188.97,
+          "display": "188.97"
+        },
+        "jungle_cs": {
+          "value": 3.92,
+          "display": "3.92"
+        }
+      }
+    },
+    {
+      "name": "Aurora",
+      "slug": "aurora",
+      "source_order": 55,
+      "values": {
+        "physical_damage": {
+          "value": 1651,
+          "display": "1,651"
+        },
+        "magic_damage": {
+          "value": 26061,
+          "display": "26,061"
+        },
+        "true_damage": {
+          "value": 1382,
+          "display": "1,382"
+        },
+        "total_damage": {
+          "value": 29096,
+          "display": "29,096"
+        },
+        "damage_taken": {
+          "value": 24342,
+          "display": "24,342"
+        },
+        "healing": {
+          "value": 5215,
+          "display": "5,215"
+        },
+        "kills": {
+          "value": 7.69,
+          "display": "7.69"
+        },
+        "deaths": {
+          "value": 5.67,
+          "display": "5.67"
+        },
+        "assists": {
+          "value": 6.76,
+          "display": "6.76"
+        },
+        "max_kill_spree": {
+          "value": 3.79,
+          "display": "3.79"
+        },
+        "gold": {
+          "value": 12210,
+          "display": "12,210"
+        },
+        "minions_killed": {
+          "value": 199.69,
+          "display": "199.69"
+        },
+        "jungle_cs": {
+          "value": 1.16,
+          "display": "1.16"
+        }
+      }
+    },
+    {
+      "name": "Taliyah",
+      "slug": "taliyah",
+      "source_order": 56,
+      "values": {
+        "physical_damage": {
+          "value": 970,
+          "display": "970"
+        },
+        "magic_damage": {
+          "value": 24402,
+          "display": "24,402"
+        },
+        "true_damage": {
+          "value": 420,
+          "display": "420"
+        },
+        "total_damage": {
+          "value": 25793,
+          "display": "25,793"
+        },
+        "damage_taken": {
+          "value": 22591,
+          "display": "22,591"
+        },
+        "healing": {
+          "value": 2769,
+          "display": "2,769"
+        },
+        "kills": {
+          "value": 5.92,
+          "display": "5.92"
+        },
+        "deaths": {
+          "value": 6.62,
+          "display": "6.62"
+        },
+        "assists": {
+          "value": 8.86,
+          "display": "8.86"
+        },
+        "max_kill_spree": {
+          "value": 2.77,
+          "display": "2.77"
+        },
+        "gold": {
+          "value": 11967,
+          "display": "11,967"
+        },
+        "minions_killed": {
+          "value": 205.95,
+          "display": "205.95"
+        },
+        "jungle_cs": {
+          "value": 5.23,
+          "display": "5.23"
+        }
+      }
+    },
+    {
+      "name": "Kennen",
+      "slug": "kennen",
+      "source_order": 57,
+      "values": {
+        "physical_damage": {
+          "value": 2321,
+          "display": "2,321"
+        },
+        "magic_damage": {
+          "value": 24038,
+          "display": "24,038"
+        },
+        "true_damage": {
+          "value": 1080,
+          "display": "1,080"
+        },
+        "total_damage": {
+          "value": 27441,
+          "display": "27,441"
+        },
+        "damage_taken": {
+          "value": 23996,
+          "display": "23,996"
+        },
+        "healing": {
+          "value": 4153,
+          "display": "4,153"
+        },
+        "kills": {
+          "value": 7.84,
+          "display": "7.84"
+        },
+        "deaths": {
+          "value": 6.36,
+          "display": "6.36"
+        },
+        "assists": {
+          "value": 6.65,
+          "display": "6.65"
+        },
+        "max_kill_spree": {
+          "value": 3.58,
+          "display": "3.58"
+        },
+        "gold": {
+          "value": 12282,
+          "display": "12,282"
+        },
+        "minions_killed": {
+          "value": 193.55,
+          "display": "193.55"
+        },
+        "jungle_cs": {
+          "value": 1.44,
+          "display": "1.44"
+        }
+      }
+    },
+    {
+      "name": "Gangplank",
+      "slug": "gangplank",
+      "source_order": 58,
+      "values": {
+        "physical_damage": {
+          "value": 20197,
+          "display": "20,197"
+        },
+        "magic_damage": {
+          "value": 5538,
+          "display": "5,538"
+        },
+        "true_damage": {
+          "value": 4383,
+          "display": "4,383"
+        },
+        "total_damage": {
+          "value": 30120,
+          "display": "30,120"
+        },
+        "damage_taken": {
+          "value": 27716,
+          "display": "27,716"
+        },
+        "healing": {
+          "value": 8115,
+          "display": "8,115"
+        },
+        "kills": {
+          "value": 7.76,
+          "display": "7.76"
+        },
+        "deaths": {
+          "value": 6.51,
+          "display": "6.51"
+        },
+        "assists": {
+          "value": 7.2,
+          "display": "7.2"
+        },
+        "max_kill_spree": {
+          "value": 3.42,
+          "display": "3.42"
+        },
+        "gold": {
+          "value": 14488,
+          "display": "14,488"
+        },
+        "minions_killed": {
+          "value": 221.3,
+          "display": "221.3"
+        },
+        "jungle_cs": {
+          "value": 5.28,
+          "display": "5.28"
+        }
+      }
+    },
+    {
+      "name": "Rumble",
+      "slug": "rumble",
+      "source_order": 59,
+      "values": {
+        "physical_damage": {
+          "value": 969,
+          "display": "969"
+        },
+        "magic_damage": {
+          "value": 25706,
+          "display": "25,706"
+        },
+        "true_damage": {
+          "value": 1288,
+          "display": "1,288"
+        },
+        "total_damage": {
+          "value": 27965,
+          "display": "27,965"
+        },
+        "damage_taken": {
+          "value": 24907,
+          "display": "24,907"
+        },
+        "healing": {
+          "value": 3270,
+          "display": "3,270"
+        },
+        "kills": {
+          "value": 7.57,
+          "display": "7.57"
+        },
+        "deaths": {
+          "value": 6.09,
+          "display": "6.09"
+        },
+        "assists": {
+          "value": 7.47,
+          "display": "7.47"
+        },
+        "max_kill_spree": {
+          "value": 3.53,
+          "display": "3.53"
+        },
+        "gold": {
+          "value": 11997,
+          "display": "11,997"
+        },
+        "minions_killed": {
+          "value": 185.32,
+          "display": "185.32"
+        },
+        "jungle_cs": {
+          "value": 3.47,
+          "display": "3.47"
+        }
+      }
+    },
+    {
+      "name": "Ryze",
+      "slug": "ryze",
+      "source_order": 60,
+      "values": {
+        "physical_damage": {
+          "value": 1035,
+          "display": "1,035"
+        },
+        "magic_damage": {
+          "value": 24506,
+          "display": "24,506"
+        },
+        "true_damage": {
+          "value": 274,
+          "display": "274"
+        },
+        "total_damage": {
+          "value": 25816,
+          "display": "25,816"
+        },
+        "damage_taken": {
+          "value": 29029,
+          "display": "29,029"
+        },
+        "healing": {
+          "value": 5922,
+          "display": "5,922"
+        },
+        "kills": {
+          "value": 5.72,
+          "display": "5.72"
+        },
+        "deaths": {
+          "value": 5.72,
+          "display": "5.72"
+        },
+        "assists": {
+          "value": 6.88,
+          "display": "6.88"
+        },
+        "max_kill_spree": {
+          "value": 2.77,
+          "display": "2.77"
+        },
+        "gold": {
+          "value": 12230,
+          "display": "12,230"
+        },
+        "minions_killed": {
+          "value": 220.79,
+          "display": "220.79"
+        },
+        "jungle_cs": {
+          "value": 5.73,
+          "display": "5.73"
+        }
+      }
+    },
+    {
+      "name": "Briar",
+      "slug": "briar",
+      "source_order": 61,
+      "values": {
+        "physical_damage": {
+          "value": 23844,
+          "display": "23,844"
+        },
+        "magic_damage": {
+          "value": 2565,
+          "display": "2,565"
+        },
+        "true_damage": {
+          "value": 2601,
+          "display": "2,601"
+        },
+        "total_damage": {
+          "value": 29012,
+          "display": "29,012"
+        },
+        "damage_taken": {
+          "value": 36516,
+          "display": "36,516"
+        },
+        "healing": {
+          "value": 24542,
+          "display": "24,542"
+        },
+        "kills": {
+          "value": 10.82,
+          "display": "10.82"
+        },
+        "deaths": {
+          "value": 8.96,
+          "display": "8.96"
+        },
+        "assists": {
+          "value": 5.71,
+          "display": "5.71"
+        },
+        "max_kill_spree": {
+          "value": 4.02,
+          "display": "4.02"
+        },
+        "gold": {
+          "value": 13365,
+          "display": "13,365"
+        },
+        "minions_killed": {
+          "value": 165.47,
+          "display": "165.47"
+        },
+        "jungle_cs": {
+          "value": 7.72,
+          "display": "7.72"
+        }
+      }
+    },
+    {
+      "name": "Zaahen",
+      "slug": "zaahen",
+      "source_order": 62,
+      "values": {
+        "physical_damage": {
+          "value": 22344,
+          "display": "22,344"
+        },
+        "magic_damage": {
+          "value": 1005,
+          "display": "1,005"
+        },
+        "true_damage": {
+          "value": 2084,
+          "display": "2,084"
+        },
+        "total_damage": {
+          "value": 25434,
+          "display": "25,434"
+        },
+        "damage_taken": {
+          "value": 39579,
+          "display": "39,579"
+        },
+        "healing": {
+          "value": 13990,
+          "display": "13,990"
+        },
+        "kills": {
+          "value": 6.48,
+          "display": "6.48"
+        },
+        "deaths": {
+          "value": 6.61,
+          "display": "6.61"
+        },
+        "assists": {
+          "value": 6.14,
+          "display": "6.14"
+        },
+        "max_kill_spree": {
+          "value": 3.05,
+          "display": "3.05"
+        },
+        "gold": {
+          "value": 11921,
+          "display": "11,921"
+        },
+        "minions_killed": {
+          "value": 189.3,
+          "display": "189.3"
+        },
+        "jungle_cs": {
+          "value": 3.68,
+          "display": "3.68"
+        }
+      }
+    },
+    {
+      "name": "Sion",
+      "slug": "sion",
+      "source_order": 63,
+      "values": {
+        "physical_damage": {
+          "value": 13948,
+          "display": "13,948"
+        },
+        "magic_damage": {
+          "value": 8581,
+          "display": "8,581"
+        },
+        "true_damage": {
+          "value": 516,
+          "display": "516"
+        },
+        "total_damage": {
+          "value": 23047,
+          "display": "23,047"
+        },
+        "damage_taken": {
+          "value": 47599,
+          "display": "47,599"
+        },
+        "healing": {
+          "value": 10551,
+          "display": "10,551"
+        },
+        "kills": {
+          "value": 4.53,
+          "display": "4.53"
+        },
+        "deaths": {
+          "value": 5.94,
+          "display": "5.94"
+        },
+        "assists": {
+          "value": 7.99,
+          "display": "7.99"
+        },
+        "max_kill_spree": {
+          "value": 2.11,
+          "display": "2.11"
+        },
+        "gold": {
+          "value": 12494,
+          "display": "12,494"
+        },
+        "minions_killed": {
+          "value": 216.74,
+          "display": "216.74"
+        },
+        "jungle_cs": {
+          "value": 1.93,
+          "display": "1.93"
+        }
+      }
+    },
+    {
+      "name": "Master Yi",
+      "slug": "masteryi",
+      "source_order": 64,
+      "values": {
+        "physical_damage": {
+          "value": 16918,
+          "display": "16,918"
+        },
+        "magic_damage": {
+          "value": 492,
+          "display": "492"
+        },
+        "true_damage": {
+          "value": 9066,
+          "display": "9,066"
+        },
+        "total_damage": {
+          "value": 26478,
+          "display": "26,478"
+        },
+        "damage_taken": {
+          "value": 29401,
+          "display": "29,401"
+        },
+        "healing": {
+          "value": 8156,
+          "display": "8,156"
+        },
+        "kills": {
+          "value": 10.05,
+          "display": "10.05"
+        },
+        "deaths": {
+          "value": 8.31,
+          "display": "8.31"
+        },
+        "assists": {
+          "value": 4.44,
+          "display": "4.44"
+        },
+        "max_kill_spree": {
+          "value": 3.85,
+          "display": "3.85"
+        },
+        "gold": {
+          "value": 13096,
+          "display": "13,096"
+        },
+        "minions_killed": {
+          "value": 170.72,
+          "display": "170.72"
+        },
+        "jungle_cs": {
+          "value": 7.33,
+          "display": "7.33"
+        }
+      }
+    },
+    {
+      "name": "Urgot",
+      "slug": "urgot",
+      "source_order": 65,
+      "values": {
+        "physical_damage": {
+          "value": 21814,
+          "display": "21,814"
+        },
+        "magic_damage": {
+          "value": 164,
+          "display": "164"
+        },
+        "true_damage": {
+          "value": 2548,
+          "display": "2,548"
+        },
+        "total_damage": {
+          "value": 24528,
+          "display": "24,528"
+        },
+        "damage_taken": {
+          "value": 29987,
+          "display": "29,987"
+        },
+        "healing": {
+          "value": 6188,
+          "display": "6,188"
+        },
+        "kills": {
+          "value": 8.08,
+          "display": "8.08"
+        },
+        "deaths": {
+          "value": 6.2,
+          "display": "6.2"
+        },
+        "assists": {
+          "value": 5.54,
+          "display": "5.54"
+        },
+        "max_kill_spree": {
+          "value": 3.79,
+          "display": "3.79"
+        },
+        "gold": {
+          "value": 12960,
+          "display": "12,960"
+        },
+        "minions_killed": {
+          "value": 200.7,
+          "display": "200.7"
+        },
+        "jungle_cs": {
+          "value": 3.75,
+          "display": "3.75"
+        }
+      }
+    },
+    {
+      "name": "Aurelion Sol",
+      "slug": "aurelionsol",
+      "source_order": 66,
+      "values": {
+        "physical_damage": {
+          "value": 274,
+          "display": "274"
+        },
+        "magic_damage": {
+          "value": 26225,
+          "display": "26,225"
+        },
+        "true_damage": {
+          "value": 678,
+          "display": "678"
+        },
+        "total_damage": {
+          "value": 27179,
+          "display": "27,179"
+        },
+        "damage_taken": {
+          "value": 24860,
+          "display": "24,860"
+        },
+        "healing": {
+          "value": 3536,
+          "display": "3,536"
+        },
+        "kills": {
+          "value": 7.18,
+          "display": "7.18"
+        },
+        "deaths": {
+          "value": 6.1,
+          "display": "6.1"
+        },
+        "assists": {
+          "value": 8.69,
+          "display": "8.69"
+        },
+        "max_kill_spree": {
+          "value": 3.46,
+          "display": "3.46"
+        },
+        "gold": {
+          "value": 12588,
+          "display": "12,588"
+        },
+        "minions_killed": {
+          "value": 209.7,
+          "display": "209.7"
+        },
+        "jungle_cs": {
+          "value": 3.2,
+          "display": "3.2"
+        }
+      }
+    },
+    {
+      "name": "Cassiopeia",
+      "slug": "cassiopeia",
+      "source_order": 67,
+      "values": {
+        "physical_damage": {
+          "value": 427,
+          "display": "427"
+        },
+        "magic_damage": {
+          "value": 24032,
+          "display": "24,032"
+        },
+        "true_damage": {
+          "value": 325,
+          "display": "325"
+        },
+        "total_damage": {
+          "value": 24785,
+          "display": "24,785"
+        },
+        "damage_taken": {
+          "value": 29017,
+          "display": "29,017"
+        },
+        "healing": {
+          "value": 8202,
+          "display": "8,202"
+        },
+        "kills": {
+          "value": 6.32,
+          "display": "6.32"
+        },
+        "deaths": {
+          "value": 6.49,
+          "display": "6.49"
+        },
+        "assists": {
+          "value": 6.45,
+          "display": "6.45"
+        },
+        "max_kill_spree": {
+          "value": 2.89,
+          "display": "2.89"
+        },
+        "gold": {
+          "value": 11875,
+          "display": "11,875"
+        },
+        "minions_killed": {
+          "value": 206.8,
+          "display": "206.8"
+        },
+        "jungle_cs": {
+          "value": 4.32,
+          "display": "4.32"
+        }
+      }
+    },
+    {
+      "name": "Malphite",
+      "slug": "malphite",
+      "source_order": 68,
+      "values": {
+        "physical_damage": {
+          "value": 5082,
+          "display": "5,082"
+        },
+        "magic_damage": {
+          "value": 17138,
+          "display": "17,138"
+        },
+        "true_damage": {
+          "value": 767,
+          "display": "767"
+        },
+        "total_damage": {
+          "value": 22988,
+          "display": "22,988"
+        },
+        "damage_taken": {
+          "value": 24381,
+          "display": "24,381"
+        },
+        "healing": {
+          "value": 3218,
+          "display": "3,218"
+        },
+        "kills": {
+          "value": 6.02,
+          "display": "6.02"
+        },
+        "deaths": {
+          "value": 5.6,
+          "display": "5.6"
+        },
+        "assists": {
+          "value": 8.31,
+          "display": "8.31"
+        },
+        "max_kill_spree": {
+          "value": 2.95,
+          "display": "2.95"
+        },
+        "gold": {
+          "value": 11479,
+          "display": "11,479"
+        },
+        "minions_killed": {
+          "value": 179.56,
+          "display": "179.56"
+        },
+        "jungle_cs": {
+          "value": 1.88,
+          "display": "1.88"
+        }
+      }
+    },
+    {
+      "name": "Kog'Maw",
+      "slug": "kogmaw",
+      "source_order": 69,
+      "values": {
+        "physical_damage": {
+          "value": 3272,
+          "display": "3,272"
+        },
+        "magic_damage": {
+          "value": 28670,
+          "display": "28,670"
+        },
+        "true_damage": {
+          "value": 2742,
+          "display": "2,742"
+        },
+        "total_damage": {
+          "value": 34685,
+          "display": "34,685"
+        },
+        "damage_taken": {
+          "value": 22944,
+          "display": "22,944"
+        },
+        "healing": {
+          "value": 3361,
+          "display": "3,361"
+        },
+        "kills": {
+          "value": 8.4,
+          "display": "8.4"
+        },
+        "deaths": {
+          "value": 7.02,
+          "display": "7.02"
+        },
+        "assists": {
+          "value": 6.23,
+          "display": "6.23"
+        },
+        "max_kill_spree": {
+          "value": 3.51,
+          "display": "3.51"
+        },
+        "gold": {
+          "value": 13265,
+          "display": "13,265"
+        },
+        "minions_killed": {
+          "value": 217.32,
+          "display": "217.32"
+        },
+        "jungle_cs": {
+          "value": 3.37,
+          "display": "3.37"
+        }
+      }
+    },
+    {
+      "name": "Karthus",
+      "slug": "karthus",
+      "source_order": 70,
+      "values": {
+        "physical_damage": {
+          "value": 352,
+          "display": "352"
+        },
+        "magic_damage": {
+          "value": 36829,
+          "display": "36,829"
+        },
+        "true_damage": {
+          "value": 1337,
+          "display": "1,337"
+        },
+        "total_damage": {
+          "value": 38520,
+          "display": "38,520"
+        },
+        "damage_taken": {
+          "value": 26033,
+          "display": "26,033"
+        },
+        "healing": {
+          "value": 2656,
+          "display": "2,656"
+        },
+        "kills": {
+          "value": 8.12,
+          "display": "8.12"
+        },
+        "deaths": {
+          "value": 8.46,
+          "display": "8.46"
+        },
+        "assists": {
+          "value": 9.04,
+          "display": "9.04"
+        },
+        "max_kill_spree": {
+          "value": 2.78,
+          "display": "2.78"
+        },
+        "gold": {
+          "value": 13309,
+          "display": "13,309"
+        },
+        "minions_killed": {
+          "value": 214.81,
+          "display": "214.81"
+        },
+        "jungle_cs": {
+          "value": 6.88,
+          "display": "6.88"
+        }
+      }
+    },
+    {
+      "name": "Zac",
+      "slug": "zac",
+      "source_order": 71,
+      "values": {
+        "physical_damage": {
+          "value": 1713,
+          "display": "1,713"
+        },
+        "magic_damage": {
+          "value": 18450,
+          "display": "18,450"
+        },
+        "true_damage": {
+          "value": 1063,
+          "display": "1,063"
+        },
+        "total_damage": {
+          "value": 21227,
+          "display": "21,227"
+        },
+        "damage_taken": {
+          "value": 43207,
+          "display": "43,207"
+        },
+        "healing": {
+          "value": 42714,
+          "display": "42,714"
+        },
+        "kills": {
+          "value": 5.86,
+          "display": "5.86"
+        },
+        "deaths": {
+          "value": 5.52,
+          "display": "5.52"
+        },
+        "assists": {
+          "value": 9.1,
+          "display": "9.1"
+        },
+        "max_kill_spree": {
+          "value": 3.14,
+          "display": "3.14"
+        },
+        "gold": {
+          "value": 11249,
+          "display": "11,249"
+        },
+        "minions_killed": {
+          "value": 169.35,
+          "display": "169.35"
+        },
+        "jungle_cs": {
+          "value": 2.01,
+          "display": "2.01"
+        }
+      }
+    },
+    {
+      "name": "Orianna",
+      "slug": "orianna",
+      "source_order": 72,
+      "values": {
+        "physical_damage": {
+          "value": 1234,
+          "display": "1,234"
+        },
+        "magic_damage": {
+          "value": 22414,
+          "display": "22,414"
+        },
+        "true_damage": {
+          "value": 259,
+          "display": "259"
+        },
+        "total_damage": {
+          "value": 23909,
+          "display": "23,909"
+        },
+        "damage_taken": {
+          "value": 21194,
+          "display": "21,194"
+        },
+        "healing": {
+          "value": 2714,
+          "display": "2,714"
+        },
+        "kills": {
+          "value": 5.49,
+          "display": "5.49"
+        },
+        "deaths": {
+          "value": 5.86,
+          "display": "5.86"
+        },
+        "assists": {
+          "value": 8.79,
+          "display": "8.79"
+        },
+        "max_kill_spree": {
+          "value": 2.72,
+          "display": "2.72"
+        },
+        "gold": {
+          "value": 11794,
+          "display": "11,794"
+        },
+        "minions_killed": {
+          "value": 209.89,
+          "display": "209.89"
+        },
+        "jungle_cs": {
+          "value": 2.39,
+          "display": "2.39"
+        }
+      }
+    },
+    {
+      "name": "Brand",
+      "slug": "brand",
+      "source_order": 73,
+      "values": {
+        "physical_damage": {
+          "value": 918,
+          "display": "918"
+        },
+        "magic_damage": {
+          "value": 27954,
+          "display": "27,954"
+        },
+        "true_damage": {
+          "value": 643,
+          "display": "643"
+        },
+        "total_damage": {
+          "value": 29518,
+          "display": "29,518"
+        },
+        "damage_taken": {
+          "value": 25473,
+          "display": "25,473"
+        },
+        "healing": {
+          "value": 2828,
+          "display": "2,828"
+        },
+        "kills": {
+          "value": 6.05,
+          "display": "6.05"
+        },
+        "deaths": {
+          "value": 7.14,
+          "display": "7.14"
+        },
+        "assists": {
+          "value": 8.07,
+          "display": "8.07"
+        },
+        "max_kill_spree": {
+          "value": 2.52,
+          "display": "2.52"
+        },
+        "gold": {
+          "value": 11812,
+          "display": "11,812"
+        },
+        "minions_killed": {
+          "value": 195.45,
+          "display": "195.45"
+        },
+        "jungle_cs": {
+          "value": 2.89,
+          "display": "2.89"
+        }
+      }
+    },
+    {
+      "name": "Fiddlesticks",
+      "slug": "fiddlesticks",
+      "source_order": 74,
+      "values": {
+        "physical_damage": {
+          "value": 400,
+          "display": "400"
+        },
+        "magic_damage": {
+          "value": 24285,
+          "display": "24,285"
+        },
+        "true_damage": {
+          "value": 1291,
+          "display": "1,291"
+        },
+        "total_damage": {
+          "value": 25977,
+          "display": "25,977"
+        },
+        "damage_taken": {
+          "value": 30010,
+          "display": "30,010"
+        },
+        "healing": {
+          "value": 10126,
+          "display": "10,126"
+        },
+        "kills": {
+          "value": 6.75,
+          "display": "6.75"
+        },
+        "deaths": {
+          "value": 7.27,
+          "display": "7.27"
+        },
+        "assists": {
+          "value": 8.25,
+          "display": "8.25"
+        },
+        "max_kill_spree": {
+          "value": 2.99,
+          "display": "2.99"
+        },
+        "gold": {
+          "value": 11164,
+          "display": "11,164"
+        },
+        "minions_killed": {
+          "value": 156.98,
+          "display": "156.98"
+        },
+        "jungle_cs": {
+          "value": 4.2,
+          "display": "4.2"
+        }
+      }
+    },
+    {
+      "name": "Renekton",
+      "slug": "renekton",
+      "source_order": 75,
+      "values": {
+        "physical_damage": {
+          "value": 18627,
+          "display": "18,627"
+        },
+        "magic_damage": {
+          "value": 3886,
+          "display": "3,886"
+        },
+        "true_damage": {
+          "value": 1269,
+          "display": "1,269"
+        },
+        "total_damage": {
+          "value": 23785,
+          "display": "23,785"
+        },
+        "damage_taken": {
+          "value": 36190,
+          "display": "36,190"
+        },
+        "healing": {
+          "value": 10274,
+          "display": "10,274"
+        },
+        "kills": {
+          "value": 6.72,
+          "display": "6.72"
+        },
+        "deaths": {
+          "value": 6.2,
+          "display": "6.2"
+        },
+        "assists": {
+          "value": 6.2,
+          "display": "6.2"
+        },
+        "max_kill_spree": {
+          "value": 3.26,
+          "display": "3.26"
+        },
+        "gold": {
+          "value": 12327,
+          "display": "12,327"
+        },
+        "minions_killed": {
+          "value": 206.78,
+          "display": "206.78"
+        },
+        "jungle_cs": {
+          "value": 2.8,
+          "display": "2.8"
+        }
+      }
+    },
+    {
+      "name": "K'Sante",
+      "slug": "ksante",
+      "source_order": 76,
+      "values": {
+        "physical_damage": {
+          "value": 17636,
+          "display": "17,636"
+        },
+        "magic_damage": {
+          "value": 1671,
+          "display": "1,671"
+        },
+        "true_damage": {
+          "value": 1420,
+          "display": "1,420"
+        },
+        "total_damage": {
+          "value": 20730,
+          "display": "20,730"
+        },
+        "damage_taken": {
+          "value": 33502,
+          "display": "33,502"
+        },
+        "healing": {
+          "value": 6232,
+          "display": "6,232"
+        },
+        "kills": {
+          "value": 5.01,
+          "display": "5.01"
+        },
+        "deaths": {
+          "value": 5.47,
+          "display": "5.47"
+        },
+        "assists": {
+          "value": 7.01,
+          "display": "7.01"
+        },
+        "max_kill_spree": {
+          "value": 2.55,
+          "display": "2.55"
+        },
+        "gold": {
+          "value": 11165,
+          "display": "11,165"
+        },
+        "minions_killed": {
+          "value": 192.39,
+          "display": "192.39"
+        },
+        "jungle_cs": {
+          "value": 0.83,
+          "display": "0.83"
+        }
+      }
+    },
+    {
+      "name": "Nunu & Willump",
+      "slug": "nunu",
+      "source_order": 77,
+      "values": {
+        "physical_damage": {
+          "value": 837,
+          "display": "837"
+        },
+        "magic_damage": {
+          "value": 20891,
+          "display": "20,891"
+        },
+        "true_damage": {
+          "value": 1616,
+          "display": "1,616"
+        },
+        "total_damage": {
+          "value": 23346,
+          "display": "23,346"
+        },
+        "damage_taken": {
+          "value": 29694,
+          "display": "29,694"
+        },
+        "healing": {
+          "value": 12395,
+          "display": "12,395"
+        },
+        "kills": {
+          "value": 7.89,
+          "display": "7.89"
+        },
+        "deaths": {
+          "value": 6.68,
+          "display": "6.68"
+        },
+        "assists": {
+          "value": 9.96,
+          "display": "9.96"
+        },
+        "max_kill_spree": {
+          "value": 3.84,
+          "display": "3.84"
+        },
+        "gold": {
+          "value": 10982,
+          "display": "10,982"
+        },
+        "minions_killed": {
+          "value": 144.65,
+          "display": "144.65"
+        },
+        "jungle_cs": {
+          "value": 3.11,
+          "display": "3.11"
+        }
+      }
+    },
+    {
+      "name": "Morgana",
+      "slug": "morgana",
+      "source_order": 78,
+      "values": {
+        "physical_damage": {
+          "value": 1059,
+          "display": "1,059"
+        },
+        "magic_damage": {
+          "value": 21461,
+          "display": "21,461"
+        },
+        "true_damage": {
+          "value": 1068,
+          "display": "1,068"
+        },
+        "total_damage": {
+          "value": 23590,
+          "display": "23,590"
+        },
+        "damage_taken": {
+          "value": 24710,
+          "display": "24,710"
+        },
+        "healing": {
+          "value": 6902,
+          "display": "6,902"
+        },
+        "kills": {
+          "value": 5.07,
+          "display": "5.07"
+        },
+        "deaths": {
+          "value": 5.42,
+          "display": "5.42"
+        },
+        "assists": {
+          "value": 9.64,
+          "display": "9.64"
+        },
+        "max_kill_spree": {
+          "value": 2.53,
+          "display": "2.53"
+        },
+        "gold": {
+          "value": 11496,
+          "display": "11,496"
+        },
+        "minions_killed": {
+          "value": 192.47,
+          "display": "192.47"
+        },
+        "jungle_cs": {
+          "value": 3.47,
+          "display": "3.47"
+        }
+      }
+    },
+    {
+      "name": "Ziggs",
+      "slug": "ziggs",
+      "source_order": 79,
+      "values": {
+        "physical_damage": {
+          "value": 1038,
+          "display": "1,038"
+        },
+        "magic_damage": {
+          "value": 30591,
+          "display": "30,591"
+        },
+        "true_damage": {
+          "value": 528,
+          "display": "528"
+        },
+        "total_damage": {
+          "value": 32158,
+          "display": "32,158"
+        },
+        "damage_taken": {
+          "value": 20628,
+          "display": "20,628"
+        },
+        "healing": {
+          "value": 2313,
+          "display": "2,313"
+        },
+        "kills": {
+          "value": 6.43,
+          "display": "6.43"
+        },
+        "deaths": {
+          "value": 5.88,
+          "display": "5.88"
+        },
+        "assists": {
+          "value": 7.7,
+          "display": "7.7"
+        },
+        "max_kill_spree": {
+          "value": 3.02,
+          "display": "3.02"
+        },
+        "gold": {
+          "value": 13043,
+          "display": "13,043"
+        },
+        "minions_killed": {
+          "value": 225.39,
+          "display": "225.39"
+        },
+        "jungle_cs": {
+          "value": 2.79,
+          "display": "2.79"
+        }
+      }
+    },
+    {
+      "name": "Xin Zhao",
+      "slug": "xinzhao",
+      "source_order": 80,
+      "values": {
+        "physical_damage": {
+          "value": 18169,
+          "display": "18,169"
+        },
+        "magic_damage": {
+          "value": 5562,
+          "display": "5,562"
+        },
+        "true_damage": {
+          "value": 2632,
+          "display": "2,632"
+        },
+        "total_damage": {
+          "value": 26365,
+          "display": "26,365"
+        },
+        "damage_taken": {
+          "value": 37517,
+          "display": "37,517"
+        },
+        "healing": {
+          "value": 17496,
+          "display": "17,496"
+        },
+        "kills": {
+          "value": 7.2,
+          "display": "7.2"
+        },
+        "deaths": {
+          "value": 7.72,
+          "display": "7.72"
+        },
+        "assists": {
+          "value": 6.01,
+          "display": "6.01"
+        },
+        "max_kill_spree": {
+          "value": 3.05,
+          "display": "3.05"
+        },
+        "gold": {
+          "value": 12304,
+          "display": "12,304"
+        },
+        "minions_killed": {
+          "value": 187.94,
+          "display": "187.94"
+        },
+        "jungle_cs": {
+          "value": 4.93,
+          "display": "4.93"
+        }
+      }
+    },
+    {
+      "name": "Illaoi",
+      "slug": "illaoi",
+      "source_order": 81,
+      "values": {
+        "physical_damage": {
+          "value": 29076,
+          "display": "29,076"
+        },
+        "magic_damage": {
+          "value": 819,
+          "display": "819"
+        },
+        "true_damage": {
+          "value": 451,
+          "display": "451"
+        },
+        "total_damage": {
+          "value": 30348,
+          "display": "30,348"
+        },
+        "damage_taken": {
+          "value": 41849,
+          "display": "41,849"
+        },
+        "healing": {
+          "value": 13321,
+          "display": "13,321"
+        },
+        "kills": {
+          "value": 5.98,
+          "display": "5.98"
+        },
+        "deaths": {
+          "value": 6.99,
+          "display": "6.99"
+        },
+        "assists": {
+          "value": 4.75,
+          "display": "4.75"
+        },
+        "max_kill_spree": {
+          "value": 2.68,
+          "display": "2.68"
+        },
+        "gold": {
+          "value": 12724,
+          "display": "12,724"
+        },
+        "minions_killed": {
+          "value": 222.65,
+          "display": "222.65"
+        },
+        "jungle_cs": {
+          "value": 1.3,
+          "display": "1.3"
+        }
+      }
+    },
+    {
+      "name": "Karma",
+      "slug": "karma",
+      "source_order": 82,
+      "values": {
+        "physical_damage": {
+          "value": 1263,
+          "display": "1,263"
+        },
+        "magic_damage": {
+          "value": 21026,
+          "display": "21,026"
+        },
+        "true_damage": {
+          "value": 621,
+          "display": "621"
+        },
+        "total_damage": {
+          "value": 22912,
+          "display": "22,912"
+        },
+        "damage_taken": {
+          "value": 22528,
+          "display": "22,528"
+        },
+        "healing": {
+          "value": 4593,
+          "display": "4,593"
+        },
+        "kills": {
+          "value": 4.44,
+          "display": "4.44"
+        },
+        "deaths": {
+          "value": 5.56,
+          "display": "5.56"
+        },
+        "assists": {
+          "value": 9.74,
+          "display": "9.74"
+        },
+        "max_kill_spree": {
+          "value": 2.18,
+          "display": "2.18"
+        },
+        "gold": {
+          "value": 10702,
+          "display": "10,702"
+        },
+        "minions_killed": {
+          "value": 177.93,
+          "display": "177.93"
+        },
+        "jungle_cs": {
+          "value": 0.91,
+          "display": "0.91"
+        }
+      }
+    },
+    {
+      "name": "Ezreal",
+      "slug": "ezreal",
+      "source_order": 83,
+      "values": {
+        "physical_damage": {
+          "value": 15149,
+          "display": "15,149"
+        },
+        "magic_damage": {
+          "value": 13992,
+          "display": "13,992"
+        },
+        "true_damage": {
+          "value": 1088,
+          "display": "1,088"
+        },
+        "total_damage": {
+          "value": 30231,
+          "display": "30,231"
+        },
+        "damage_taken": {
+          "value": 25613,
+          "display": "25,613"
+        },
+        "healing": {
+          "value": 6609,
+          "display": "6,609"
+        },
+        "kills": {
+          "value": 7.17,
+          "display": "7.17"
+        },
+        "deaths": {
+          "value": 6.73,
+          "display": "6.73"
+        },
+        "assists": {
+          "value": 5.9,
+          "display": "5.9"
+        },
+        "max_kill_spree": {
+          "value": 3.16,
+          "display": "3.16"
+        },
+        "gold": {
+          "value": 12782,
+          "display": "12,782"
+        },
+        "minions_killed": {
+          "value": 205.68,
+          "display": "205.68"
+        },
+        "jungle_cs": {
+          "value": 3.52,
+          "display": "3.52"
+        }
+      }
+    },
+    {
+      "name": "Twitch",
+      "slug": "twitch",
+      "source_order": 84,
+      "values": {
+        "physical_damage": {
+          "value": 12948,
+          "display": "12,948"
+        },
+        "magic_damage": {
+          "value": 7103,
+          "display": "7,103"
+        },
+        "true_damage": {
+          "value": 9246,
+          "display": "9,246"
+        },
+        "total_damage": {
+          "value": 29299,
+          "display": "29,299"
+        },
+        "damage_taken": {
+          "value": 23272,
+          "display": "23,272"
+        },
+        "healing": {
+          "value": 3550,
+          "display": "3,550"
+        },
+        "kills": {
+          "value": 10.38,
+          "display": "10.38"
+        },
+        "deaths": {
+          "value": 7.94,
+          "display": "7.94"
+        },
+        "assists": {
+          "value": 6.34,
+          "display": "6.34"
+        },
+        "max_kill_spree": {
+          "value": 4.15,
+          "display": "4.15"
+        },
+        "gold": {
+          "value": 12785,
+          "display": "12,785"
+        },
+        "minions_killed": {
+          "value": 170.14,
+          "display": "170.14"
+        },
+        "jungle_cs": {
+          "value": 3.43,
+          "display": "3.43"
+        }
+      }
+    },
+    {
+      "name": "Zyra",
+      "slug": "zyra",
+      "source_order": 85,
+      "values": {
+        "physical_damage": {
+          "value": 1095,
+          "display": "1,095"
+        },
+        "magic_damage": {
+          "value": 26221,
+          "display": "26,221"
+        },
+        "true_damage": {
+          "value": 913,
+          "display": "913"
+        },
+        "total_damage": {
+          "value": 28231,
+          "display": "28,231"
+        },
+        "damage_taken": {
+          "value": 21009,
+          "display": "21,009"
+        },
+        "healing": {
+          "value": 2407,
+          "display": "2,407"
+        },
+        "kills": {
+          "value": 4.72,
+          "display": "4.72"
+        },
+        "deaths": {
+          "value": 6.35,
+          "display": "6.35"
+        },
+        "assists": {
+          "value": 8.29,
+          "display": "8.29"
+        },
+        "max_kill_spree": {
+          "value": 2.04,
+          "display": "2.04"
+        },
+        "gold": {
+          "value": 11593,
+          "display": "11,593"
+        },
+        "minions_killed": {
+          "value": 200.46,
+          "display": "200.46"
+        },
+        "jungle_cs": {
+          "value": 3.97,
+          "display": "3.97"
+        }
+      }
+    },
+    {
+      "name": "Tristana",
+      "slug": "tristana",
+      "source_order": 86,
+      "values": {
+        "physical_damage": {
+          "value": 22478,
+          "display": "22,478"
+        },
+        "magic_damage": {
+          "value": 2252,
+          "display": "2,252"
+        },
+        "true_damage": {
+          "value": 779,
+          "display": "779"
+        },
+        "total_damage": {
+          "value": 25510,
+          "display": "25,510"
+        },
+        "damage_taken": {
+          "value": 24288,
+          "display": "24,288"
+        },
+        "healing": {
+          "value": 6644,
+          "display": "6,644"
+        },
+        "kills": {
+          "value": 7.92,
+          "display": "7.92"
+        },
+        "deaths": {
+          "value": 6.54,
+          "display": "6.54"
+        },
+        "assists": {
+          "value": 4.56,
+          "display": "4.56"
+        },
+        "max_kill_spree": {
+          "value": 3.55,
+          "display": "3.55"
+        },
+        "gold": {
+          "value": 13437,
+          "display": "13,437"
+        },
+        "minions_killed": {
+          "value": 209.54,
+          "display": "209.54"
+        },
+        "jungle_cs": {
+          "value": 8.35,
+          "display": "8.35"
+        }
+      }
+    },
+    {
+      "name": "Sejuani",
+      "slug": "sejuani",
+      "source_order": 87,
+      "values": {
+        "physical_damage": {
+          "value": 12494,
+          "display": "12,494"
+        },
+        "magic_damage": {
+          "value": 9433,
+          "display": "9,433"
+        },
+        "true_damage": {
+          "value": 1412,
+          "display": "1,412"
+        },
+        "total_damage": {
+          "value": 23342,
+          "display": "23,342"
+        },
+        "damage_taken": {
+          "value": 37176,
+          "display": "37,176"
+        },
+        "healing": {
+          "value": 6003,
+          "display": "6,003"
+        },
+        "kills": {
+          "value": 5.85,
+          "display": "5.85"
+        },
+        "deaths": {
+          "value": 5.83,
+          "display": "5.83"
+        },
+        "assists": {
+          "value": 9.44,
+          "display": "9.44"
+        },
+        "max_kill_spree": {
+          "value": 2.95,
+          "display": "2.95"
+        },
+        "gold": {
+          "value": 11629,
+          "display": "11,629"
+        },
+        "minions_killed": {
+          "value": 183.56,
+          "display": "183.56"
+        },
+        "jungle_cs": {
+          "value": 1.96,
+          "display": "1.96"
+        }
+      }
+    },
+    {
+      "name": "Lucian",
+      "slug": "lucian",
+      "source_order": 88,
+      "values": {
+        "physical_damage": {
+          "value": 22422,
+          "display": "22,422"
+        },
+        "magic_damage": {
+          "value": 2007,
+          "display": "2,007"
+        },
+        "true_damage": {
+          "value": 976,
+          "display": "976"
+        },
+        "total_damage": {
+          "value": 25406,
+          "display": "25,406"
+        },
+        "damage_taken": {
+          "value": 25975,
+          "display": "25,975"
+        },
+        "healing": {
+          "value": 6338,
+          "display": "6,338"
+        },
+        "kills": {
+          "value": 6.93,
+          "display": "6.93"
+        },
+        "deaths": {
+          "value": 7.2,
+          "display": "7.2"
+        },
+        "assists": {
+          "value": 5.35,
+          "display": "5.35"
+        },
+        "max_kill_spree": {
+          "value": 2.95,
+          "display": "2.95"
+        },
+        "gold": {
+          "value": 12707,
+          "display": "12,707"
+        },
+        "minions_killed": {
+          "value": 212.54,
+          "display": "212.54"
+        },
+        "jungle_cs": {
+          "value": 6.4,
+          "display": "6.4"
+        }
+      }
+    },
+    {
+      "name": "Nasus",
+      "slug": "nasus",
+      "source_order": 89,
+      "values": {
+        "physical_damage": {
+          "value": 16515,
+          "display": "16,515"
+        },
+        "magic_damage": {
+          "value": 4769,
+          "display": "4,769"
+        },
+        "true_damage": {
+          "value": 339,
+          "display": "339"
+        },
+        "total_damage": {
+          "value": 21625,
+          "display": "21,625"
+        },
+        "damage_taken": {
+          "value": 41732,
+          "display": "41,732"
+        },
+        "healing": {
+          "value": 16684,
+          "display": "16,684"
+        },
+        "kills": {
+          "value": 5.57,
+          "display": "5.57"
+        },
+        "deaths": {
+          "value": 5.39,
+          "display": "5.39"
+        },
+        "assists": {
+          "value": 5.96,
+          "display": "5.96"
+        },
+        "max_kill_spree": {
+          "value": 2.86,
+          "display": "2.86"
+        },
+        "gold": {
+          "value": 11944,
+          "display": "11,944"
+        },
+        "minions_killed": {
+          "value": 194.84,
+          "display": "194.84"
+        },
+        "jungle_cs": {
+          "value": 3.53,
+          "display": "3.53"
+        }
+      }
+    },
+    {
+      "name": "Varus",
+      "slug": "varus",
+      "source_order": 90,
+      "values": {
+        "physical_damage": {
+          "value": 11299,
+          "display": "11,299"
+        },
+        "magic_damage": {
+          "value": 15612,
+          "display": "15,612"
+        },
+        "true_damage": {
+          "value": 419,
+          "display": "419"
+        },
+        "total_damage": {
+          "value": 27332,
+          "display": "27,332"
+        },
+        "damage_taken": {
+          "value": 25308,
+          "display": "25,308"
+        },
+        "healing": {
+          "value": 4922,
+          "display": "4,922"
+        },
+        "kills": {
+          "value": 8.12,
+          "display": "8.12"
+        },
+        "deaths": {
+          "value": 7.42,
+          "display": "7.42"
+        },
+        "assists": {
+          "value": 5.57,
+          "display": "5.57"
+        },
+        "max_kill_spree": {
+          "value": 3.48,
+          "display": "3.48"
+        },
+        "gold": {
+          "value": 12963,
+          "display": "12,963"
+        },
+        "minions_killed": {
+          "value": 200.88,
+          "display": "200.88"
+        },
+        "jungle_cs": {
+          "value": 3.13,
+          "display": "3.13"
+        }
+      }
+    },
+    {
+      "name": "Dr. Mundo",
+      "slug": "drmundo",
+      "source_order": 91,
+      "values": {
+        "physical_damage": {
+          "value": 12375,
+          "display": "12,375"
+        },
+        "magic_damage": {
+          "value": 13138,
+          "display": "13,138"
+        },
+        "true_damage": {
+          "value": 361,
+          "display": "361"
+        },
+        "total_damage": {
+          "value": 25875,
+          "display": "25,875"
+        },
+        "damage_taken": {
+          "value": 62643,
+          "display": "62,643"
+        },
+        "healing": {
+          "value": 15836,
+          "display": "15,836"
+        },
+        "kills": {
+          "value": 4.65,
+          "display": "4.65"
+        },
+        "deaths": {
+          "value": 5.36,
+          "display": "5.36"
+        },
+        "assists": {
+          "value": 5.73,
+          "display": "5.73"
+        },
+        "max_kill_spree": {
+          "value": 2.39,
+          "display": "2.39"
+        },
+        "gold": {
+          "value": 12200,
+          "display": "12,200"
+        },
+        "minions_killed": {
+          "value": 215.48,
+          "display": "215.48"
+        },
+        "jungle_cs": {
+          "value": 2,
+          "display": "2"
+        }
+      }
+    },
+    {
+      "name": "Corki",
+      "slug": "corki",
+      "source_order": 92,
+      "values": {
+        "physical_damage": {
+          "value": 18350,
+          "display": "18,350"
+        },
+        "magic_damage": {
+          "value": 5492,
+          "display": "5,492"
+        },
+        "true_damage": {
+          "value": 4034,
+          "display": "4,034"
+        },
+        "total_damage": {
+          "value": 27878,
+          "display": "27,878"
+        },
+        "damage_taken": {
+          "value": 25006,
+          "display": "25,006"
+        },
+        "healing": {
+          "value": 4860,
+          "display": "4,860"
+        },
+        "kills": {
+          "value": 6.91,
+          "display": "6.91"
+        },
+        "deaths": {
+          "value": 6.66,
+          "display": "6.66"
+        },
+        "assists": {
+          "value": 5.71,
+          "display": "5.71"
+        },
+        "max_kill_spree": {
+          "value": 3.02,
+          "display": "3.02"
+        },
+        "gold": {
+          "value": 13144,
+          "display": "13,144"
+        },
+        "minions_killed": {
+          "value": 220.56,
+          "display": "220.56"
+        },
+        "jungle_cs": {
+          "value": 6.44,
+          "display": "6.44"
+        }
+      }
+    },
+    {
+      "name": "Teemo",
+      "slug": "teemo",
+      "source_order": 93,
+      "values": {
+        "physical_damage": {
+          "value": 3744,
+          "display": "3,744"
+        },
+        "magic_damage": {
+          "value": 25024,
+          "display": "25,024"
+        },
+        "true_damage": {
+          "value": 1631,
+          "display": "1,631"
+        },
+        "total_damage": {
+          "value": 30401,
+          "display": "30,401"
+        },
+        "damage_taken": {
+          "value": 24693,
+          "display": "24,693"
+        },
+        "healing": {
+          "value": 3722,
+          "display": "3,722"
+        },
+        "kills": {
+          "value": 5.64,
+          "display": "5.64"
+        },
+        "deaths": {
+          "value": 7.01,
+          "display": "7.01"
+        },
+        "assists": {
+          "value": 6.82,
+          "display": "6.82"
+        },
+        "max_kill_spree": {
+          "value": 2.38,
+          "display": "2.38"
+        },
+        "gold": {
+          "value": 12555,
+          "display": "12,555"
+        },
+        "minions_killed": {
+          "value": 210.65,
+          "display": "210.65"
+        },
+        "jungle_cs": {
+          "value": 5.59,
+          "display": "5.59"
+        }
+      }
+    },
+    {
+      "name": "Azir",
+      "slug": "azir",
+      "source_order": 94,
+      "values": {
+        "physical_damage": {
+          "value": 737,
+          "display": "737"
+        },
+        "magic_damage": {
+          "value": 25869,
+          "display": "25,869"
+        },
+        "true_damage": {
+          "value": 400,
+          "display": "400"
+        },
+        "total_damage": {
+          "value": 27007,
+          "display": "27,007"
+        },
+        "damage_taken": {
+          "value": 22826,
+          "display": "22,826"
+        },
+        "healing": {
+          "value": 2669,
+          "display": "2,669"
+        },
+        "kills": {
+          "value": 6.21,
+          "display": "6.21"
+        },
+        "deaths": {
+          "value": 6.3,
+          "display": "6.3"
+        },
+        "assists": {
+          "value": 5.88,
+          "display": "5.88"
+        },
+        "max_kill_spree": {
+          "value": 2.86,
+          "display": "2.86"
+        },
+        "gold": {
+          "value": 12448,
+          "display": "12,448"
+        },
+        "minions_killed": {
+          "value": 219.41,
+          "display": "219.41"
+        },
+        "jungle_cs": {
+          "value": 4.09,
+          "display": "4.09"
+        }
+      }
+    },
+    {
+      "name": "Yorick",
+      "slug": "yorick",
+      "source_order": 95,
+      "values": {
+        "physical_damage": {
+          "value": 15442,
+          "display": "15,442"
+        },
+        "magic_damage": {
+          "value": 8109,
+          "display": "8,109"
+        },
+        "true_damage": {
+          "value": 684,
+          "display": "684"
+        },
+        "total_damage": {
+          "value": 24237,
+          "display": "24,237"
+        },
+        "damage_taken": {
+          "value": 29606,
+          "display": "29,606"
+        },
+        "healing": {
+          "value": 9006,
+          "display": "9,006"
+        },
+        "kills": {
+          "value": 4.38,
+          "display": "4.38"
+        },
+        "deaths": {
+          "value": 4.97,
+          "display": "4.97"
+        },
+        "assists": {
+          "value": 5.29,
+          "display": "5.29"
+        },
+        "max_kill_spree": {
+          "value": 2.32,
+          "display": "2.32"
+        },
+        "gold": {
+          "value": 12178,
+          "display": "12,178"
+        },
+        "minions_killed": {
+          "value": 216.83,
+          "display": "216.83"
+        },
+        "jungle_cs": {
+          "value": 4.75,
+          "display": "4.75"
+        }
+      }
+    },
+    {
+      "name": "Smolder",
+      "slug": "smolder",
+      "source_order": 96,
+      "values": {
+        "physical_damage": {
+          "value": 19410,
+          "display": "19,410"
+        },
+        "magic_damage": {
+          "value": 5878,
+          "display": "5,878"
+        },
+        "true_damage": {
+          "value": 3395,
+          "display": "3,395"
+        },
+        "total_damage": {
+          "value": 28685,
+          "display": "28,685"
+        },
+        "damage_taken": {
+          "value": 26278,
+          "display": "26,278"
+        },
+        "healing": {
+          "value": 5817,
+          "display": "5,817"
+        },
+        "kills": {
+          "value": 6.47,
+          "display": "6.47"
+        },
+        "deaths": {
+          "value": 6.67,
+          "display": "6.67"
+        },
+        "assists": {
+          "value": 6.58,
+          "display": "6.58"
+        },
+        "max_kill_spree": {
+          "value": 2.99,
+          "display": "2.99"
+        },
+        "gold": {
+          "value": 13006,
+          "display": "13,006"
+        },
+        "minions_killed": {
+          "value": 227.37,
+          "display": "227.37"
+        },
+        "jungle_cs": {
+          "value": 6.54,
+          "display": "6.54"
+        }
+      }
+    },
+    {
+      "name": "Mel",
+      "slug": "mel",
+      "source_order": 97,
+      "values": {
+        "physical_damage": {
+          "value": 1653,
+          "display": "1,653"
+        },
+        "magic_damage": {
+          "value": 25231,
+          "display": "25,231"
+        },
+        "true_damage": {
+          "value": 369,
+          "display": "369"
+        },
+        "total_damage": {
+          "value": 27255,
+          "display": "27,255"
+        },
+        "damage_taken": {
+          "value": 21634,
+          "display": "21,634"
+        },
+        "healing": {
+          "value": 2464,
+          "display": "2,464"
+        },
+        "kills": {
+          "value": 9.14,
+          "display": "9.14"
+        },
+        "deaths": {
+          "value": 6.4,
+          "display": "6.4"
+        },
+        "assists": {
+          "value": 5.02,
+          "display": "5.02"
+        },
+        "max_kill_spree": {
+          "value": 4.14,
+          "display": "4.14"
+        },
+        "gold": {
+          "value": 13130,
+          "display": "13,130"
+        },
+        "minions_killed": {
+          "value": 218.57,
+          "display": "218.57"
+        },
+        "jungle_cs": {
+          "value": 3.06,
+          "display": "3.06"
+        }
+      }
+    }
+  ]
+}

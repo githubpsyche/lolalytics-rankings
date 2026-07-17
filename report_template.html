@@ -109,46 +109,18 @@
       outline-offset: 2px;
     }
 
-    details {
-      position: relative;
-    }
-
-    summary {
-      list-style: none;
-      border: 1px solid var(--border);
-      border-radius: 5px;
-      background: var(--surface);
-      padding: 7px 10px;
-      cursor: pointer;
-    }
-
-    summary::-webkit-details-marker {
-      display: none;
-    }
-
-    .column-picker {
-      position: absolute;
-      z-index: 6;
-      top: calc(100% + 5px);
-      left: 0;
-      display: grid;
-      grid-template-columns: repeat(2, minmax(145px, 1fr));
-      gap: 7px 14px;
-      min-width: 330px;
-      max-height: min(460px, 70vh);
-      overflow: auto;
-      padding: 12px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      background: var(--surface);
-      box-shadow: 0 8px 24px var(--shadow);
-    }
-
-    .column-picker label {
+    .category-picker {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
-      gap: 7px;
-      white-space: nowrap;
+      gap: 6px;
+    }
+
+    .category-toggle[aria-pressed="true"] {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 600;
     }
 
     .result-count {
@@ -284,15 +256,6 @@
         padding: 14px;
       }
 
-      .column-picker {
-        position: fixed;
-        top: auto;
-        right: 14px;
-        bottom: 14px;
-        left: 14px;
-        grid-template-columns: 1fr;
-        min-width: 0;
-      }
     }
   </style>
 </head>
@@ -302,10 +265,7 @@
     <div class="metadata" id="metadata"></div>
 
     <div class="toolbar">
-      <details>
-        <summary>Columns</summary>
-        <div class="column-picker" id="column-picker"></div>
-      </details>
+      <div class="category-picker" id="category-picker" aria-label="Metric categories"></div>
       <button type="button" id="clear-filters">Clear filters</button>
       <span class="result-count" id="result-count" aria-live="polite"></span>
     </div>
@@ -325,12 +285,16 @@
 
       const dataset = JSON.parse(document.getElementById("ranking-data").textContent);
       const metadata = document.getElementById("metadata");
-      const columnPicker = document.getElementById("column-picker");
+      const categoryPicker = document.getElementById("category-picker");
       const clearFilters = document.getElementById("clear-filters");
       const resultCount = document.getElementById("result-count");
       const tableHead = document.getElementById("table-head");
       const tableBody = document.getElementById("table-body");
-      const visible = new Set(dataset.metrics.map((metric) => metric.key));
+      const activeCategories = new Set(
+        dataset.categories
+          .filter((category) => category.default_visible)
+          .map((category) => category.key)
+      );
       const filters = new Map(
         dataset.metrics
           .filter((metric) => metric.filterable)
@@ -383,27 +347,43 @@
         });
       }
 
-      function renderColumnPicker() {
-        for (const metric of dataset.metrics) {
-          const label = document.createElement("label");
-          const input = document.createElement("input");
-          input.type = "checkbox";
-          input.checked = true;
-          input.dataset.column = metric.key;
-          input.addEventListener("change", () => {
-            if (input.checked) {
-              visible.add(metric.key);
+      function visibleMetrics() {
+        return dataset.metrics.filter((metric) =>
+          activeCategories.has(metric.category)
+        );
+      }
+
+      function renderCategoryPicker() {
+        for (const category of dataset.categories) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "category-toggle";
+          button.textContent = category.label;
+          button.setAttribute(
+            "aria-pressed",
+            activeCategories.has(category.key) ? "true" : "false"
+          );
+          button.addEventListener("click", () => {
+            if (activeCategories.has(category.key)) {
+              activeCategories.delete(category.key);
             } else {
-              visible.delete(metric.key);
-              clearMetricFilter(metric.key);
-              if (sort?.key === metric.key) {
-                sort = null;
-              }
+              activeCategories.add(category.key);
+            }
+            button.setAttribute(
+              "aria-pressed",
+              activeCategories.has(category.key) ? "true" : "false"
+            );
+            if (
+              sort &&
+              !activeCategories.has(
+                dataset.metrics.find((metric) => metric.key === sort.key).category
+              )
+            ) {
+              sort = null;
             }
             renderTable();
           });
-          label.append(input, document.createTextNode(metric.label));
-          columnPicker.appendChild(label);
+          categoryPicker.appendChild(button);
         }
       }
 
@@ -426,8 +406,9 @@
       }
 
       function filteredRows() {
+        const metrics = visibleMetrics();
         return dataset.champions.filter((champion) =>
-          dataset.metrics.every((metric) => {
+          metrics.every((metric) => {
             if (!metric.filterable) {
               return true;
             }
@@ -513,6 +494,7 @@
 
       function renderHead() {
         tableHead.replaceChildren();
+        const metrics = visibleMetrics();
 
         const labels = document.createElement("tr");
         const rank = document.createElement("th");
@@ -524,10 +506,8 @@
         champion.scope = "col";
         champion.textContent = "Champion";
         labels.append(rank, champion);
-        for (const metric of dataset.metrics) {
-          if (visible.has(metric.key)) {
-            labels.appendChild(makeMetricHeader(metric));
-          }
+        for (const metric of metrics) {
+          labels.appendChild(makeMetricHeader(metric));
         }
 
         const inputs = document.createElement("tr");
@@ -537,10 +517,8 @@
         const championSpacer = document.createElement("th");
         championSpacer.className = "champion-column";
         inputs.append(rankSpacer, championSpacer);
-        for (const metric of dataset.metrics) {
-          if (visible.has(metric.key)) {
-            inputs.appendChild(makeFilterHeader(metric));
-          }
+        for (const metric of metrics) {
+          inputs.appendChild(makeFilterHeader(metric));
         }
 
         tableHead.append(labels, inputs);
@@ -548,6 +526,7 @@
 
       function renderBody() {
         tableBody.replaceChildren();
+        const metrics = visibleMetrics();
         const rows = sortRows(filteredRows());
         resultCount.textContent = `${rows.length} of ${dataset.champions.length} champions`;
 
@@ -555,7 +534,7 @@
           const row = document.createElement("tr");
           const cell = document.createElement("td");
           cell.className = "empty-state";
-          cell.colSpan = visible.size + 2;
+          cell.colSpan = metrics.length + 2;
           cell.textContent = "No champions match the current filters.";
           row.appendChild(cell);
           tableBody.appendChild(row);
@@ -572,10 +551,7 @@
           name.textContent = champion.name;
           row.append(rank, name);
 
-          for (const metric of dataset.metrics) {
-            if (!visible.has(metric.key)) {
-              continue;
-            }
+          for (const metric of metrics) {
             const cell = document.createElement("td");
             cell.dataset.metric = metric.key;
             cell.textContent = champion.values[metric.key].display;
@@ -598,7 +574,7 @@
       });
 
       renderMetadata();
-      renderColumnPicker();
+      renderCategoryPicker();
       renderTable();
     })();
   </script>

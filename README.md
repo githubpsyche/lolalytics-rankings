@@ -9,11 +9,14 @@ The generated page supports:
 
 - single-column ascending and descending sorting;
 - inclusive minimum and maximum filters for every metric;
-- optional metric columns; and
+- independently toggled Overall, Combat, Economy & Farming, and Best
+  Worldwide metric groups; and
 - configurable lane, tier, region, and period.
 
-The table combines the tier list's performance and best-player fields with
-the 13 per-champion damage, combat, economy, and farming statistics.
+Overall, Combat, and Economy & Farming are visible by default. Best Worldwide
+is opt-in. The table combines selected tier-list performance and best-player
+fields with the 13 per-champion damage, combat, economy, and farming
+statistics.
 
 ## Refresh the data
 

@@ -76,37 +76,44 @@ REGIONS = (
     "ru",
     "vn",
 )
+CATEGORIES = (
+    ("overall", "Overall", True),
+    ("combat", "Combat", True),
+    ("economy", "Economy & Farming", True),
+    ("best_worldwide", "Best Worldwide", False),
+)
 TIERLIST_METRICS = (
-    ("tier", "Tier", False),
-    ("lane_share", "Lane %", True),
-    ("win_rate", "Win %", True),
-    ("win_rate_delta", "Win Δ", True),
-    ("pick_rate", "Pick %", True),
-    ("ban_rate", "Ban %", True),
-    ("pbi", "PBI", True),
-    ("games", "Games", True),
-    ("best_rank", "Best Rank", True),
-    ("best_win_rate", "Best Win %", True),
-    ("best_games", "Best Games", True),
-    ("best_delta", "Best Δ", True),
-    ("best_elo", "Best Elo", False),
+    ("tier", "Tier", False, "overall"),
+    ("win_rate", "Win %", True, "overall"),
+    ("pick_rate", "Pick %", True, "overall"),
+    ("ban_rate", "Ban %", True, "overall"),
+    ("best_rank", "Best Rank", True, "best_worldwide"),
+    ("best_win_rate", "Best Win %", True, "best_worldwide"),
+    ("best_games", "Best Games", True, "best_worldwide"),
+    ("best_delta", "Best Δ", True, "best_worldwide"),
+    ("best_elo", "Best Elo", False, "best_worldwide"),
 )
 STAT_METRICS = (
-    ("physical_damage", "Physical Damage", True),
-    ("magic_damage", "Magic Damage", True),
-    ("true_damage", "True Damage", True),
-    ("total_damage", "Total Damage", True),
-    ("damage_taken", "Damage Taken", True),
-    ("healing", "Healing", True),
-    ("kills", "Kills", True),
-    ("deaths", "Deaths", True),
-    ("assists", "Assists", True),
-    ("max_kill_spree", "Max Kill Spree", True),
-    ("gold", "Gold", True),
-    ("minions_killed", "Minions Killed", True),
-    ("jungle_cs", "Jungle CS", True),
+    ("physical_damage", "Physical Damage", True, "combat"),
+    ("magic_damage", "Magic Damage", True, "combat"),
+    ("true_damage", "True Damage", True, "combat"),
+    ("total_damage", "Total Damage", True, "combat"),
+    ("damage_taken", "Damage Taken", True, "combat"),
+    ("healing", "Healing", True, "combat"),
+    ("kills", "Kills", True, "combat"),
+    ("deaths", "Deaths", True, "combat"),
+    ("assists", "Assists", True, "combat"),
+    ("max_kill_spree", "Max Kill Spree", True, "combat"),
+    ("gold", "Gold", True, "economy"),
+    ("minions_killed", "Minions Killed", True, "economy"),
+    ("jungle_cs", "Jungle CS", True, "economy"),
 )
-METRICS = TIERLIST_METRICS + STAT_METRICS
+METRICS = tuple(
+    metric
+    for category, _, _ in CATEGORIES
+    for metric in TIERLIST_METRICS + STAT_METRICS
+    if metric[3] == category
+)
 TIER_LABELS = (
     "S+",
     "S",
@@ -237,28 +244,14 @@ def tierlist_values(
             "sort_value": len(TIER_LABELS) + 1 - tier_number,
             "display": TIER_LABELS[tier_number - 1],
         },
-        "lane_share": numeric_entry(
-            resolved_row_value(objects, row, "pctLane"), "Lane %"
-        ),
         "win_rate": numeric_entry(
             resolved_row_value(objects, row, "wr"), "Win %"
-        ),
-        "win_rate_delta": numeric_entry(
-            resolved_row_value(objects, row, "avgWrDelta"),
-            "Win Δ",
-            signed=True,
         ),
         "pick_rate": numeric_entry(
             resolved_row_value(objects, row, "pr"), "Pick %"
         ),
         "ban_rate": numeric_entry(
             resolved_row_value(objects, row, "br"), "Ban %"
-        ),
-        "pbi": numeric_entry(
-            resolved_row_value(objects, row, "pbi"), "PBI", integer=True
-        ),
-        "games": numeric_entry(
-            resolved_row_value(objects, row, "games"), "Games", integer=True
         ),
         "best_rank": numeric_entry(
             resolved_row_value(objects, row, "topRank"),
@@ -374,7 +367,7 @@ def extract_champion(html: str, slug: str, source_order: int) -> dict[str, Any]:
     panel = heading.xpath("..")
     values: dict[str, dict[str, int | float | str]] = {}
 
-    for key, label, _ in STAT_METRICS:
+    for key, label, _, _ in STAT_METRICS:
         labels = panel.xpath(f'.//div[normalize-space(text())="{label}:"]')
         if len(labels) != 1:
             raise ScrapeError(
@@ -408,7 +401,7 @@ def validate_dataset(dataset: dict[str, Any]) -> None:
     if len(slugs) != len(set(slugs)):
         raise ScrapeError("The completed dataset contains duplicate champions")
 
-    expected_keys = {key for key, _, _ in METRICS}
+    expected_keys = {key for key, _, _, _ in METRICS}
     for champion in champions:
         actual_keys = set(champion["values"])
         if actual_keys != expected_keys:
@@ -483,7 +476,7 @@ def main() -> int:
 
         generated_at = datetime.now(UTC)
         dataset = {
-            "schema_version": 2,
+            "schema_version": 3,
             "generated_at": generated_at.isoformat().replace("+00:00", "Z"),
             "filters": {
                 "lane": args.lane,
@@ -493,9 +486,22 @@ def main() -> int:
                 "queue": "Ranked Solo/Duo",
             },
             "source_url": tierlist_url,
+            "categories": [
+                {
+                    "key": key,
+                    "label": label,
+                    "default_visible": default_visible,
+                }
+                for key, label, default_visible in CATEGORIES
+            ],
             "metrics": [
-                {"key": key, "label": label, "filterable": filterable}
-                for key, label, filterable in METRICS
+                {
+                    "key": key,
+                    "label": label,
+                    "filterable": filterable,
+                    "category": category,
+                }
+                for key, label, filterable, category in METRICS
             ],
             "champions": champions,
         }

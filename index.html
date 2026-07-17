@@ -138,7 +138,6 @@
 
     table {
       width: max-content;
-      min-width: 100%;
       border-collapse: separate;
       border-spacing: 0;
       font-variant-numeric: tabular-nums;
@@ -147,7 +146,7 @@
     th,
     td {
       border-bottom: 1px solid var(--border);
-      padding: 8px 10px;
+      padding: 7px 8px;
       text-align: right;
       white-space: nowrap;
     }
@@ -164,7 +163,7 @@
 
     thead tr.filters th {
       top: 38px;
-      padding: 5px;
+      padding: 4px 3px;
     }
 
     tbody tr:last-child td {
@@ -201,7 +200,7 @@
     }
 
     .metric-column {
-      min-width: 144px;
+      min-width: 0;
     }
 
     .sort-button {
@@ -226,19 +225,31 @@
 
     .filter-pair {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(2, 48px);
+      justify-content: center;
       gap: 4px;
     }
 
     .filter-pair input {
-      width: 64px;
+      width: 100%;
       min-width: 0;
       border: 1px solid var(--border);
       border-radius: 4px;
       background: var(--surface);
       color: var(--foreground);
-      padding: 4px;
+      padding: 3px 4px;
       text-align: right;
+      appearance: textfield;
+    }
+
+    .filter-pair input::placeholder {
+      text-align: center;
+    }
+
+    .filter-pair input::-webkit-inner-spin-button,
+    .filter-pair input::-webkit-outer-spin-button {
+      margin: 0;
+      appearance: none;
     }
 
     .empty-state {

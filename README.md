@@ -12,6 +12,9 @@ The generated page supports:
 - optional metric columns; and
 - configurable lane, tier, region, and period.
 
+The table combines the tier list's performance and best-player fields with
+the 13 per-champion damage, combat, economy, and farming statistics.
+
 ## Refresh the data
 
 Install [uv](https://docs.astral.sh/uv/), then run:

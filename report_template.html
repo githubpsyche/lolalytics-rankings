@@ -332,7 +332,9 @@
       const tableBody = document.getElementById("table-body");
       const visible = new Set(dataset.metrics.map((metric) => metric.key));
       const filters = new Map(
-        dataset.metrics.map((metric) => [metric.key, { min: null, max: null }])
+        dataset.metrics
+          .filter((metric) => metric.filterable)
+          .map((metric) => [metric.key, { min: null, max: null }])
       );
       let sort = null;
 
@@ -372,6 +374,9 @@
       }
 
       function clearMetricFilter(key) {
+        if (!filters.has(key)) {
+          return;
+        }
         filters.set(key, { min: null, max: null });
         document.querySelectorAll(`input[data-filter="${key}"]`).forEach((input) => {
           input.value = "";
@@ -408,8 +413,12 @@
         }
         const direction = sort.direction === "desc" ? -1 : 1;
         return rows.sort((a, b) => {
+          const aValue =
+            a.values[sort.key].sort_value ?? a.values[sort.key].value;
+          const bValue =
+            b.values[sort.key].sort_value ?? b.values[sort.key].value;
           const difference =
-            a.values[sort.key].value - b.values[sort.key].value;
+            aValue - bValue;
           return difference === 0
             ? a.source_order - b.source_order
             : difference * direction;
@@ -419,6 +428,9 @@
       function filteredRows() {
         return dataset.champions.filter((champion) =>
           dataset.metrics.every((metric) => {
+            if (!metric.filterable) {
+              return true;
+            }
             const bounds = filters.get(metric.key);
             const value = champion.values[metric.key].value;
             return (
@@ -471,6 +483,11 @@
         const th = document.createElement("th");
         th.className = "metric-column";
         th.dataset.metric = metric.key;
+        if (!metric.filterable) {
+          th.textContent = "—";
+          th.setAttribute("aria-label", `${metric.label} is categorical`);
+          return th;
+        }
         const pair = document.createElement("div");
         pair.className = "filter-pair";
 

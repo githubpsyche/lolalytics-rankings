@@ -76,20 +76,53 @@ REGIONS = (
     "ru",
     "vn",
 )
-METRICS = (
-    ("physical_damage", "Physical Damage"),
-    ("magic_damage", "Magic Damage"),
-    ("true_damage", "True Damage"),
-    ("total_damage", "Total Damage"),
-    ("damage_taken", "Damage Taken"),
-    ("healing", "Healing"),
-    ("kills", "Kills"),
-    ("deaths", "Deaths"),
-    ("assists", "Assists"),
-    ("max_kill_spree", "Max Kill Spree"),
-    ("gold", "Gold"),
-    ("minions_killed", "Minions Killed"),
-    ("jungle_cs", "Jungle CS"),
+TIERLIST_METRICS = (
+    ("tier", "Tier", False),
+    ("lane_share", "Lane %", True),
+    ("win_rate", "Win %", True),
+    ("win_rate_delta", "Win Δ", True),
+    ("pick_rate", "Pick %", True),
+    ("ban_rate", "Ban %", True),
+    ("pbi", "PBI", True),
+    ("games", "Games", True),
+    ("best_rank", "Best Rank", True),
+    ("best_win_rate", "Best Win %", True),
+    ("best_games", "Best Games", True),
+    ("best_delta", "Best Δ", True),
+    ("best_elo", "Best Elo", False),
+)
+STAT_METRICS = (
+    ("physical_damage", "Physical Damage", True),
+    ("magic_damage", "Magic Damage", True),
+    ("true_damage", "True Damage", True),
+    ("total_damage", "Total Damage", True),
+    ("damage_taken", "Damage Taken", True),
+    ("healing", "Healing", True),
+    ("kills", "Kills", True),
+    ("deaths", "Deaths", True),
+    ("assists", "Assists", True),
+    ("max_kill_spree", "Max Kill Spree", True),
+    ("gold", "Gold", True),
+    ("minions_killed", "Minions Killed", True),
+    ("jungle_cs", "Jungle CS", True),
+)
+METRICS = TIERLIST_METRICS + STAT_METRICS
+TIER_LABELS = (
+    "S+",
+    "S",
+    "S-",
+    "A+",
+    "A",
+    "A-",
+    "B+",
+    "B",
+    "B-",
+    "C+",
+    "C",
+    "C-",
+    "D+",
+    "D",
+    "D-",
 )
 
 
@@ -156,7 +189,98 @@ def resolve_qwik_reference(objects: list[Any], reference: Any) -> Any:
     return None
 
 
-def extract_roster(html: str) -> list[str]:
+def resolved_row_value(
+    objects: list[Any], row: dict[str, Any], key: str
+) -> Any:
+    if key not in row:
+        raise ScrapeError(f"Tier-list row is missing {key!r}")
+    value = resolve_qwik_reference(objects, row[key])
+    if value is None:
+        raise ScrapeError(f"Tier-list value {key!r} could not be resolved")
+    return value
+
+
+def numeric_entry(
+    value: Any, label: str, *, signed: bool = False, integer: bool = False
+) -> dict[str, int | float | str]:
+    number = parse_numeric(str(value), label)
+    if integer:
+        if not isinstance(number, int):
+            raise ScrapeError(f"{label} is not an integer: {value!r}")
+        display = f"{number:,}"
+    else:
+        display = f"{number:.2f}"
+        if signed and number > 0:
+            display = f"+{display}"
+    return {"value": number, "display": display}
+
+
+def tierlist_values(
+    objects: list[Any], row: dict[str, Any]
+) -> dict[str, dict[str, int | float | str]]:
+    tier_number = parse_numeric(
+        str(resolved_row_value(objects, row, "tier")), "Tier"
+    )
+    if not isinstance(tier_number, int) or not 1 <= tier_number <= len(TIER_LABELS):
+        raise ScrapeError(f"Tier has an unexpected value: {tier_number!r}")
+
+    elo = parse_numeric(
+        str(resolved_row_value(objects, row, "topElo")), "Best Elo"
+    )
+    if not isinstance(elo, int):
+        raise ScrapeError(f"Best Elo is not an integer: {elo!r}")
+    elo_label = "CH" if elo >= 900 else "GM" if elo >= 500 else "M"
+
+    return {
+        "tier": {
+            "value": tier_number,
+            "sort_value": len(TIER_LABELS) + 1 - tier_number,
+            "display": TIER_LABELS[tier_number - 1],
+        },
+        "lane_share": numeric_entry(
+            resolved_row_value(objects, row, "pctLane"), "Lane %"
+        ),
+        "win_rate": numeric_entry(
+            resolved_row_value(objects, row, "wr"), "Win %"
+        ),
+        "win_rate_delta": numeric_entry(
+            resolved_row_value(objects, row, "avgWrDelta"),
+            "Win Δ",
+            signed=True,
+        ),
+        "pick_rate": numeric_entry(
+            resolved_row_value(objects, row, "pr"), "Pick %"
+        ),
+        "ban_rate": numeric_entry(
+            resolved_row_value(objects, row, "br"), "Ban %"
+        ),
+        "pbi": numeric_entry(
+            resolved_row_value(objects, row, "pbi"), "PBI", integer=True
+        ),
+        "games": numeric_entry(
+            resolved_row_value(objects, row, "games"), "Games", integer=True
+        ),
+        "best_rank": numeric_entry(
+            resolved_row_value(objects, row, "topRank"),
+            "Best Rank",
+            integer=True,
+        ),
+        "best_win_rate": numeric_entry(
+            resolved_row_value(objects, row, "topWr"), "Best Win %"
+        ),
+        "best_games": numeric_entry(
+            resolved_row_value(objects, row, "topGames"),
+            "Best Games",
+            integer=True,
+        ),
+        "best_delta": numeric_entry(
+            resolved_row_value(objects, row, "topDelta"), "Best Δ"
+        ),
+        "best_elo": {"value": elo, "display": elo_label},
+    }
+
+
+def extract_roster(html: str) -> list[dict[str, Any]]:
     selector = Selector(html)
     payload_text = selector.css('script[type="qwik/json"]::text').get()
     if not payload_text:
@@ -208,7 +332,22 @@ def extract_roster(html: str) -> list[str]:
         raise ScrapeError(
             f"Could not resolve {len(missing_ids)} tier-list champions to URLs"
         )
-    return [best_slug_map[cid] for cid in champion_ids]
+
+    roster = []
+    for source_order, (champion_id, outer_row) in enumerate(
+        zip(champion_ids, rows, strict=True)
+    ):
+        row = resolve_qwik_reference(objects, outer_row["row"])
+        if not isinstance(row, dict):
+            raise ScrapeError("Tier-list champion row could not be resolved")
+        roster.append(
+            {
+                "slug": best_slug_map[champion_id],
+                "source_order": source_order,
+                "values": tierlist_values(objects, row),
+            }
+        )
+    return roster
 
 
 def parse_numeric(display: str, metric: str) -> int | float:
@@ -235,7 +374,7 @@ def extract_champion(html: str, slug: str, source_order: int) -> dict[str, Any]:
     panel = heading.xpath("..")
     values: dict[str, dict[str, int | float | str]] = {}
 
-    for key, label in METRICS:
+    for key, label, _ in STAT_METRICS:
         labels = panel.xpath(f'.//div[normalize-space(text())="{label}:"]')
         if len(labels) != 1:
             raise ScrapeError(
@@ -269,12 +408,17 @@ def validate_dataset(dataset: dict[str, Any]) -> None:
     if len(slugs) != len(set(slugs)):
         raise ScrapeError("The completed dataset contains duplicate champions")
 
-    expected_keys = {key for key, _ in METRICS}
+    expected_keys = {key for key, _, _ in METRICS}
     for champion in champions:
         actual_keys = set(champion["values"])
         if actual_keys != expected_keys:
             missing = ", ".join(sorted(expected_keys - actual_keys))
             raise ScrapeError(f"{champion['name']} is missing metrics: {missing}")
+        for key, entry in champion["values"].items():
+            if not isinstance(entry.get("value"), (int, float)):
+                raise ScrapeError(f"{champion['name']}: {key} is not numeric")
+            if not isinstance(entry.get("display"), str) or not entry["display"]:
+                raise ScrapeError(f"{champion['name']}: {key} has no display value")
 
 
 def atomic_write(path: Path, content: str) -> None:
@@ -320,7 +464,8 @@ def main() -> int:
         print(f"Found {len(roster)} champions", flush=True)
 
         champions = []
-        for index, slug in enumerate(roster, start=1):
+        for index, roster_champion in enumerate(roster, start=1):
+            slug = roster_champion["slug"]
             if index > 1:
                 time.sleep(REQUEST_DELAY)
             print(f"[{index:>3}/{len(roster)}] {slug}", flush=True)
@@ -328,13 +473,17 @@ def main() -> int:
             champion = extract_champion(
                 fetch(session, champion_url),
                 slug=slug,
-                source_order=index - 1,
+                source_order=roster_champion["source_order"],
             )
+            champion["values"] = {
+                **roster_champion["values"],
+                **champion["values"],
+            }
             champions.append(champion)
 
         generated_at = datetime.now(UTC)
         dataset = {
-            "schema_version": 1,
+            "schema_version": 2,
             "generated_at": generated_at.isoformat().replace("+00:00", "Z"),
             "filters": {
                 "lane": args.lane,
@@ -345,8 +494,8 @@ def main() -> int:
             },
             "source_url": tierlist_url,
             "metrics": [
-                {"key": key, "label": label}
-                for key, label in METRICS
+                {"key": key, "label": label, "filterable": filterable}
+                for key, label, filterable in METRICS
             ],
             "champions": champions,
         }

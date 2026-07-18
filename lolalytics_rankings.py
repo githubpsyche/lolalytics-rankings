@@ -83,7 +83,7 @@ CATEGORIES = (
     ("best_worldwide", "Best Worldwide", False),
 )
 TIERLIST_METRICS = (
-    ("tier", "Tier", False, "overall"),
+    ("tier", "Tier", True, "overall"),
     ("win_rate", "Win %", True, "overall"),
     ("pick_rate", "Pick %", True, "overall"),
     ("ban_rate", "Ban %", True, "overall"),

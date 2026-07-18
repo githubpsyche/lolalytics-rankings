@@ -81,12 +81,14 @@
 
     button,
     summary,
-    input {
+    input,
+    select {
       font: inherit;
     }
 
     button,
-    summary {
+    summary,
+    select {
       color: var(--foreground);
     }
 
@@ -104,7 +106,8 @@
 
     button:focus-visible,
     summary:focus-visible,
-    input:focus-visible {
+    input:focus-visible,
+    select:focus-visible {
       outline: 2px solid var(--focus);
       outline-offset: 2px;
     }
@@ -230,7 +233,8 @@
       gap: 4px;
     }
 
-    .filter-pair input {
+    .filter-pair input,
+    .filter-pair select {
       width: 100%;
       min-width: 0;
       border: 1px solid var(--border);
@@ -238,8 +242,17 @@
       background: var(--surface);
       color: var(--foreground);
       padding: 3px 4px;
+    }
+
+    .filter-pair input {
       text-align: right;
       appearance: textfield;
+    }
+
+    .filter-pair select {
+      padding-inline: 1px;
+      text-align: center;
+      cursor: pointer;
     }
 
     .filter-pair input::placeholder {
@@ -311,6 +324,14 @@
           .filter((metric) => metric.filterable)
           .map((metric) => [metric.key, { min: null, max: null }])
       );
+      const tierChoices = Array.from(
+        new Map(
+          dataset.champions.map((champion) => {
+            const tier = champion.values.tier;
+            return [tier.sort_value ?? tier.value, tier.display];
+          })
+        ).entries()
+      ).sort((a, b) => b[0] - a[0]);
       let sort = null;
 
       function titleCase(value) {
@@ -353,8 +374,8 @@
           return;
         }
         filters.set(key, { min: null, max: null });
-        document.querySelectorAll(`input[data-filter="${key}"]`).forEach((input) => {
-          input.value = "";
+        document.querySelectorAll(`[data-filter="${key}"]`).forEach((control) => {
+          control.value = "";
         });
       }
 
@@ -424,7 +445,8 @@
               return true;
             }
             const bounds = filters.get(metric.key);
-            const value = champion.values[metric.key].value;
+            const entry = champion.values[metric.key];
+            const value = entry.sort_value ?? entry.value;
             return (
               (bounds.min === null || value >= bounds.min) &&
               (bounds.max === null || value <= bounds.max)
@@ -484,22 +506,40 @@
         pair.className = "filter-pair";
 
         for (const bound of ["min", "max"]) {
-          const input = document.createElement("input");
-          input.type = "number";
-          input.step = "any";
-          input.inputMode = "decimal";
-          input.placeholder = bound;
-          input.dataset.filter = metric.key;
-          input.setAttribute("aria-label", `${metric.label} ${bound}imum`);
+          const control = document.createElement(
+            metric.key === "tier" ? "select" : "input"
+          );
+          if (control instanceof HTMLSelectElement) {
+            const emptyOption = document.createElement("option");
+            emptyOption.value = "";
+            emptyOption.textContent = bound;
+            control.appendChild(emptyOption);
+            for (const [value, label] of tierChoices) {
+              const option = document.createElement("option");
+              option.value = String(value);
+              option.textContent = label;
+              control.appendChild(option);
+            }
+          } else {
+            control.type = "number";
+            control.step = "any";
+            control.inputMode = "decimal";
+            control.placeholder = bound;
+          }
+          control.dataset.filter = metric.key;
+          control.setAttribute("aria-label", `${metric.label} ${bound}imum`);
           const savedValue = filters.get(metric.key)[bound];
-          input.value = savedValue === null ? "" : String(savedValue);
-          input.addEventListener("input", () => {
-            const current = filters.get(metric.key);
-            current[bound] =
-              input.value.trim() === "" ? null : Number(input.value);
-            renderBody();
-          });
-          pair.appendChild(input);
+          control.value = savedValue === null ? "" : String(savedValue);
+          control.addEventListener(
+            control instanceof HTMLSelectElement ? "change" : "input",
+            () => {
+              const current = filters.get(metric.key);
+              current[bound] =
+                control.value.trim() === "" ? null : Number(control.value);
+              renderBody();
+            }
+          );
+          pair.appendChild(control);
         }
         th.appendChild(pair);
         return th;

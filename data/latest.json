@@ -35,7 +35,7 @@
     {
       "key": "tier",
       "label": "Tier",
-      "filterable": false,
+      "filterable": true,
       "category": "overall"
     },
     {

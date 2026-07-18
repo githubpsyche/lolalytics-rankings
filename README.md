@@ -18,6 +18,9 @@ is opt-in. The table combines selected tier-list performance and best-player
 fields with the 13 per-champion damage, combat, economy, and farming
 statistics.
 
+Tier filters use the ordered D- to S+ scale: a minimum of A includes A and
+better, while a maximum of S includes S and worse.
+
 ## Refresh the data
 
 Install [uv](https://docs.astral.sh/uv/), then run:

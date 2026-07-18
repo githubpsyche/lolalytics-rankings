@@ -46,11 +46,12 @@ tracked.
 
 ### [Counterpick Coverage](https://githubpsyche.github.io/hextech-studies/counterpick-coverage/)
 
-An exploratory table ranking additions to a champion pool by marginal expected
-counterpick coverage. The first published analysis uses Zoe in Middle as the
-current pool and weights each displayed matchup by the opposing champion's
-lane pick rate. Expanding any candidate reveals every opponent-level term that
-sums to its score.
+An exploratory table comparing additions to a champion pool by marginal
+expected counterpick coverage. The first published analysis uses Zoe in Middle
+as the current pool and weights each displayed matchup by the opposing
+champion's lane pick rate. A searchable picker defaults to Zilean and shows one
+candidate's rank, summary, and every opponent-level term that sums to its
+score.
 
 Refresh its data and generated page with:
 

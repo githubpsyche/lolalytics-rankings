@@ -61,6 +61,7 @@
     }
 
     button,
+    input,
     summary {
       color: inherit;
       font: inherit;
@@ -75,6 +76,7 @@
     }
 
     button:focus-visible,
+    input:focus-visible,
     summary:focus-visible,
     a:focus-visible {
       outline: 2px solid var(--focus);
@@ -187,12 +189,111 @@
       font-size: 0.88rem;
     }
 
-    .table-toolbar {
+    .candidate-panel {
+      width: fit-content;
+      max-width: 100%;
+      margin-bottom: 18px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--surface);
+      box-shadow: 0 4px 12px var(--shadow);
+    }
+
+    .candidate-controls {
       display: flex;
-      align-items: baseline;
-      justify-content: space-between;
+      align-items: flex-start;
       flex-wrap: wrap;
-      gap: 8px 16px;
+      gap: 8px 14px;
+    }
+
+    .candidate-field {
+      width: 300px;
+      max-width: 100%;
+    }
+
+    .candidate-field label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 650;
+    }
+
+    .candidate-search {
+      width: 100%;
+      min-height: 38px;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      background: var(--background);
+    }
+
+    .selection-help,
+    .selection-status {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .selection-status {
+      color: var(--warning);
+    }
+
+    .selection-status:empty {
+      margin: 0;
+    }
+
+    .candidate-source {
+      min-height: 38px;
+      margin-top: 25px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .candidate-source:hover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .score-summary {
+      display: flex;
+      flex-wrap: wrap;
+      width: fit-content;
+      max-width: 100%;
+      margin: 14px 0 0;
+      border-top: 1px solid var(--border);
+      border-left: 1px solid var(--border);
+    }
+
+    .score-item {
+      min-width: 118px;
+      padding: 8px 10px;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .score-label,
+    .score-value {
+      display: block;
+    }
+
+    .score-label {
+      color: var(--muted);
+      font-size: 0.76rem;
+    }
+
+    .score-value {
+      margin-top: 2px;
+      font-size: 0.98rem;
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+    }
+
+    .table-toolbar {
+      width: fit-content;
+      max-width: 100%;
       margin-bottom: 8px;
     }
 
@@ -201,182 +302,15 @@
       font-size: 1rem;
     }
 
-    .result-count {
-      color: var(--muted);
-      font-size: 0.88rem;
-    }
-
-    .table-wrap {
-      width: fit-content;
-      max-width: 100%;
-      overflow: auto;
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      background: var(--surface);
-    }
-
-    .candidate-table {
-      width: max-content;
-      min-width: min(100%, 760px);
-      border-collapse: separate;
-      border-spacing: 0;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .candidate-table th,
-    .candidate-table td {
-      border-bottom: 1px solid var(--border);
-      padding: 8px 8px;
-      text-align: center;
-      white-space: nowrap;
-    }
-
-    .candidate-table thead th {
-      position: sticky;
-      top: 0;
-      z-index: 3;
-      background: var(--surface-alt);
-    }
-
-    .candidate-table tbody:last-child tr:last-child td {
-      border-bottom: 0;
-    }
-
-    .candidate-row:hover td {
-      background: var(--accent-soft);
-    }
-
-    .rank-column {
-      width: 42px;
-      min-width: 42px;
-    }
-
-    .candidate-column {
-      position: sticky;
-      left: 0;
-      z-index: 2;
-      width: 164px;
-      min-width: 164px;
-      background: var(--surface);
-      box-shadow: 1px 0 0 var(--border);
-    }
-
-    thead .candidate-column {
-      z-index: 4;
-      background: var(--surface-alt);
-    }
-
-    .candidate-row:hover .candidate-column {
-      background: var(--accent-soft);
-    }
-
-    .score-column {
-      width: 112px;
-      min-width: 112px;
-    }
-
-    .gain-column {
-      width: 120px;
-      min-width: 120px;
-    }
-
-    .coverage-column {
-      width: 126px;
-      min-width: 126px;
-    }
-
-    .sort-button {
-      width: 100%;
-      border: 0;
-      background: transparent;
-      padding: 2px 0;
-      font-weight: 650;
-      text-align: center;
-    }
-
-    .sort-button:hover {
-      color: var(--accent);
-    }
-
-    .sort-indicator {
-      color: var(--accent);
-    }
-
-    .sort-indicator:not(:empty) {
-      margin-left: 3px;
-    }
-
-    .candidate-identity {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-    }
-
-    .expand-button {
-      width: 24px;
-      height: 24px;
-      border: 0;
-      border-radius: 4px;
-      background: transparent;
-      color: var(--accent);
-      line-height: 1;
-    }
-
-    .expand-button:hover {
-      background: var(--surface-alt);
-    }
-
-    .candidate-link {
-      color: inherit;
-      font-weight: 600;
-      text-decoration-color: var(--border);
-      text-underline-offset: 3px;
-    }
-
-    .candidate-link:hover {
-      color: var(--accent);
-      text-decoration-color: currentColor;
-    }
-
-    .gain {
-      color: var(--positive);
-      font-weight: 650;
-    }
-
-    .details-row > td {
-      padding: 0;
-      background: var(--background);
-      text-align: left;
-      white-space: normal;
-    }
-
-    .candidate-details {
-      padding: 16px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .details-heading {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 4px 16px;
-      margin-bottom: 10px;
-    }
-
-    .details-heading h3 {
-      margin: 0;
-      font-size: 0.98rem;
-    }
-
-    .details-summary {
+    .calculation-summary {
+      margin: 3px 0 0;
       color: var(--muted);
       font-size: 0.85rem;
     }
 
     .detail-wrap {
-      max-height: 470px;
+      width: fit-content;
+      max-width: 100%;
       overflow: auto;
       border: 1px solid var(--border);
       border-radius: 5px;
@@ -384,7 +318,7 @@
     }
 
     .detail-table {
-      width: 100%;
+      width: max-content;
       min-width: 750px;
       border-collapse: separate;
       border-spacing: 0;
@@ -439,9 +373,12 @@
       font-style: italic;
     }
 
+    .gain {
+      color: var(--positive);
+      font-weight: 650;
+    }
+
     .detail-total td {
-      position: sticky;
-      bottom: 0;
       border-top: 2px solid var(--border);
       border-bottom: 0;
       background: var(--surface-alt);
@@ -487,8 +424,34 @@
         grid-column: auto;
       }
 
-      .candidate-details {
+      .candidate-panel {
+        width: 100%;
         padding: 10px;
+      }
+
+      .candidate-controls,
+      .candidate-field {
+        width: 100%;
+      }
+
+      .candidate-source {
+        width: 100%;
+        margin-top: 0;
+        text-align: center;
+      }
+
+      .score-summary {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+      }
+
+      .score-item {
+        min-width: 0;
+      }
+
+      .score-item:last-child {
+        grid-column: 1 / -1;
       }
     }
   </style>
@@ -502,7 +465,7 @@
     </div>
     <p class="lede">
       Which additional champion most improves a pool when the opposing laner
-      is known? Candidates are ranked by one decomposable measure.
+      is known? Select a candidate to inspect one decomposable measure.
     </p>
     <div class="metadata" id="metadata"></div>
 
@@ -523,18 +486,83 @@
       </div>
     </details>
 
+    <section class="candidate-panel" aria-labelledby="candidate-label">
+      <div class="candidate-controls">
+        <div class="candidate-field">
+          <label id="candidate-label" for="candidate-search">
+            Candidate champion
+          </label>
+          <input
+            class="candidate-search"
+            id="candidate-search"
+            type="search"
+            list="candidate-options"
+            autocomplete="off"
+            spellcheck="false"
+            aria-describedby="selection-help selection-status"
+          >
+          <datalist id="candidate-options"></datalist>
+          <p class="selection-help" id="selection-help">
+            Type to narrow the list, then choose a champion.
+          </p>
+          <p
+            class="selection-status"
+            id="selection-status"
+            role="status"
+            aria-live="polite"
+          ></p>
+        </div>
+        <a
+          class="candidate-source"
+          id="candidate-source"
+          target="_blank"
+          rel="noreferrer"
+        ></a>
+      </div>
+
+      <div
+        class="score-summary"
+        role="group"
+        aria-label="Selected candidate summary"
+      >
+        <div class="score-item">
+          <span class="score-label">Observed gain rank</span>
+          <span class="score-value" id="score-rank"></span>
+        </div>
+        <div class="score-item">
+          <span class="score-label">Pool before</span>
+          <span class="score-value" id="score-before"></span>
+        </div>
+        <div class="score-item">
+          <span class="score-label">With candidate</span>
+          <span class="score-value" id="score-after"></span>
+        </div>
+        <div class="score-item">
+          <span class="score-label">Marginal gain</span>
+          <span class="score-value gain" id="score-gain"></span>
+        </div>
+        <div class="score-item">
+          <span class="score-label">Evidence coverage</span>
+          <span class="score-value" id="score-coverage"></span>
+        </div>
+      </div>
+    </section>
+
     <div class="table-toolbar">
-      <h2>Candidate additions</h2>
-      <span class="result-count" id="result-count" aria-live="polite"></span>
+      <h2
+        id="calculation-heading"
+        aria-live="polite"
+        aria-atomic="true"
+      ></h2>
+      <p class="calculation-summary" id="calculation-summary"></p>
     </div>
 
-    <div class="table-wrap">
-      <table class="candidate-table" aria-describedby="method-note">
-        <caption class="visually-hidden">
-          Candidate champions ranked by marginal observed counterpick coverage
-        </caption>
-        <thead id="table-head"></thead>
-        <tbody id="table-body"></tbody>
+    <div class="detail-wrap" id="calculation-wrap">
+      <table class="detail-table" aria-describedby="method-note calculation-summary">
+        <caption class="visually-hidden" id="calculation-caption"></caption>
+        <thead id="calculation-head"></thead>
+        <tbody id="calculation-body"></tbody>
+        <tfoot id="calculation-foot"></tfoot>
       </table>
     </div>
 
@@ -558,28 +586,46 @@
       );
       const metadata = document.getElementById("metadata");
       const methodNote = document.getElementById("method-note");
-      const resultCount = document.getElementById("result-count");
-      const tableHead = document.getElementById("table-head");
-      const tableBody = document.getElementById("table-body");
-      const expandedCandidates = new Set();
-      let sort = { key: "gain", direction: "desc" };
+      const candidateSearch = document.getElementById("candidate-search");
+      const candidateOptions = document.getElementById("candidate-options");
+      const candidateSource = document.getElementById("candidate-source");
+      const selectionStatus = document.getElementById("selection-status");
+      const scoreRank = document.getElementById("score-rank");
+      const scoreBefore = document.getElementById("score-before");
+      const scoreAfter = document.getElementById("score-after");
+      const scoreGain = document.getElementById("score-gain");
+      const scoreCoverage = document.getElementById("score-coverage");
+      const calculationHeading =
+        document.getElementById("calculation-heading");
+      const calculationSummary =
+        document.getElementById("calculation-summary");
+      const calculationCaption =
+        document.getElementById("calculation-caption");
+      const calculationHead = document.getElementById("calculation-head");
+      const calculationBody = document.getElementById("calculation-body");
+      const calculationFoot = document.getElementById("calculation-foot");
 
-      const columns = [
-        { key: "name", label: "Candidate", className: "candidate-column" },
-        {
-          key: "pool_before",
-          label: "Pool before",
-          className: "score-column",
-          sortable: false
-        },
-        { key: "pool_after", label: "With candidate", className: "score-column" },
-        { key: "gain", label: "Marginal gain", className: "gain-column" },
-        {
-          key: "evidence_coverage",
-          label: "Evidence coverage",
-          className: "coverage-column"
-        }
-      ];
+      const rankedCandidates = [...dataset.candidates].sort(
+        (a, b) => b.gain - a.gain || a.source_order - b.source_order
+      );
+      const alphabeticalCandidates = [...dataset.candidates].sort(
+        (a, b) => a.name.localeCompare(b.name)
+      );
+      const rankBySlug = new Map(
+        rankedCandidates.map((candidate, index) => [
+          candidate.slug,
+          index + 1
+        ])
+      );
+      const candidateByName = new Map(
+        dataset.candidates.map((candidate) => [
+          candidate.name.toLocaleLowerCase(),
+          candidate
+        ])
+      );
+      let selectedCandidate =
+        dataset.candidates.find((candidate) => candidate.slug === "zilean") ??
+        rankedCandidates[0];
 
       function titleCase(value) {
         return value
@@ -607,6 +653,19 @@
 
       function poolNames() {
         return dataset.pool.map((member) => member.name).join(", ");
+      }
+
+      function populateCandidateOptions() {
+        const fragment = document.createDocumentFragment();
+        for (const candidate of alphabeticalCandidates) {
+          const option = document.createElement("option");
+          option.value = candidate.name;
+          option.label =
+            `#${rankBySlug.get(candidate.slug)} · ` +
+            percentagePoints(candidate.gain);
+          fragment.appendChild(option);
+        }
+        candidateOptions.replaceChildren(fragment);
       }
 
       function renderMetadata() {
@@ -656,87 +715,7 @@
           `own mirror matchup. Evidence coverage reports the weighted share of ` +
           `applicable opponents with a displayed row. For a multi-champion pool, ` +
           `an unshown pool-member row cannot become its displayed baseline and ` +
-          `the detail table reports how many pool members supplied evidence.`;
-      }
-
-      function candidateValue(candidate, key) {
-        return key === "pool_before" ? dataset.pool_before : candidate[key];
-      }
-
-      function sortedCandidates() {
-        const direction = sort.direction === "desc" ? -1 : 1;
-        return [...dataset.candidates].sort((a, b) => {
-          const aValue = candidateValue(a, sort.key);
-          const bValue = candidateValue(b, sort.key);
-          let comparison;
-          if (typeof aValue === "string") {
-            comparison = aValue.localeCompare(bValue);
-          } else {
-            comparison = aValue - bValue;
-          }
-          return comparison === 0
-            ? a.source_order - b.source_order
-            : comparison * direction;
-        });
-      }
-
-      function setSort(key) {
-        if (sort.key === key) {
-          sort.direction = sort.direction === "desc" ? "asc" : "desc";
-        } else {
-          sort = {
-            key,
-            direction: key === "name" ? "asc" : "desc"
-          };
-        }
-        renderTable();
-        document.querySelector(`[data-sort-key="${key}"]`)?.focus();
-      }
-
-      function makeSortHeader(column) {
-        const th = document.createElement("th");
-        th.scope = "col";
-        th.className = column.className;
-        if (column.sortable === false) {
-          th.textContent = column.label;
-          return th;
-        }
-        th.setAttribute(
-          "aria-sort",
-          sort.key === column.key
-            ? sort.direction === "desc" ? "descending" : "ascending"
-            : "none"
-        );
-
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "sort-button";
-        button.dataset.sortKey = column.key;
-        button.addEventListener("click", () => setSort(column.key));
-
-        const label = document.createElement("span");
-        label.textContent = column.label;
-        const indicator = document.createElement("span");
-        indicator.className = "sort-indicator";
-        indicator.textContent =
-          sort.key === column.key
-            ? sort.direction === "desc" ? "↓" : "↑"
-            : "";
-        button.append(label, indicator);
-        th.appendChild(button);
-        return th;
-      }
-
-      function renderHead() {
-        tableHead.replaceChildren();
-        const row = document.createElement("tr");
-        const rank = document.createElement("th");
-        rank.scope = "col";
-        rank.className = "rank-column";
-        rank.textContent = "#";
-        row.appendChild(rank);
-        columns.forEach((column) => row.appendChild(makeSortHeader(column)));
-        tableHead.appendChild(row);
+          `the calculation table reports how many pool members supplied evidence.`;
       }
 
       function appendTextCell(row, text, className = "") {
@@ -744,46 +723,6 @@
         cell.className = className;
         cell.textContent = text;
         row.appendChild(cell);
-        return cell;
-      }
-
-      function makeIdentityCell(candidate) {
-        const cell = document.createElement("td");
-        cell.className = "candidate-column";
-        const identity = document.createElement("div");
-        identity.className = "candidate-identity";
-
-        const button = document.createElement("button");
-        const expanded = expandedCandidates.has(candidate.slug);
-        button.type = "button";
-        button.className = "expand-button";
-        button.textContent = expanded ? "▾" : "▸";
-        button.setAttribute("aria-expanded", String(expanded));
-        button.setAttribute("aria-controls", `details-${candidate.slug}`);
-        button.setAttribute(
-          "aria-label",
-          `${expanded ? "Hide" : "Show"} calculation for ${candidate.name}`
-        );
-        button.addEventListener("click", () => {
-          if (expandedCandidates.has(candidate.slug)) {
-            expandedCandidates.delete(candidate.slug);
-          } else {
-            expandedCandidates.add(candidate.slug);
-          }
-          renderBody();
-          document
-            .querySelector(`[aria-controls="details-${candidate.slug}"]`)
-            ?.focus();
-        });
-
-        const link = document.createElement("a");
-        link.className = "candidate-link";
-        link.href = candidate.source_url;
-        link.target = "_blank";
-        link.rel = "noreferrer";
-        link.textContent = candidate.name;
-        identity.append(button, link);
-        cell.appendChild(identity);
         return cell;
       }
 
@@ -826,42 +765,8 @@
         return cell;
       }
 
-      function makeDetailsRow(candidate) {
-        const row = document.createElement("tr");
-        row.className = "details-row";
-        row.id = `details-${candidate.slug}`;
-        const cell = document.createElement("td");
-        cell.colSpan = columns.length + 1;
-
-        const details = document.createElement("section");
-        details.className = "candidate-details";
-        details.setAttribute(
-          "aria-label",
-          `${candidate.name} contribution calculation`
-        );
-
-        const heading = document.createElement("div");
-        heading.className = "details-heading";
-        const title = document.createElement("h3");
-        title.textContent =
-          `${candidate.name}: ${percentagePoints(candidate.gain)} total gain`;
-        const summary = document.createElement("span");
-        summary.className = "details-summary";
-        summary.textContent =
-          `${candidate.observed_matchups} of ${candidate.applicable_matchups} ` +
-          `applicable rows shown · ${coverage(candidate.evidence_coverage)} ` +
-          `weighted evidence coverage · row values rounded for display`;
-        heading.append(title, summary);
-
-        const wrap = document.createElement("div");
-        wrap.className = "detail-wrap";
-        const table = document.createElement("table");
-        table.className = "detail-table";
-        const caption = document.createElement("caption");
-        caption.className = "visually-hidden";
-        caption.textContent =
-          `${candidate.name} opponent-level contribution calculation`;
-        const head = document.createElement("thead");
+      function renderCalculationHead(candidate) {
+        calculationHead.replaceChildren();
         const headerRow = document.createElement("tr");
         for (const label of [
           "Opponent",
@@ -876,9 +781,11 @@
           th.textContent = label;
           headerRow.appendChild(th);
         }
-        head.appendChild(headerRow);
+        calculationHead.appendChild(headerRow);
+      }
 
-        const body = document.createElement("tbody");
+      function renderCalculationBody(candidate) {
+        const fragment = document.createDocumentFragment();
         for (const entry of detailRows(candidate)) {
           const detailRow = document.createElement("tr");
           if ((entry.matchup?.contribution ?? 0) > 0) {
@@ -928,10 +835,12 @@
             percentagePoints(entry.matchup?.contribution ?? 0, 4),
             (entry.matchup?.contribution ?? 0) > 0 ? "gain" : ""
           );
-          body.appendChild(detailRow);
+          fragment.appendChild(detailRow);
         }
+        calculationBody.replaceChildren(fragment);
+      }
 
-        const foot = document.createElement("tfoot");
+      function renderCalculationFoot(candidate) {
         const total = document.createElement("tr");
         total.className = "detail-total";
         const totalLabel = document.createElement("td");
@@ -941,64 +850,97 @@
         totalValue.textContent = percentagePoints(candidate.gain);
         totalValue.className = "gain";
         total.append(totalLabel, totalValue);
-        foot.appendChild(total);
-        table.append(caption, head, body, foot);
-        wrap.appendChild(table);
-        details.append(heading, wrap);
-        cell.appendChild(details);
-        row.appendChild(cell);
-        return row;
+        calculationFoot.replaceChildren(total);
       }
 
-      function renderBody() {
-        tableBody.replaceChildren();
-        const fragment = document.createDocumentFragment();
-        const candidates = sortedCandidates();
-        resultCount.textContent =
-          `${candidates.length} candidate${candidates.length === 1 ? "" : "s"} · ` +
-          "select a champion to inspect every contribution";
-
-        candidates.forEach((candidate, index) => {
-          const row = document.createElement("tr");
-          row.className = "candidate-row";
-          appendTextCell(row, String(index + 1), "rank-column");
-          row.appendChild(makeIdentityCell(candidate));
-          appendTextCell(
-            row,
-            percent(dataset.pool_before),
-            "score-column"
-          );
-          appendTextCell(
-            row,
-            percent(candidate.pool_after),
-            "score-column"
-          );
-          appendTextCell(
-            row,
-            percentagePoints(candidate.gain),
-            "gain gain-column"
-          );
-          appendTextCell(
-            row,
-            coverage(candidate.evidence_coverage),
-            "coverage-column"
-          );
-          fragment.appendChild(row);
-          if (expandedCandidates.has(candidate.slug)) {
-            fragment.appendChild(makeDetailsRow(candidate));
-          }
-        });
-        tableBody.appendChild(fragment);
+      function renderCandidate(candidate) {
+        selectedCandidate = candidate;
+        candidateSearch.value = candidate.name;
+        candidateSource.href = candidate.source_url;
+        candidateSource.textContent = `${candidate.name} source ↗`;
+        candidateSource.setAttribute(
+          "aria-label",
+          `Open ${candidate.name} matchup source in a new tab`
+        );
+        scoreRank.textContent =
+          `#${rankBySlug.get(candidate.slug)} of ${dataset.candidates.length}`;
+        scoreBefore.textContent = percent(dataset.pool_before);
+        scoreAfter.textContent = percent(candidate.pool_after);
+        scoreGain.textContent = percentagePoints(candidate.gain);
+        scoreCoverage.textContent = coverage(candidate.evidence_coverage);
+        calculationHeading.textContent =
+          `${candidate.name} contribution calculation`;
+        calculationSummary.textContent =
+          `${candidate.observed_matchups} of ${candidate.applicable_matchups} ` +
+          `applicable rows displayed · ` +
+          `${coverage(candidate.evidence_coverage)} weighted evidence ` +
+          `coverage · row values rounded for display`;
+        calculationCaption.textContent =
+          `${candidate.name} opponent-level contribution calculation`;
+        renderCalculationHead(candidate);
+        renderCalculationBody(candidate);
+        renderCalculationFoot(candidate);
       }
 
-      function renderTable() {
-        renderHead();
-        renderBody();
+      function normalizeName(value) {
+        return value.trim().toLocaleLowerCase();
       }
+
+      function findCandidate(value) {
+        const query = normalizeName(value);
+        if (!query) {
+          return null;
+        }
+        const exact = candidateByName.get(query);
+        if (exact) {
+          return exact;
+        }
+        const matches = alphabeticalCandidates.filter((candidate) =>
+          candidate.name.toLocaleLowerCase().includes(query)
+        );
+        return matches.length === 1 ? matches[0] : null;
+      }
+
+      function showSelectionStatus(message = "") {
+        selectionStatus.textContent = message;
+      }
+
+      function commitCandidateSearch() {
+        const requestedName = candidateSearch.value.trim();
+        const candidate = findCandidate(requestedName);
+        if (candidate) {
+          showSelectionStatus();
+          renderCandidate(candidate);
+          return;
+        }
+        candidateSearch.value = selectedCandidate.name;
+        showSelectionStatus(
+          `No unique candidate matched “${requestedName}”. ` +
+          `Restored ${selectedCandidate.name}.`
+        );
+      }
+
+      candidateSearch.addEventListener("input", () => {
+        showSelectionStatus();
+        const exact = candidateByName.get(normalizeName(candidateSearch.value));
+        if (exact) {
+          renderCandidate(exact);
+        }
+      });
+      candidateSearch.addEventListener("change", commitCandidateSearch);
+      candidateSearch.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          window.setTimeout(commitCandidateSearch, 0);
+        }
+      });
+      candidateSearch.addEventListener("focus", () => {
+        candidateSearch.select();
+      });
 
       renderMetadata();
       renderMethodNote();
-      renderTable();
+      populateCandidateOptions();
+      renderCandidate(selectedCandidate);
     })();
   </script>
 </body>

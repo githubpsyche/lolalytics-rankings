@@ -119,11 +119,81 @@
       gap: 6px;
     }
 
-    .category-toggle[aria-pressed="true"] {
+    .category-toggle[aria-pressed="true"],
+    .category-toggle[aria-pressed="mixed"] {
       border-color: var(--accent);
       background: var(--accent-soft);
       color: var(--accent);
       font-weight: 600;
+    }
+
+    .category-toggle[aria-pressed="mixed"] {
+      border-style: dashed;
+    }
+
+    .column-control {
+      position: relative;
+    }
+
+    .column-control summary {
+      list-style: none;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      background: var(--surface);
+      padding: 7px 10px;
+      cursor: pointer;
+    }
+
+    .column-control summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .column-control[open] summary {
+      border-color: var(--accent);
+    }
+
+    .column-picker {
+      position: absolute;
+      z-index: 6;
+      top: calc(100% + 5px);
+      left: 0;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(170px, 1fr));
+      gap: 14px 20px;
+      min-width: 390px;
+      max-height: min(480px, 70vh);
+      overflow: auto;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      box-shadow: 0 8px 24px var(--shadow);
+    }
+
+    .column-group {
+      min-width: 0;
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+
+    .column-group legend {
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .column-options {
+      display: grid;
+      gap: 5px;
+    }
+
+    .column-option {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      white-space: nowrap;
+      cursor: pointer;
     }
 
     .result-count {
@@ -280,6 +350,15 @@
         padding: 14px;
       }
 
+      .column-picker {
+        position: fixed;
+        top: auto;
+        right: 14px;
+        bottom: 14px;
+        left: 14px;
+        grid-template-columns: 1fr;
+        min-width: 0;
+      }
     }
   </style>
 </head>
@@ -290,6 +369,10 @@
 
     <div class="toolbar">
       <div class="category-picker" id="category-picker" aria-label="Metric categories"></div>
+      <details class="column-control">
+        <summary id="column-summary">Columns</summary>
+        <div class="column-picker" id="column-picker"></div>
+      </details>
       <button type="button" id="clear-filters">Clear filters</button>
       <span class="result-count" id="result-count" aria-live="polite"></span>
     </div>
@@ -310,15 +393,24 @@
       const dataset = JSON.parse(document.getElementById("ranking-data").textContent);
       const metadata = document.getElementById("metadata");
       const categoryPicker = document.getElementById("category-picker");
+      const columnPicker = document.getElementById("column-picker");
+      const columnSummary = document.getElementById("column-summary");
       const clearFilters = document.getElementById("clear-filters");
       const resultCount = document.getElementById("result-count");
       const tableHead = document.getElementById("table-head");
       const tableBody = document.getElementById("table-body");
-      const activeCategories = new Set(
+      const defaultCategories = new Set(
         dataset.categories
           .filter((category) => category.default_visible)
           .map((category) => category.key)
       );
+      const visibleMetricKeys = new Set(
+        dataset.metrics
+          .filter((metric) => defaultCategories.has(metric.category))
+          .map((metric) => metric.key)
+      );
+      const categoryButtons = new Map();
+      const columnInputs = new Map();
       const filters = new Map(
         dataset.metrics
           .filter((metric) => metric.filterable)
@@ -380,9 +472,41 @@
       }
 
       function visibleMetrics() {
-        return dataset.metrics.filter((metric) =>
-          activeCategories.has(metric.category)
-        );
+        return dataset.metrics.filter((metric) => visibleMetricKeys.has(metric.key));
+      }
+
+      function categoryMetrics(categoryKey) {
+        return dataset.metrics.filter((metric) => metric.category === categoryKey);
+      }
+
+      function categoryState(categoryKey) {
+        const metrics = categoryMetrics(categoryKey);
+        const visibleCount = metrics.filter((metric) =>
+          visibleMetricKeys.has(metric.key)
+        ).length;
+        if (visibleCount === 0) {
+          return "false";
+        }
+        return visibleCount === metrics.length ? "true" : "mixed";
+      }
+
+      function syncVisibilityControls() {
+        for (const [key, input] of columnInputs) {
+          input.checked = visibleMetricKeys.has(key);
+        }
+        for (const category of dataset.categories) {
+          categoryButtons
+            .get(category.key)
+            .setAttribute("aria-pressed", categoryState(category.key));
+        }
+        columnSummary.textContent =
+          `Columns (${visibleMetricKeys.size}/${dataset.metrics.length})`;
+      }
+
+      function resetSortIfHidden() {
+        if (sort && !visibleMetricKeys.has(sort.key)) {
+          sort = null;
+        }
       }
 
       function renderCategoryPicker() {
@@ -391,32 +515,59 @@
           button.type = "button";
           button.className = "category-toggle";
           button.textContent = category.label;
-          button.setAttribute(
-            "aria-pressed",
-            activeCategories.has(category.key) ? "true" : "false"
-          );
+          categoryButtons.set(category.key, button);
           button.addEventListener("click", () => {
-            if (activeCategories.has(category.key)) {
-              activeCategories.delete(category.key);
-            } else {
-              activeCategories.add(category.key);
-            }
-            button.setAttribute(
-              "aria-pressed",
-              activeCategories.has(category.key) ? "true" : "false"
+            const metrics = categoryMetrics(category.key);
+            const hasVisibleMetric = metrics.some((metric) =>
+              visibleMetricKeys.has(metric.key)
             );
-            if (
-              sort &&
-              !activeCategories.has(
-                dataset.metrics.find((metric) => metric.key === sort.key).category
-              )
-            ) {
-              sort = null;
+            if (hasVisibleMetric) {
+              metrics.forEach((metric) => visibleMetricKeys.delete(metric.key));
+            } else {
+              metrics.forEach((metric) => visibleMetricKeys.add(metric.key));
             }
+            resetSortIfHidden();
+            syncVisibilityControls();
             renderTable();
           });
           categoryPicker.appendChild(button);
         }
+      }
+
+      function renderColumnPicker() {
+        for (const category of dataset.categories) {
+          const group = document.createElement("fieldset");
+          group.className = "column-group";
+          const legend = document.createElement("legend");
+          legend.textContent = category.label;
+          const options = document.createElement("div");
+          options.className = "column-options";
+
+          for (const metric of categoryMetrics(category.key)) {
+            const label = document.createElement("label");
+            label.className = "column-option";
+            const input = document.createElement("input");
+            input.type = "checkbox";
+            input.value = metric.key;
+            columnInputs.set(metric.key, input);
+            input.addEventListener("change", () => {
+              if (input.checked) {
+                visibleMetricKeys.add(metric.key);
+              } else {
+                visibleMetricKeys.delete(metric.key);
+              }
+              resetSortIfHidden();
+              syncVisibilityControls();
+              renderTable();
+            });
+            label.append(input, document.createTextNode(metric.label));
+            options.appendChild(label);
+          }
+
+          group.append(legend, options);
+          columnPicker.appendChild(group);
+        }
+        syncVisibilityControls();
       }
 
       function sortRows(rows) {
@@ -628,6 +779,7 @@
 
       renderMetadata();
       renderCategoryPicker();
+      renderColumnPicker();
       renderTable();
     })();
   </script>

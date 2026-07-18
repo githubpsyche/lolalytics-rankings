@@ -10,7 +10,8 @@ The generated page supports:
 - single-column ascending and descending sorting;
 - inclusive minimum and maximum filters for every metric;
 - independently toggled Overall, Combat, Economy & Farming, and Best
-  Worldwide metric groups; and
+  Worldwide metric groups;
+- individual column visibility controls; and
 - configurable lane, tier, region, and period.
 
 Overall, Combat, and Economy & Farming are visible by default. Best Worldwide

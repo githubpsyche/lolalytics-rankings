@@ -37,6 +37,13 @@ REQUEST_DELAY = 0.25
 REQUEST_ATTEMPTS = 3
 
 LANES = ("top", "jungle", "middle", "bottom", "support")
+LANE_LABELS = {
+    "top": "Top",
+    "jungle": "Jungle",
+    "middle": "Middle",
+    "bottom": "Bottom",
+    "support": "Support",
+}
 TIERS = (
     "all",
     "1trick",
@@ -141,7 +148,12 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Build an interactive table from Lolalytics champion stats."
     )
-    parser.add_argument("--lane", choices=LANES, default="middle")
+    parser.add_argument(
+        "--lane",
+        choices=("all", *LANES),
+        default="all",
+        help="scrape all lanes or one lane for a faster targeted run (default: all)",
+    )
     parser.add_argument("--tier", choices=TIERS, default="emerald_plus")
     parser.add_argument("--region", choices=REGIONS, default="all")
     parser.add_argument(
@@ -157,8 +169,8 @@ def parse_args() -> argparse.Namespace:
     return args
 
 
-def query_params(args: argparse.Namespace) -> dict[str, str]:
-    params = {"lane": args.lane, "tier": args.tier, "region": args.region}
+def query_params(args: argparse.Namespace, lane: str) -> dict[str, str]:
+    params = {"lane": lane, "tier": args.tier, "region": args.region}
     if args.period != "current":
         params["patch"] = args.period
     return params
@@ -393,25 +405,39 @@ def extract_champion(html: str, slug: str, source_order: int) -> dict[str, Any]:
 
 
 def validate_dataset(dataset: dict[str, Any]) -> None:
-    champions = dataset["champions"]
-    if not champions:
-        raise ScrapeError("No champions were scraped")
-
-    slugs = [champion["slug"] for champion in champions]
-    if len(slugs) != len(set(slugs)):
-        raise ScrapeError("The completed dataset contains duplicate champions")
+    lanes = dataset["lanes"]
+    if not lanes:
+        raise ScrapeError("No lanes were scraped")
+    lane_keys = [lane["key"] for lane in lanes]
+    if len(lane_keys) != len(set(lane_keys)):
+        raise ScrapeError("The completed dataset contains duplicate lanes")
+    if dataset["default_lane"] not in lane_keys:
+        raise ScrapeError("The default lane is not present in the dataset")
 
     expected_keys = {key for key, _, _, _ in METRICS}
-    for champion in champions:
-        actual_keys = set(champion["values"])
-        if actual_keys != expected_keys:
-            missing = ", ".join(sorted(expected_keys - actual_keys))
-            raise ScrapeError(f"{champion['name']} is missing metrics: {missing}")
-        for key, entry in champion["values"].items():
-            if not isinstance(entry.get("value"), (int, float)):
-                raise ScrapeError(f"{champion['name']}: {key} is not numeric")
-            if not isinstance(entry.get("display"), str) or not entry["display"]:
-                raise ScrapeError(f"{champion['name']}: {key} has no display value")
+    for lane in lanes:
+        champions = lane["champions"]
+        if not champions:
+            raise ScrapeError(f"No {lane['label']} champions were scraped")
+        slugs = [champion["slug"] for champion in champions]
+        if len(slugs) != len(set(slugs)):
+            raise ScrapeError(f"The {lane['label']} dataset contains duplicates")
+        for champion in champions:
+            actual_keys = set(champion["values"])
+            if actual_keys != expected_keys:
+                missing = ", ".join(sorted(expected_keys - actual_keys))
+                raise ScrapeError(
+                    f"{lane['label']} {champion['name']} is missing metrics: {missing}"
+                )
+            for key, entry in champion["values"].items():
+                if not isinstance(entry.get("value"), (int, float)):
+                    raise ScrapeError(
+                        f"{lane['label']} {champion['name']}: {key} is not numeric"
+                    )
+                if not isinstance(entry.get("display"), str) or not entry["display"]:
+                    raise ScrapeError(
+                        f"{lane['label']} {champion['name']}: {key} has no display value"
+                    )
 
 
 def atomic_write(path: Path, content: str) -> None:
@@ -441,10 +467,45 @@ def archive_name(generated_at: datetime, args: argparse.Namespace) -> str:
     return f"{timestamp}-{cohort}.json"
 
 
+def scrape_lane(
+    session: requests.Session, args: argparse.Namespace, lane: str
+) -> dict[str, Any]:
+    params = query_params(args, lane)
+    tierlist_url = build_url("tierlist", params)
+    print(f"\n{LANE_LABELS[lane]} lane", flush=True)
+    print(f"Fetching roster: {tierlist_url}", flush=True)
+    roster = extract_roster(fetch(session, tierlist_url))
+    print(f"Found {len(roster)} champions", flush=True)
+
+    champions = []
+    for index, roster_champion in enumerate(roster, start=1):
+        slug = roster_champion["slug"]
+        if index > 1:
+            time.sleep(REQUEST_DELAY)
+        print(f"[{index:>3}/{len(roster)}] {slug}", flush=True)
+        champion_url = build_url(f"{slug}/build", params)
+        champion = extract_champion(
+            fetch(session, champion_url),
+            slug=slug,
+            source_order=roster_champion["source_order"],
+        )
+        champion["values"] = {
+            **roster_champion["values"],
+            **champion["values"],
+        }
+        champions.append(champion)
+
+    return {
+        "key": lane,
+        "label": LANE_LABELS[lane],
+        "source_url": tierlist_url,
+        "champions": champions,
+    }
+
+
 def main() -> int:
     args = parse_args()
-    params = query_params(args)
-    tierlist_url = build_url("tierlist", params)
+    selected_lanes = LANES if args.lane == "all" else (args.lane,)
     session = requests.Session()
     session.headers["User-Agent"] = (
         "Mozilla/5.0 (compatible; LolalyticsRankings/1.0; "
@@ -452,40 +513,20 @@ def main() -> int:
     )
 
     try:
-        print(f"Fetching roster: {tierlist_url}", flush=True)
-        roster = extract_roster(fetch(session, tierlist_url))
-        print(f"Found {len(roster)} champions", flush=True)
-
-        champions = []
-        for index, roster_champion in enumerate(roster, start=1):
-            slug = roster_champion["slug"]
-            if index > 1:
-                time.sleep(REQUEST_DELAY)
-            print(f"[{index:>3}/{len(roster)}] {slug}", flush=True)
-            champion_url = build_url(f"{slug}/build", params)
-            champion = extract_champion(
-                fetch(session, champion_url),
-                slug=slug,
-                source_order=roster_champion["source_order"],
-            )
-            champion["values"] = {
-                **roster_champion["values"],
-                **champion["values"],
-            }
-            champions.append(champion)
+        lanes = [scrape_lane(session, args, lane) for lane in selected_lanes]
 
         generated_at = datetime.now(UTC)
+        default_lane = "middle" if "middle" in selected_lanes else selected_lanes[0]
         dataset = {
-            "schema_version": 3,
+            "schema_version": 4,
             "generated_at": generated_at.isoformat().replace("+00:00", "Z"),
+            "default_lane": default_lane,
             "filters": {
-                "lane": args.lane,
                 "tier": args.tier,
                 "region": args.region,
                 "period": args.period,
                 "queue": "Ranked Solo/Duo",
             },
-            "source_url": tierlist_url,
             "categories": [
                 {
                     "key": key,
@@ -503,7 +544,7 @@ def main() -> int:
                 }
                 for key, label, filterable, category in METRICS
             ],
-            "champions": champions,
+            "lanes": lanes,
         }
         validate_dataset(dataset)
         pretty_json = json.dumps(dataset, ensure_ascii=False, indent=2) + "\n"

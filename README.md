@@ -13,12 +13,13 @@ The generated page supports:
 - independently toggled Overall, Combat, Economy & Farming, and Best
   Worldwide metric groups;
 - individual column visibility controls; and
-- configurable lane, tier, region, and period.
+- switching among lane-specific Top, Jungle, Middle, Bottom, and Support
+  rankings.
 
 Overall, Combat, and Economy & Farming are visible by default. Best Worldwide
-is opt-in. The table combines selected tier-list performance and best-player
-fields with the 13 per-champion damage, combat, economy, and farming
-statistics.
+is opt-in, and Middle is the initial lane. The table combines selected
+tier-list performance and best-player fields with the 13 per-champion damage,
+combat, economy, and farming statistics.
 
 Tier filters use the ordered D- to S+ scale: a minimum of A includes A and
 better, while a maximum of S includes S and worse.
@@ -31,8 +32,8 @@ Install [uv](https://docs.astral.sh/uv/), then run:
 uv run lolalytics_rankings.py
 ```
 
-Defaults are Middle, Emerald+, Global, Ranked Solo/Duo, and the rolling
-30-day period. For example:
+Defaults are all five lanes, Emerald+, Global, Ranked Solo/Duo, and the rolling
+30-day period. Use `--lane` for a faster single-lane refresh:
 
 ```bash
 uv run lolalytics_rankings.py \
@@ -42,6 +43,8 @@ uv run lolalytics_rankings.py \
   --period 30
 ```
 
+Single-lane output contains only that lane and selects it by default.
+
 Each successful run updates:
 
 - `index.html` — the self-contained GitHub Pages site;
@@ -49,8 +52,8 @@ Each successful run updates:
 - `data/archive/` — timestamped snapshots.
 
 The script declares its only dependencies, `requests` and `parsel`, through
-PEP 723 metadata. A failed or incomplete scrape does not replace the previous
-successful outputs.
+PEP 723 metadata. A failed or incomplete lane scrape does not replace the
+previous successful outputs.
 
 ## Disclaimer
 

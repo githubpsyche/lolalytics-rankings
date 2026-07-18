@@ -79,6 +79,22 @@
       margin-bottom: 12px;
     }
 
+    .lane-control {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .lane-control select {
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      background: var(--surface);
+      padding: 6px 8px;
+      cursor: pointer;
+    }
+
     button,
     summary,
     input,
@@ -410,6 +426,10 @@
     <div class="metadata" id="metadata"></div>
 
     <div class="toolbar">
+      <label class="lane-control">
+        Lane
+        <select id="lane-select" aria-label="Lane"></select>
+      </label>
       <div class="category-picker" id="category-picker" aria-label="Metric categories"></div>
       <details class="popover-control column-control">
         <summary id="column-summary">Columns</summary>
@@ -438,6 +458,7 @@
 
       const dataset = JSON.parse(document.getElementById("ranking-data").textContent);
       const metadata = document.getElementById("metadata");
+      const laneSelect = document.getElementById("lane-select");
       const categoryPicker = document.getElementById("category-picker");
       const columnPicker = document.getElementById("column-picker");
       const columnSummary = document.getElementById("column-summary");
@@ -466,12 +487,15 @@
           .filter((metric) => metric.filterable)
           .map((metric) => [metric.key, { min: null, max: null }])
       );
+      let activeLaneKey = dataset.default_lane;
       const tierChoices = Array.from(
         new Map(
-          dataset.champions.map((champion) => {
-            const tier = champion.values.tier;
-            return [tier.sort_value ?? tier.value, tier.display];
-          })
+          dataset.lanes.flatMap((lane) =>
+            lane.champions.map((champion) => {
+              const tier = champion.values.tier;
+              return [tier.sort_value ?? tier.value, tier.display];
+            })
+          )
         ).entries()
       ).sort((a, b) => b[0] - a[0]);
       let sort = null;
@@ -483,10 +507,31 @@
           .replace(/\b\w/g, (letter) => letter.toUpperCase());
       }
 
+      function activeLane() {
+        return dataset.lanes.find((lane) => lane.key === activeLaneKey);
+      }
+
+      function renderLanePicker() {
+        for (const lane of dataset.lanes) {
+          const option = document.createElement("option");
+          option.value = lane.key;
+          option.textContent = lane.label;
+          option.selected = lane.key === activeLaneKey;
+          laneSelect.appendChild(option);
+        }
+        laneSelect.addEventListener("change", () => {
+          activeLaneKey = laneSelect.value;
+          renderMetadata();
+          renderTable();
+        });
+      }
+
       function renderMetadata() {
+        metadata.replaceChildren();
+        const lane = activeLane();
         const generated = new Date(dataset.generated_at).toLocaleString();
         const items = [
-          `${titleCase(dataset.filters.lane)} lane`,
+          `${lane.label} lane`,
           titleCase(dataset.filters.tier),
           dataset.filters.region === "all" ? "Global" : dataset.filters.region.toUpperCase(),
           dataset.filters.period === "current"
@@ -495,7 +540,7 @@
               ? `Patch ${dataset.filters.period}`
               : `Rolling ${dataset.filters.period} days`,
           dataset.filters.queue,
-          `${dataset.champions.length} champions`,
+          `${lane.champions.length} champions`,
           `Generated ${generated}`
         ];
         for (const text of items) {
@@ -504,7 +549,7 @@
           metadata.appendChild(span);
         }
         const link = document.createElement("a");
-        link.href = dataset.source_url;
+        link.href = lane.source_url;
         link.textContent = "Source";
         link.target = "_blank";
         link.rel = "noreferrer";
@@ -745,7 +790,7 @@
 
       function filteredRows() {
         const metrics = dataset.metrics.filter((metric) => metric.filterable);
-        return dataset.champions.filter((champion) =>
+        return activeLane().champions.filter((champion) =>
           metrics.every((metric) => {
             const bounds = filters.get(metric.key);
             const entry = champion.values[metric.key];
@@ -852,12 +897,13 @@
         const metrics = visibleMetrics();
         const rows = sortRows(filteredRows());
         const filterCount = activeFilterCount();
+        const championCount = activeLane().champions.length;
         const filterStatus =
           filterCount === 0
             ? ""
             : ` · ${filterCount} active filter${filterCount === 1 ? "" : "s"}`;
         resultCount.textContent =
-          `${rows.length} of ${dataset.champions.length} champions${filterStatus}`;
+          `${rows.length} of ${championCount} champions${filterStatus}`;
 
         if (rows.length === 0) {
           const row = document.createElement("tr");
@@ -916,6 +962,7 @@
         });
       });
 
+      renderLanePicker();
       renderMetadata();
       renderCategoryPicker();
       renderColumnPicker();

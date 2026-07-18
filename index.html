@@ -245,7 +245,7 @@
       font-weight: 600;
     }
 
-    .filter-panel-pair {
+    .filter-pair.filter-panel-pair {
       grid-template-columns: repeat(2, 62px);
     }
 
@@ -272,8 +272,8 @@
     th,
     td {
       border-bottom: 1px solid var(--border);
-      padding: 7px 8px;
-      text-align: right;
+      padding: 7px 5px;
+      text-align: center;
       white-space: nowrap;
     }
 
@@ -301,17 +301,17 @@
     }
 
     .rank-column {
-      width: 54px;
-      min-width: 54px;
-      text-align: right;
+      width: 38px;
+      min-width: 38px;
+      text-align: center;
     }
 
     .champion-column {
       position: sticky;
       left: 0;
       z-index: 2;
-      min-width: 145px;
-      text-align: left;
+      min-width: 118px;
+      text-align: center;
       background: var(--surface);
       box-shadow: 1px 0 0 var(--border);
     }
@@ -333,8 +333,8 @@
       width: 100%;
       border: 0;
       background: transparent;
-      padding: 2px;
-      text-align: right;
+      padding: 2px 0;
+      text-align: center;
       font-weight: 600;
     }
 
@@ -344,16 +344,18 @@
     }
 
     .sort-indicator {
-      display: inline-block;
-      width: 1em;
       color: var(--accent);
+    }
+
+    .sort-indicator:not(:empty) {
+      margin-left: 3px;
     }
 
     .filter-pair {
       display: grid;
-      grid-template-columns: repeat(2, 48px);
+      grid-template-columns: repeat(2, 42px);
       justify-content: center;
-      gap: 4px;
+      gap: 3px;
     }
 
     .filter-pair input,
@@ -368,7 +370,7 @@
     }
 
     .filter-pair input {
-      text-align: right;
+      text-align: center;
       appearance: textfield;
     }
 
@@ -836,7 +838,7 @@
           sort?.key === metric.key
             ? sort.direction === "desc" ? "↓" : "↑"
             : "";
-        button.append(label, document.createTextNode(" "), indicator);
+        button.append(label, indicator);
         th.appendChild(button);
         return th;
       }

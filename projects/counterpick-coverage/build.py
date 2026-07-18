@@ -30,8 +30,18 @@ REPOSITORY_ROOT = PROJECT_ROOT.parents[1]
 TEMPLATE_PATH = PROJECT_ROOT / "template.html"
 LATEST_PATH = PROJECT_ROOT / "data" / "latest.json"
 ARCHIVE_DIR = PROJECT_ROOT / "data" / "archive"
-REPORT_PATH = REPOSITORY_ROOT / "docs" / "counterpick-coverage" / "index.html"
+RANKINGS_REPORT_PATH = (
+    REPOSITORY_ROOT / "docs" / "counterpick-coverage" / "index.html"
+)
+PAIR_REPORT_PATH = (
+    REPOSITORY_ROOT
+    / "docs"
+    / "counterpick-coverage"
+    / "pair"
+    / "index.html"
+)
 DATA_MARKER = "__COUNTERPICK_COVERAGE_DATA__"
+PAGE_MARKER = "__COUNTERPICK_COVERAGE_PAGE__"
 
 BASE_URL = "https://lolalytics.com/lol"
 REQUEST_TIMEOUT = 30
@@ -871,20 +881,31 @@ def page_dataset(dataset: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def render_report(dataset: dict[str, Any]) -> str:
+def render_page(dataset: dict[str, Any], page_kind: str) -> str:
+    if page_kind not in {"rankings", "pair"}:
+        raise ScrapeError(f"Unknown page kind: {page_kind}")
     try:
         template = TEMPLATE_PATH.read_text(encoding="utf-8")
     except OSError as error:
         raise ScrapeError(f"Could not read {TEMPLATE_PATH.name}: {error}") from error
-    if template.count(DATA_MARKER) != 1:
+    if template.count(DATA_MARKER) != 1 or template.count(PAGE_MARKER) != 1:
         raise ScrapeError(
-            f"{TEMPLATE_PATH.name} must contain exactly one {DATA_MARKER} marker"
+            f"{TEMPLATE_PATH.name} must contain exactly one data marker and "
+            "one page marker"
         )
     embedded = json.dumps(
         page_dataset(dataset), ensure_ascii=False, separators=(",", ":")
     )
     embedded = embedded.replace("<", "\\u003c")
-    return template.replace(DATA_MARKER, embedded)
+    return template.replace(DATA_MARKER, embedded).replace(PAGE_MARKER, page_kind)
+
+
+def render_reports(dataset: dict[str, Any]) -> dict[Path, str]:
+    """Render the ranking overview and pair-level calculation pages."""
+    return {
+        RANKINGS_REPORT_PATH: render_page(dataset, "rankings"),
+        PAIR_REPORT_PATH: render_page(dataset, "pair"),
+    }
 
 
 def archive_name(dataset: dict[str, Any]) -> str:
@@ -967,13 +988,14 @@ def main() -> int:
             dataset = scrape(args)
 
         validate_dataset(dataset)
-        report = render_report(dataset)
+        reports = render_reports(dataset)
         if not args.render_only:
             pretty_json = json.dumps(dataset, ensure_ascii=False, indent=2) + "\n"
             archive_path = ARCHIVE_DIR / archive_name(dataset)
             atomic_write(archive_path, pretty_json)
             atomic_write(LATEST_PATH, pretty_json)
-        atomic_write(REPORT_PATH, report)
+        for report_path, report in reports.items():
+            atomic_write(report_path, report)
     except (ScrapeError, OSError, json.JSONDecodeError) as error:
         print(f"Error: {error}", flush=True)
         return 1
@@ -981,7 +1003,8 @@ def main() -> int:
     if not args.render_only:
         print(f"Wrote {LATEST_PATH.relative_to(REPOSITORY_ROOT)}", flush=True)
         print(f"Wrote {archive_path.relative_to(REPOSITORY_ROOT)}", flush=True)
-    print(f"Wrote {REPORT_PATH.relative_to(REPOSITORY_ROOT)}", flush=True)
+    for report_path in reports:
+        print(f"Wrote {report_path.relative_to(REPOSITORY_ROOT)}", flush=True)
     return 0
 
 

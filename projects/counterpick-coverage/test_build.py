@@ -71,6 +71,40 @@ def arguments(
 
 
 class CoverageCalculationTests(unittest.TestCase):
+    def test_one_template_renders_distinct_linked_pages(self) -> None:
+        dataset = {
+            "schema_version": 2,
+            "generated_at": "2026-01-01T00:00:00Z",
+            "filters": {},
+            "source": {},
+            "method": {},
+            "defaults": {
+                "base_slug": "zoe",
+                "candidate_slug": "zilean",
+            },
+            "champions": [
+                {
+                    "slug": "zoe",
+                    "name": "Zoe",
+                    "source_order": 0,
+                    "pick_rate": 1.0,
+                    "source_url": "https://example.test/zoe",
+                    "matchups": {},
+                }
+            ],
+        }
+
+        rankings = BUILD.render_page(dataset, "rankings")
+        pair = BUILD.render_page(dataset, "pair")
+
+        self.assertIn('data-page-kind="rankings"', rankings)
+        self.assertIn('data-page-kind="pair"', pair)
+        self.assertIn("pair/?base=", rankings)
+        self.assertNotIn(BUILD.DATA_MARKER, rankings)
+        self.assertNotIn(BUILD.PAGE_MARKER, rankings)
+        with self.assertRaisesRegex(BUILD.ScrapeError, "Unknown page kind"):
+            BUILD.render_page(dataset, "other")
+
     def test_singleton_weights_missing_row_and_candidate_self(self) -> None:
         roster = [
             roster_entry("zoe", "Zoe", 40.0, 0),

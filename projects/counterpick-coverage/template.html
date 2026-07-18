@@ -484,6 +484,73 @@
       text-align: left;
     }
 
+    .rankings-wrap {
+      width: min(100%, 960px);
+      max-width: 100%;
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      background: var(--surface);
+    }
+
+    .rankings-table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: separate;
+      border-spacing: 0;
+      table-layout: fixed;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .rankings-table th,
+    .rankings-table td {
+      border-bottom: 1px solid var(--border);
+      padding: 7px 6px;
+      text-align: center;
+    }
+
+    .rankings-table thead th,
+    .rankings-table thead td {
+      background: var(--surface-alt);
+      font-size: 0.8rem;
+    }
+
+    .rankings-table thead tr.filters td {
+      padding: 4px;
+    }
+
+    .rankings-table tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .rankings-table tbody tr:hover td {
+      box-shadow: inset 0 0 0 999px rgba(80, 120, 160, 0.06);
+    }
+
+    .rankings-table .rank-column {
+      width: 112px;
+    }
+
+    .rankings-table .candidate-column {
+      width: 190px;
+      text-align: left;
+    }
+
+    .rankings-table .estimate-column {
+      width: 130px;
+    }
+
+    .candidate-link {
+      display: inline-block;
+      padding: 3px 4px;
+      font-weight: 700;
+      text-underline-offset: 2px;
+    }
+
+    .candidate-filter {
+      width: 150px;
+    }
+
     .empty-state {
       padding: 18px !important;
       color: var(--muted);
@@ -555,20 +622,24 @@
     }
   </style>
 </head>
-<body>
+<body data-page-kind="__COUNTERPICK_COVERAGE_PAGE__">
   <main>
-    <a class="site-nav" href="../">← Hextech Studies</a>
+    <a class="site-nav" id="site-nav" href="../">← Hextech Studies</a>
     <div class="title-row">
-      <h1>Counterpick Coverage</h1>
+      <h1 id="page-title">Counterpick Coverage</h1>
       <span class="status-badge">Exploratory</span>
     </div>
-    <p class="lede">
+    <p class="lede" id="page-lede">
       Given one champion you already play, which second champion most improves
       your observed counterpick coverage when the opposing laner is known?
     </p>
     <div class="metadata" id="metadata"></div>
 
-    <section class="selection-panel" aria-label="Champion pair specification">
+    <section
+      class="selection-panel"
+      id="selection-panel"
+      aria-label="Current champion specification"
+    >
       <div class="champion-controls">
         <div class="champion-field">
           <label for="base-search">
@@ -601,7 +672,7 @@
           ></p>
         </div>
 
-        <div class="champion-field">
+        <div class="champion-field" id="candidate-field">
           <label for="candidate-search">
             Champion to add
           </label>
@@ -635,6 +706,7 @@
 
       <div
         class="score-summary"
+        id="pair-score-summary"
         role="group"
         aria-label="Selected candidate summary"
       >
@@ -659,10 +731,31 @@
           <span class="score-value" id="score-coverage"></span>
         </div>
       </div>
+
+      <div
+        class="score-summary"
+        id="ranking-score-summary"
+        role="group"
+        aria-label="Current champion ranking summary"
+        hidden
+      >
+        <div class="score-item">
+          <span class="score-label" id="ranking-baseline-label"></span>
+          <span class="score-value" id="ranking-baseline"></span>
+        </div>
+        <div class="score-item">
+          <span class="score-label">Ranked additions</span>
+          <span class="score-value" id="ranking-addition-count"></span>
+        </div>
+        <div class="score-item">
+          <span class="score-label">Universe coverage</span>
+          <span class="score-value" id="ranking-universe-coverage"></span>
+        </div>
+      </div>
     </section>
 
     <details class="method" open>
-      <summary>How this ranking is calculated</summary>
+      <summary id="method-summary">How this ranking is calculated</summary>
       <div class="method-body">
         <div class="formula">
           opponent weight × max(0, addition WR − current champion WR)
@@ -678,31 +771,76 @@
       </div>
     </details>
 
-    <div class="table-toolbar">
-      <div>
-        <h2
-          id="calculation-heading"
-          aria-live="polite"
-          aria-atomic="true"
-        ></h2>
-        <p class="calculation-summary" id="calculation-summary"></p>
+    <section id="rankings-view" hidden>
+      <div class="table-toolbar">
+        <div>
+          <h2
+            id="rankings-heading"
+            aria-live="polite"
+            aria-atomic="true"
+          ></h2>
+          <p class="calculation-summary" id="rankings-summary">
+            Choose an addition to inspect its opponent-level calculation.
+          </p>
+        </div>
+        <div class="table-actions">
+          <span
+            class="result-count"
+            id="rankings-result-count"
+            aria-live="polite"
+          ></span>
+          <button
+            class="clear-filters"
+            id="rankings-clear-filters"
+            type="button"
+          >
+            Clear filters
+          </button>
+        </div>
       </div>
-      <div class="table-actions">
-        <span class="result-count" id="result-count" aria-live="polite"></span>
-        <button class="clear-filters" id="clear-filters" type="button">
-          Clear filters
-        </button>
-      </div>
-    </div>
 
-    <div class="detail-wrap" id="calculation-wrap">
-      <table class="detail-table" aria-describedby="method-note calculation-summary">
-        <caption class="visually-hidden" id="calculation-caption"></caption>
-        <thead id="calculation-head"></thead>
-        <tbody id="calculation-body"></tbody>
-        <tfoot id="calculation-foot"></tfoot>
-      </table>
-    </div>
+      <div class="rankings-wrap">
+        <table
+          class="rankings-table"
+          aria-describedby="method-note rankings-summary"
+        >
+          <caption class="visually-hidden" id="rankings-caption"></caption>
+          <thead id="rankings-head"></thead>
+          <tbody id="rankings-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="pair-view" hidden>
+      <div class="table-toolbar">
+        <div>
+          <h2
+            id="calculation-heading"
+            aria-live="polite"
+            aria-atomic="true"
+          ></h2>
+          <p class="calculation-summary" id="calculation-summary"></p>
+        </div>
+        <div class="table-actions">
+          <span class="result-count" id="result-count" aria-live="polite"></span>
+          <button class="clear-filters" id="clear-filters" type="button">
+            Clear filters
+          </button>
+        </div>
+      </div>
+
+      <div class="detail-wrap" id="calculation-wrap">
+        <table
+          class="detail-table"
+          aria-describedby="method-note calculation-summary"
+        >
+          <caption class="visually-hidden" id="calculation-caption"></caption>
+          <thead id="calculation-head"></thead>
+          <tbody id="calculation-body"></tbody>
+          <tfoot id="calculation-foot"></tfoot>
+        </table>
+      </div>
+    </section>
 
     <p class="disclaimer">
       Population-level data assuming the opponent is known and both selected
@@ -722,16 +860,37 @@
       const dataset = JSON.parse(
         document.getElementById("coverage-data").textContent
       );
+      const pageKind = document.body.dataset.pageKind;
+      if (!["rankings", "pair"].includes(pageKind)) {
+        throw new Error(`Unknown page kind: ${pageKind}`);
+      }
+      const siteNav = document.getElementById("site-nav");
+      const pageTitle = document.getElementById("page-title");
+      const pageLede = document.getElementById("page-lede");
       const metadata = document.getElementById("metadata");
       const methodNote = document.getElementById("method-note");
+      const methodSummary = document.getElementById("method-summary");
+      const selectionPanel = document.getElementById("selection-panel");
       const baseSearch = document.getElementById("base-search");
       const baseOptions = document.getElementById("base-options");
       const baseSource = document.getElementById("base-source");
       const baseStatus = document.getElementById("base-status");
+      const candidateField = document.getElementById("candidate-field");
       const candidateSearch = document.getElementById("candidate-search");
       const candidateOptions = document.getElementById("candidate-options");
       const candidateSource = document.getElementById("candidate-source");
       const candidateStatus = document.getElementById("candidate-status");
+      const pairScoreSummary =
+        document.getElementById("pair-score-summary");
+      const rankingScoreSummary =
+        document.getElementById("ranking-score-summary");
+      const rankingBaselineLabel =
+        document.getElementById("ranking-baseline-label");
+      const rankingBaseline = document.getElementById("ranking-baseline");
+      const rankingAdditionCount =
+        document.getElementById("ranking-addition-count");
+      const rankingUniverseCoverage =
+        document.getElementById("ranking-universe-coverage");
       const scoreRank = document.getElementById("score-rank");
       const scoreBeforeLabel =
         document.getElementById("score-before-label");
@@ -751,6 +910,16 @@
       const calculationFoot = document.getElementById("calculation-foot");
       const resultCount = document.getElementById("result-count");
       const clearFilters = document.getElementById("clear-filters");
+      const rankingsView = document.getElementById("rankings-view");
+      const pairView = document.getElementById("pair-view");
+      const rankingsHeading = document.getElementById("rankings-heading");
+      const rankingsCaption = document.getElementById("rankings-caption");
+      const rankingsHead = document.getElementById("rankings-head");
+      const rankingsBody = document.getElementById("rankings-body");
+      const rankingsResultCount =
+        document.getElementById("rankings-result-count");
+      const rankingsClearFilters =
+        document.getElementById("rankings-clear-filters");
 
       const alphabeticalChampions = [...dataset.champions].sort(
         (a, b) => a.name.localeCompare(b.name)
@@ -770,6 +939,8 @@
       let currentAnalysis;
       let opponentQuery = "";
       let sort = { key: "contribution", direction: "desc" };
+      let rankingCandidateQuery = "";
+      let rankingSort = { key: "rank", direction: "asc" };
 
       const columns = [
         {
@@ -817,6 +988,53 @@
           .filter((column) => column.filterable)
           .map((column) => [column.key, { min: null, max: null }])
       );
+      const rankingColumns = [
+        {
+          key: "rank",
+          label: "Gain rank",
+          value: (candidate) =>
+            currentAnalysis.rank_by_slug.get(candidate.slug),
+          filterable: true,
+          className: "rank-column"
+        },
+        {
+          key: "candidate",
+          label: "Champion to add",
+          value: (candidate) => candidate.name,
+          filterable: false,
+          className: "candidate-column"
+        },
+        {
+          key: "pool_after",
+          label: "Pair score",
+          value: (candidate) => candidate.pool_after,
+          filterable: true
+        },
+        {
+          key: "gain",
+          label: "Marginal gain",
+          value: (candidate) => candidate.gain,
+          filterable: true
+        },
+        {
+          key: "evidence_coverage",
+          label: "Evidence coverage",
+          value: (candidate) => candidate.evidence_coverage * 100,
+          filterable: true
+        },
+        {
+          key: "observed_matchups",
+          label: "Displayed estimates",
+          value: (candidate) => candidate.observed_matchups,
+          filterable: true,
+          className: "estimate-column"
+        }
+      ];
+      const rankingFilters = new Map(
+        rankingColumns
+          .filter((column) => column.filterable)
+          .map((column) => [column.key, { min: null, max: null }])
+      );
 
       function titleCase(value) {
         return value
@@ -844,6 +1062,74 @@
 
       function roundValue(value) {
         return Number(value.toFixed(10));
+      }
+
+      function configurePage() {
+        if (pageKind === "rankings") {
+          document.title =
+            "Counterpick Coverage Rankings · Hextech Studies";
+          pageTitle.textContent = "Counterpick Coverage Rankings";
+          pageLede.textContent =
+            "Choose one champion you already play, then rank every possible " +
+            "second champion by its observed, opponent-weighted marginal gain.";
+          siteNav.href = "../";
+          siteNav.textContent = "← Hextech Studies";
+          selectionPanel.setAttribute(
+            "aria-label",
+            "Current champion specification"
+          );
+          candidateField.hidden = true;
+          pairScoreSummary.hidden = true;
+          rankingScoreSummary.hidden = false;
+          rankingsView.hidden = false;
+          pairView.hidden = true;
+          methodSummary.textContent = "How these rankings are calculated";
+          return;
+        }
+
+        document.title =
+          "Pair Breakdown · Counterpick Coverage · Hextech Studies";
+        pageTitle.textContent = "Counterpick Coverage: Pair Breakdown";
+        pageLede.textContent =
+          "Inspect every opponent-level term behind one current champion " +
+          "and proposed addition.";
+        selectionPanel.setAttribute(
+          "aria-label",
+          "Champion pair specification"
+        );
+        candidateField.hidden = false;
+        pairScoreSummary.hidden = false;
+        rankingScoreSummary.hidden = true;
+        rankingsView.hidden = true;
+        pairView.hidden = false;
+        methodSummary.textContent = "How this pair score is calculated";
+      }
+
+      function syncCanonicalUrl() {
+        if (!selectedBase) {
+          return;
+        }
+        const params = new URLSearchParams();
+        params.set("base", selectedBase.slug);
+        if (pageKind === "pair" && selectedCandidate) {
+          params.set("candidate", selectedCandidate.slug);
+        }
+        const target =
+          `${window.location.pathname}?${params.toString()}` +
+          `${window.location.hash}`;
+        window.history.replaceState(null, "", target);
+
+        if (pageKind === "pair") {
+          siteNav.href =
+            `../?base=${encodeURIComponent(selectedBase.slug)}`;
+          siteNav.textContent = `← All additions for ${selectedBase.name}`;
+          document.title =
+            `${selectedBase.name} + ${selectedCandidate.name} · ` +
+            "Counterpick Coverage";
+        } else {
+          document.title =
+            `${selectedBase.name} Addition Rankings · Counterpick Coverage`;
+        }
       }
 
       function analyzeBase(baseSlug) {
@@ -1063,6 +1349,263 @@
           `Changing the current champion rebuilds the opponent universe and ` +
           `weights, so marginal gains should only be compared within one current ` +
           `champion. Totals use stored precision; row values are rounded for display.`;
+      }
+
+      function renderRankingSummary() {
+        const universe = currentAnalysis.opponent_universe;
+        rankingBaselineLabel.textContent = `${selectedBase.name} baseline`;
+        rankingBaseline.textContent = percent(currentAnalysis.pool_before);
+        rankingAdditionCount.textContent =
+          String(currentAnalysis.candidates.length);
+        rankingUniverseCoverage.textContent =
+          coverage(universe.pick_rate_coverage);
+        rankingsHeading.textContent =
+          `Champions to add alongside ${selectedBase.name}`;
+        rankingsCaption.textContent =
+          `Ranked second-champion additions for a pool containing ` +
+          `${selectedBase.name}`;
+      }
+
+      function rankingColumnValue(candidate, key) {
+        return rankingColumns
+          .find((column) => column.key === key)
+          .value(candidate);
+      }
+
+      function rankingFilterIsActive(key) {
+        const bounds = rankingFilters.get(key);
+        return bounds && (bounds.min !== null || bounds.max !== null);
+      }
+
+      function activeRankingFilterCount() {
+        return (
+          [...rankingFilters.keys()].filter(rankingFilterIsActive).length +
+          (rankingCandidateQuery === "" ? 0 : 1)
+        );
+      }
+
+      function filteredRankingRows() {
+        return currentAnalysis.candidates.filter((candidate) => {
+          if (
+            rankingCandidateQuery &&
+            !candidate.name
+              .toLocaleLowerCase()
+              .includes(rankingCandidateQuery)
+          ) {
+            return false;
+          }
+          return [...rankingFilters].every(([key, bounds]) => {
+            const value = rankingColumnValue(candidate, key);
+            return (
+              (bounds.min === null || value >= bounds.min) &&
+              (bounds.max === null || value <= bounds.max)
+            );
+          });
+        });
+      }
+
+      function sortRankingRows(rows) {
+        const direction = rankingSort.direction === "desc" ? -1 : 1;
+        return rows.sort((a, b) => {
+          const aValue = rankingColumnValue(a, rankingSort.key);
+          const bValue = rankingColumnValue(b, rankingSort.key);
+          const comparison =
+            typeof aValue === "string"
+              ? aValue.localeCompare(bValue)
+              : aValue - bValue;
+          return comparison === 0
+            ? a.source_order - b.source_order
+            : comparison * direction;
+        });
+      }
+
+      function setRankingSort(key) {
+        if (rankingSort.key === key) {
+          rankingSort.direction =
+            rankingSort.direction === "desc" ? "asc" : "desc";
+        } else {
+          rankingSort = {
+            key,
+            direction:
+              key === "candidate" || key === "rank" ? "asc" : "desc"
+          };
+        }
+        renderRankingHead();
+        renderRankingBody();
+      }
+
+      function makeRankingSortHeader(column) {
+        const th = document.createElement("th");
+        th.scope = "col";
+        th.className = column.className ?? "";
+        th.setAttribute(
+          "aria-sort",
+          rankingSort.key === column.key
+            ? rankingSort.direction === "desc"
+              ? "descending"
+              : "ascending"
+            : "none"
+        );
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "sort-button";
+        button.addEventListener("click", () => setRankingSort(column.key));
+        const label = document.createElement("span");
+        label.textContent = column.label;
+        const indicator = document.createElement("span");
+        indicator.className = "sort-indicator";
+        indicator.textContent =
+          rankingSort.key === column.key
+            ? rankingSort.direction === "desc"
+              ? "↓"
+              : "↑"
+            : "";
+        button.append(label, indicator);
+        th.appendChild(button);
+        return th;
+      }
+
+      function makeRankingFilterInput(column, bound) {
+        const input = document.createElement("input");
+        input.type = "number";
+        input.step = "any";
+        input.inputMode = "decimal";
+        input.className = "filter-input";
+        input.placeholder = bound;
+        input.setAttribute(
+          "aria-label",
+          `${column.label} ${bound}imum`
+        );
+        const savedValue = rankingFilters.get(column.key)[bound];
+        input.value = savedValue === null ? "" : String(savedValue);
+        input.addEventListener("input", () => {
+          const value =
+            input.value.trim() === "" ? null : Number(input.value);
+          rankingFilters.get(column.key)[bound] =
+            value === null || Number.isFinite(value) ? value : null;
+          renderRankingBody();
+        });
+        return input;
+      }
+
+      function makeRankingFilterCell(column) {
+        const cell = document.createElement("td");
+        cell.className = column.className ?? "";
+        if (column.key === "candidate") {
+          const input = document.createElement("input");
+          input.type = "search";
+          input.className = "opponent-filter candidate-filter";
+          input.placeholder = "Search";
+          input.value = rankingCandidateQuery;
+          input.setAttribute("aria-label", "Filter champion additions");
+          input.addEventListener("input", () => {
+            rankingCandidateQuery =
+              input.value.trim().toLocaleLowerCase();
+            renderRankingBody();
+          });
+          cell.appendChild(input);
+          return cell;
+        }
+        const pair = document.createElement("div");
+        pair.className = "filter-pair";
+        pair.append(
+          makeRankingFilterInput(column, "min"),
+          makeRankingFilterInput(column, "max")
+        );
+        cell.appendChild(pair);
+        return cell;
+      }
+
+      function renderRankingHead() {
+        const labels = document.createElement("tr");
+        const inputs = document.createElement("tr");
+        inputs.className = "filters";
+        for (const column of rankingColumns) {
+          labels.appendChild(makeRankingSortHeader(column));
+          inputs.appendChild(makeRankingFilterCell(column));
+        }
+        rankingsHead.replaceChildren(labels, inputs);
+      }
+
+      function appendRankingTextCell(row, text, className = "") {
+        const cell = document.createElement("td");
+        cell.className = className;
+        cell.textContent = text;
+        row.appendChild(cell);
+      }
+
+      function renderRankingBody() {
+        const rows = sortRankingRows(filteredRankingRows());
+        const filterCount = activeRankingFilterCount();
+        rankingsResultCount.textContent =
+          `${rows.length} of ${currentAnalysis.candidates.length} additions` +
+          (filterCount === 0
+            ? ""
+            : ` · ${filterCount} active ` +
+              `filter${filterCount === 1 ? "" : "s"}`);
+        rankingsClearFilters.disabled = filterCount === 0;
+
+        if (rows.length === 0) {
+          const row = document.createElement("tr");
+          const cell = document.createElement("td");
+          cell.className = "empty-state";
+          cell.colSpan = rankingColumns.length;
+          cell.textContent = "No champion additions match the current filters.";
+          row.appendChild(cell);
+          rankingsBody.replaceChildren(row);
+          return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        for (const candidate of rows) {
+          const row = document.createElement("tr");
+          appendRankingTextCell(
+            row,
+            `#${currentAnalysis.rank_by_slug.get(candidate.slug)}`,
+            "rank-column"
+          );
+
+          const championCell = document.createElement("td");
+          championCell.className = "candidate-column";
+          const link = document.createElement("a");
+          link.className = "candidate-link";
+          link.href =
+            `pair/?base=${encodeURIComponent(selectedBase.slug)}` +
+            `&candidate=${encodeURIComponent(candidate.slug)}`;
+          link.textContent = candidate.name;
+          link.setAttribute(
+            "aria-label",
+            `View ${selectedBase.name} plus ${candidate.name} ` +
+            `contribution breakdown`
+          );
+          championCell.appendChild(link);
+          row.appendChild(championCell);
+
+          appendRankingTextCell(row, percent(candidate.pool_after));
+          appendRankingTextCell(
+            row,
+            percentagePoints(candidate.gain),
+            "gain"
+          );
+          appendRankingTextCell(
+            row,
+            coverage(candidate.evidence_coverage)
+          );
+          appendRankingTextCell(
+            row,
+            `${candidate.observed_matchups} / ` +
+              `${candidate.applicable_matchups}`,
+            "estimate-column"
+          );
+          fragment.appendChild(row);
+        }
+        rankingsBody.replaceChildren(fragment);
+      }
+
+      function renderRankings() {
+        renderRankingSummary();
+        renderRankingHead();
+        renderRankingBody();
       }
 
       function appendTextCell(row, text, className = "") {
@@ -1419,6 +1962,7 @@
           `contribution calculation`;
         renderCalculationHead();
         renderCalculationRows();
+        syncCanonicalUrl();
       }
 
       function normalizeName(value) {
@@ -1452,9 +1996,15 @@
           `Open ${base.name} matchup source in a new tab`
         );
         currentAnalysis = analyzeBase(base.slug);
-        populateCandidateOptions();
         renderMetadata();
         renderMethodNote();
+        if (pageKind === "rankings") {
+          selectedCandidate = undefined;
+          renderRankings();
+          syncCanonicalUrl();
+          return;
+        }
+        populateCandidateOptions();
         const candidate =
           currentAnalysis.candidates.find(
             (entry) => entry.slug === preferredCandidateSlug
@@ -1557,11 +2107,33 @@
         renderCalculationRows();
       });
 
+      rankingsClearFilters.addEventListener("click", () => {
+        rankingCandidateQuery = "";
+        for (const key of rankingFilters.keys()) {
+          rankingFilters.set(key, { min: null, max: null });
+        }
+        renderRankingHead();
+        renderRankingBody();
+      });
+
+      configurePage();
       populateBaseOptions();
       const defaultBase =
         championBySlug.get(dataset.defaults.base_slug) ??
         alphabeticalChampions[0];
-      renderBase(defaultBase, dataset.defaults.candidate_slug);
+      const query = new URLSearchParams(window.location.search);
+      const requestedBaseSlug =
+        query.get("base")?.trim().toLocaleLowerCase() ?? "";
+      const requestedCandidateSlug =
+        query.get("candidate")?.trim().toLocaleLowerCase() ?? "";
+      const initialBase =
+        championBySlug.get(requestedBaseSlug) ?? defaultBase;
+      renderBase(
+        initialBase,
+        pageKind === "pair"
+          ? requestedCandidateSlug || dataset.defaults.candidate_slug
+          : null
+      );
     })();
   </script>
 </body>

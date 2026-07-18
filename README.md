@@ -47,14 +47,16 @@ tracked.
 ### [Counterpick Coverage](https://githubpsyche.github.io/hextech-studies/counterpick-coverage/)
 
 An exploratory table for expanding a one-champion pool to two champions.
-Choose the champion you already play and a proposed addition; the page ranks
-every valid addition by marginal observed counterpick coverage, weights the
-current champion's displayed matchup universe by opposing lane pick rate, and
-exposes every term behind the selected pair's score. The calculation table
-supports column sorting, opponent search, and inclusive numeric minimum and
-maximum filters. The page defaults to Zoe + Zilean in Middle.
+Choose the champion you already play; the landing page ranks every valid
+addition by marginal observed counterpick coverage and links each result to a
+separate, shareable pair breakdown. Both tables support column sorting, text
+search, and inclusive numeric minimum and maximum filters. The pair breakdown
+exposes every opponent-level term behind the selected score. Opponent weights
+come from the current champion's displayed matchup universe and opposing lane
+pick rates. The rankings default to Zoe in Middle, while a pair URL with no
+parameters defaults to Zoe + Zilean.
 
-Refresh its data and generated page with:
+Refresh its data and generated pages with:
 
 ```bash
 uv run projects/counterpick-coverage/build.py
@@ -62,7 +64,7 @@ uv run projects/counterpick-coverage/build.py
 
 Defaults are Zoe as the initial current champion, Zilean as the initial
 addition, Middle, Emerald+, Global, Ranked Solo/Duo, and the rolling 30-day
-period. Every scraped champion remains selectable in the generated page. Build
+period. Every scraped champion remains selectable in the generated pages. Build
 flags can change the initial pair, lane, tier, or period; Global and Ranked
 Solo/Duo remain fixed:
 
@@ -80,10 +82,18 @@ project. A successful scrape atomically updates:
 
 - `projects/counterpick-coverage/data/latest.json`;
 - an ignored local timestamped snapshot under
-  `projects/counterpick-coverage/data/archive/`; and
-- `docs/counterpick-coverage/index.html`.
+  `projects/counterpick-coverage/data/archive/`;
+- `docs/counterpick-coverage/index.html`, the addition rankings; and
+- `docs/counterpick-coverage/pair/index.html`, the linked pair breakdown.
 
-To rebuild only the page after editing its template:
+Generated URLs keep the current selection shareable:
+
+```text
+https://githubpsyche.github.io/hextech-studies/counterpick-coverage/?base=zoe
+https://githubpsyche.github.io/hextech-studies/counterpick-coverage/pair/?base=zoe&candidate=zilean
+```
+
+To rebuild only the pages after editing their shared template:
 
 ```bash
 uv run projects/counterpick-coverage/build.py --render-only
@@ -112,7 +122,7 @@ Shrinkage and uncertainty are reserved for a later statistical milestone.
 docs/                         GitHub Pages output
   index.html                  Hextech Studies homepage
   champion-rankings/          generated rankings page
-  counterpick-coverage/       generated coverage page
+  counterpick-coverage/       generated addition rankings and pair breakdown
 projects/
   champion-rankings/
     build.py                  scraper and generator
@@ -121,7 +131,7 @@ projects/
   counterpick-coverage/
     build.py                  scraper, calculator, and generator
     test_build.py             hand-checkable calculation fixture
-    template.html             standalone page template
+    template.html             shared rankings/pair page template
     data/                     latest data and local archives
 ```
 

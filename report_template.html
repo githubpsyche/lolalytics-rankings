@@ -131,11 +131,11 @@
       border-style: dashed;
     }
 
-    .column-control {
+    .popover-control {
       position: relative;
     }
 
-    .column-control summary {
+    .popover-control summary {
       list-style: none;
       border: 1px solid var(--border);
       border-radius: 5px;
@@ -144,23 +144,29 @@
       cursor: pointer;
     }
 
-    .column-control summary::-webkit-details-marker {
+    .popover-control summary::-webkit-details-marker {
       display: none;
     }
 
-    .column-control[open] summary {
+    .popover-control[open] summary,
+    .filter-control.has-active summary {
       border-color: var(--accent);
     }
 
-    .column-picker {
+    .filter-control.has-active summary {
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .column-picker,
+    .filter-picker {
       position: absolute;
       z-index: 6;
       top: calc(100% + 5px);
       left: 0;
       display: grid;
-      grid-template-columns: repeat(2, minmax(170px, 1fr));
       gap: 14px 20px;
-      min-width: 390px;
       max-height: min(480px, 70vh);
       overflow: auto;
       padding: 12px;
@@ -168,6 +174,16 @@
       border-radius: 6px;
       background: var(--surface);
       box-shadow: 0 8px 24px var(--shadow);
+    }
+
+    .column-picker {
+      grid-template-columns: repeat(2, minmax(170px, 1fr));
+      min-width: 390px;
+    }
+
+    .filter-picker {
+      grid-template-columns: repeat(2, minmax(250px, 1fr));
+      min-width: 570px;
     }
 
     .column-group {
@@ -194,6 +210,27 @@
       gap: 7px;
       white-space: nowrap;
       cursor: pointer;
+    }
+
+    .filter-options {
+      display: grid;
+      gap: 6px;
+    }
+
+    .filter-option {
+      display: grid;
+      grid-template-columns: minmax(110px, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-option[data-active="true"] .filter-label {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .filter-panel-pair {
+      grid-template-columns: repeat(2, 62px);
     }
 
     .result-count {
@@ -350,7 +387,8 @@
         padding: 14px;
       }
 
-      .column-picker {
+      .column-picker,
+      .filter-picker {
         position: fixed;
         top: auto;
         right: 14px;
@@ -358,6 +396,10 @@
         left: 14px;
         grid-template-columns: 1fr;
         min-width: 0;
+      }
+
+      .filter-picker {
+        max-height: min(560px, 75vh);
       }
     }
   </style>
@@ -369,9 +411,13 @@
 
     <div class="toolbar">
       <div class="category-picker" id="category-picker" aria-label="Metric categories"></div>
-      <details class="column-control">
+      <details class="popover-control column-control">
         <summary id="column-summary">Columns</summary>
         <div class="column-picker" id="column-picker"></div>
+      </details>
+      <details class="popover-control filter-control" id="filter-control">
+        <summary id="filter-summary">Filters</summary>
+        <div class="filter-picker" id="filter-picker"></div>
       </details>
       <button type="button" id="clear-filters">Clear filters</button>
       <span class="result-count" id="result-count" aria-live="polite"></span>
@@ -395,6 +441,9 @@
       const categoryPicker = document.getElementById("category-picker");
       const columnPicker = document.getElementById("column-picker");
       const columnSummary = document.getElementById("column-summary");
+      const filterControl = document.getElementById("filter-control");
+      const filterPicker = document.getElementById("filter-picker");
+      const filterSummary = document.getElementById("filter-summary");
       const clearFilters = document.getElementById("clear-filters");
       const resultCount = document.getElementById("result-count");
       const tableHead = document.getElementById("table-head");
@@ -411,6 +460,7 @@
       );
       const categoryButtons = new Map();
       const columnInputs = new Map();
+      const filterRows = new Map();
       const filters = new Map(
         dataset.metrics
           .filter((metric) => metric.filterable)
@@ -461,14 +511,47 @@
         metadata.appendChild(link);
       }
 
-      function clearMetricFilter(key) {
-        if (!filters.has(key)) {
+      function filterIsActive(key) {
+        const bounds = filters.get(key);
+        return bounds && (bounds.min !== null || bounds.max !== null);
+      }
+
+      function activeFilterCount() {
+        return [...filters.keys()].filter(filterIsActive).length;
+      }
+
+      function syncFilterSummary() {
+        const count = activeFilterCount();
+        filterSummary.textContent = count === 0 ? "Filters" : `Filters (${count})`;
+        filterControl.classList.toggle("has-active", count > 0);
+        for (const [key, row] of filterRows) {
+          row.dataset.active = String(filterIsActive(key));
+        }
+      }
+
+      function syncFilterControls(key) {
+        const bounds = filters.get(key);
+        if (!bounds) {
           return;
         }
-        filters.set(key, { min: null, max: null });
-        document.querySelectorAll(`[data-filter="${key}"]`).forEach((control) => {
-          control.value = "";
-        });
+        for (const bound of ["min", "max"]) {
+          const value = bounds[bound] === null ? "" : String(bounds[bound]);
+          document
+            .querySelectorAll(`[data-filter="${key}"][data-bound="${bound}"]`)
+            .forEach((control) => {
+              if (control.value !== value) {
+                control.value = value;
+              }
+            });
+        }
+        syncFilterSummary();
+      }
+
+      function setMetricFilter(metric, bound, rawValue) {
+        const value = rawValue.trim() === "" ? null : Number(rawValue);
+        filters.get(metric.key)[bound] = value;
+        syncFilterControls(metric.key);
+        renderBody();
       }
 
       function visibleMetrics() {
@@ -570,6 +653,78 @@
         syncVisibilityControls();
       }
 
+      function makeFilterControl(metric, bound) {
+        const control = document.createElement(
+          metric.key === "tier" ? "select" : "input"
+        );
+        if (control instanceof HTMLSelectElement) {
+          const emptyOption = document.createElement("option");
+          emptyOption.value = "";
+          emptyOption.textContent = bound;
+          control.appendChild(emptyOption);
+          for (const [value, label] of tierChoices) {
+            const option = document.createElement("option");
+            option.value = String(value);
+            option.textContent = label;
+            control.appendChild(option);
+          }
+        } else {
+          control.type = "number";
+          control.step = "any";
+          control.inputMode = "decimal";
+          control.placeholder = bound;
+        }
+        control.dataset.filter = metric.key;
+        control.dataset.bound = bound;
+        control.setAttribute("aria-label", `${metric.label} ${bound}imum`);
+        const savedValue = filters.get(metric.key)[bound];
+        control.value = savedValue === null ? "" : String(savedValue);
+        control.addEventListener(
+          control instanceof HTMLSelectElement ? "change" : "input",
+          () => setMetricFilter(metric, bound, control.value)
+        );
+        return control;
+      }
+
+      function renderFilterPicker() {
+        for (const category of dataset.categories) {
+          const metrics = categoryMetrics(category.key).filter(
+            (metric) => metric.filterable
+          );
+          if (metrics.length === 0) {
+            continue;
+          }
+
+          const group = document.createElement("fieldset");
+          group.className = "column-group filter-group";
+          const legend = document.createElement("legend");
+          legend.textContent = category.label;
+          const options = document.createElement("div");
+          options.className = "filter-options";
+
+          for (const metric of metrics) {
+            const row = document.createElement("div");
+            row.className = "filter-option";
+            filterRows.set(metric.key, row);
+            const label = document.createElement("span");
+            label.className = "filter-label";
+            label.textContent = metric.label;
+            const pair = document.createElement("div");
+            pair.className = "filter-pair filter-panel-pair";
+            pair.append(
+              makeFilterControl(metric, "min"),
+              makeFilterControl(metric, "max")
+            );
+            row.append(label, pair);
+            options.appendChild(row);
+          }
+
+          group.append(legend, options);
+          filterPicker.appendChild(group);
+        }
+        syncFilterSummary();
+      }
+
       function sortRows(rows) {
         if (!sort) {
           return rows.sort((a, b) => a.source_order - b.source_order);
@@ -589,12 +744,9 @@
       }
 
       function filteredRows() {
-        const metrics = visibleMetrics();
+        const metrics = dataset.metrics.filter((metric) => metric.filterable);
         return dataset.champions.filter((champion) =>
           metrics.every((metric) => {
-            if (!metric.filterable) {
-              return true;
-            }
             const bounds = filters.get(metric.key);
             const entry = champion.values[metric.key];
             const value = entry.sort_value ?? entry.value;
@@ -657,40 +809,7 @@
         pair.className = "filter-pair";
 
         for (const bound of ["min", "max"]) {
-          const control = document.createElement(
-            metric.key === "tier" ? "select" : "input"
-          );
-          if (control instanceof HTMLSelectElement) {
-            const emptyOption = document.createElement("option");
-            emptyOption.value = "";
-            emptyOption.textContent = bound;
-            control.appendChild(emptyOption);
-            for (const [value, label] of tierChoices) {
-              const option = document.createElement("option");
-              option.value = String(value);
-              option.textContent = label;
-              control.appendChild(option);
-            }
-          } else {
-            control.type = "number";
-            control.step = "any";
-            control.inputMode = "decimal";
-            control.placeholder = bound;
-          }
-          control.dataset.filter = metric.key;
-          control.setAttribute("aria-label", `${metric.label} ${bound}imum`);
-          const savedValue = filters.get(metric.key)[bound];
-          control.value = savedValue === null ? "" : String(savedValue);
-          control.addEventListener(
-            control instanceof HTMLSelectElement ? "change" : "input",
-            () => {
-              const current = filters.get(metric.key);
-              current[bound] =
-                control.value.trim() === "" ? null : Number(control.value);
-              renderBody();
-            }
-          );
-          pair.appendChild(control);
+          pair.appendChild(makeFilterControl(metric, bound));
         }
         th.appendChild(pair);
         return th;
@@ -732,7 +851,13 @@
         tableBody.replaceChildren();
         const metrics = visibleMetrics();
         const rows = sortRows(filteredRows());
-        resultCount.textContent = `${rows.length} of ${dataset.champions.length} champions`;
+        const filterCount = activeFilterCount();
+        const filterStatus =
+          filterCount === 0
+            ? ""
+            : ` · ${filterCount} active filter${filterCount === 1 ? "" : "s"}`;
+        resultCount.textContent =
+          `${rows.length} of ${dataset.champions.length} champions${filterStatus}`;
 
         if (rows.length === 0) {
           const row = document.createElement("tr");
@@ -771,15 +896,30 @@
       }
 
       clearFilters.addEventListener("click", () => {
-        for (const metric of dataset.metrics) {
-          clearMetricFilter(metric.key);
+        for (const key of filters.keys()) {
+          filters.set(key, { min: null, max: null });
+          syncFilterControls(key);
         }
         renderBody();
+      });
+
+      document.querySelectorAll(".popover-control").forEach((control) => {
+        control.addEventListener("toggle", () => {
+          if (!control.open) {
+            return;
+          }
+          document.querySelectorAll(".popover-control").forEach((other) => {
+            if (other !== control) {
+              other.open = false;
+            }
+          });
+        });
       });
 
       renderMetadata();
       renderCategoryPicker();
       renderColumnPicker();
+      renderFilterPicker();
       renderTable();
     })();
   </script>

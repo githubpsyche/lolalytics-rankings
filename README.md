@@ -8,7 +8,8 @@ server-rendered champion statistics on [Lolalytics](https://lolalytics.com/).
 The generated page supports:
 
 - single-column ascending and descending sorting;
-- inclusive minimum and maximum filters for every metric;
+- inclusive minimum and maximum filters for every metric, including hidden
+  columns;
 - independently toggled Overall, Combat, Economy & Farming, and Best
   Worldwide metric groups;
 - individual column visibility controls; and

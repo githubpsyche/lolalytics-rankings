@@ -59,6 +59,18 @@
       font-weight: 600;
     }
 
+    .site-nav {
+      display: inline-block;
+      margin-bottom: 10px;
+      color: var(--accent);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .site-nav:hover {
+      text-decoration: underline;
+    }
+
     .metadata {
       display: flex;
       flex-wrap: wrap;
@@ -396,6 +408,13 @@
       text-align: center;
     }
 
+    .disclaimer {
+      max-width: 80ch;
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
     [hidden] {
       display: none !important;
     }
@@ -424,6 +443,7 @@
 </head>
 <body>
   <main>
+    <a class="site-nav" href="../">← Hextech Studies</a>
     <h1>Lolalytics Champion Rankings</h1>
     <div class="metadata" id="metadata"></div>
 
@@ -451,6 +471,11 @@
         <tbody id="table-body"></tbody>
       </table>
     </div>
+    <p class="disclaimer">
+      Unofficial data explorer. Lolalytics is the source of the displayed
+      statistics; this project is not affiliated with or endorsed by
+      Lolalytics or Riot Games.
+    </p>
   </main>
 
   <script id="ranking-data" type="application/json">__LOLALYTICS_DATA__</script>

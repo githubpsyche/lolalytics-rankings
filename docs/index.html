@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta
+    name="description"
+    content="League of Legends data tools and experiments."
+  >
+  <link rel="icon" href="data:,">
+  <title>Hextech Studies</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --background: #f3f5f7;
+      --foreground: #17202a;
+      --surface: #ffffff;
+      --muted: #596572;
+      --border: #cad2da;
+      --accent: #146d82;
+      --accent-soft: #e3f3f5;
+      --shadow: rgba(25, 40, 50, 0.09);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --background: #10171c;
+        --foreground: #e8eef2;
+        --surface: #182127;
+        --muted: #aab6bf;
+        --border: #384750;
+        --accent: #65c6d3;
+        --accent-soft: #17363d;
+        --shadow: rgba(0, 0, 0, 0.28);
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--foreground);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+
+    main {
+      width: min(820px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: clamp(48px, 9vw, 96px) 0 48px;
+    }
+
+    header {
+      max-width: 660px;
+      margin-bottom: 40px;
+    }
+
+    .eyebrow {
+      margin: 0 0 6px;
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.2rem, 8vw, 4rem);
+      font-weight: 700;
+      letter-spacing: -0.045em;
+      line-height: 1.05;
+    }
+
+    .intro {
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: clamp(1rem, 2.5vw, 1.16rem);
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .project-card {
+      display: block;
+      padding: 22px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      box-shadow: 0 8px 24px var(--shadow);
+      color: inherit;
+      text-decoration: none;
+      transition: border-color 120ms ease, transform 120ms ease;
+    }
+
+    .project-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .project-card:focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .card-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 1.2rem;
+    }
+
+    .arrow {
+      color: var(--accent);
+      font-size: 1.2rem;
+    }
+
+    .project-card p {
+      max-width: 66ch;
+      margin: 8px 0 0;
+      color: var(--muted);
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 16px;
+    }
+
+    .tag {
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    footer {
+      max-width: 72ch;
+      margin-top: 40px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">League of Legends data lab</p>
+      <h1>Hextech Studies</h1>
+      <p class="intro">
+        Small, focused tools for exploring League data. Each study identifies
+        its sources and stays independent enough to use the right approach for
+        the question.
+      </p>
+    </header>
+
+    <section aria-labelledby="projects-heading">
+      <h2 id="projects-heading">Projects</h2>
+      <a class="project-card" href="champion-rankings/">
+        <div class="card-heading">
+          <h3>Lolalytics Champion Rankings</h3>
+          <span class="arrow" aria-hidden="true">→</span>
+        </div>
+        <p>
+          Compare champion performance, combat, farming, and best-player
+          statistics across every lane. Sort columns, narrow numeric ranges,
+          and show only the metrics that matter.
+        </p>
+        <div class="tags" aria-label="Project attributes">
+          <span class="tag">Interactive table</span>
+          <span class="tag">Five lanes</span>
+          <span class="tag">Lolalytics data</span>
+        </div>
+      </a>
+    </section>
+
+    <footer>
+      Hextech Studies is an independent project and is not affiliated with or
+      endorsed by Riot Games. Each project provides its own source attribution.
+    </footer>
+  </main>
+</body>
+</html>

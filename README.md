@@ -1,61 +1,68 @@
-# Lolalytics Champion Rankings
+# Hextech Studies
 
-An unofficial, lightweight scraper and interactive ranking table for the
-server-rendered champion statistics on [Lolalytics](https://lolalytics.com/).
+Small, source-explicit tools and data explorations for
+[League of Legends](https://www.leagueoflegends.com/).
 
-**Live table:** https://githubpsyche.github.io/lolalytics-rankings/
+**Live site:** https://githubpsyche.github.io/hextech-studies/
 
-The generated page supports:
+## Projects
 
-- single-column ascending and descending sorting;
-- inclusive minimum and maximum filters for every metric, including hidden
-  columns;
-- independently toggled Overall, Combat, Economy & Farming, and Best
-  Worldwide metric groups;
-- individual column visibility controls; and
-- switching among lane-specific Top, Jungle, Middle, Bottom, and Support
-  rankings.
+### [Lolalytics Champion Rankings](https://githubpsyche.github.io/hextech-studies/champion-rankings/)
 
-Overall, Combat, and Economy & Farming are visible by default. Best Worldwide
-is opt-in, and Middle is the initial lane. The table combines selected
-tier-list performance and best-player fields with the 13 per-champion damage,
-combat, economy, and farming statistics.
+An interactive comparison of lane-specific champion statistics scraped from
+[Lolalytics](https://lolalytics.com/). It supports sorting, inclusive minimum
+and maximum filters (including on hidden columns), category and individual
+column visibility controls, tier filters, and switching among Top, Jungle,
+Middle, Bottom, and Support.
 
-Tier filters use the ordered D- to S+ scale: a minimum of A includes A and
-better, while a maximum of S includes S and worse.
-
-## Refresh the data
-
-Install [uv](https://docs.astral.sh/uv/), then run:
+Refresh its data and generated page with:
 
 ```bash
-uv run lolalytics_rankings.py
+uv run projects/champion-rankings/build.py
 ```
 
-Defaults are all five lanes, Emerald+, Global, Ranked Solo/Duo, and the rolling
-30-day period. Use `--lane` for a faster single-lane refresh:
+Defaults are Emerald+, Global, Ranked Solo/Duo, all five lanes, and the rolling
+30-day period. A targeted run is also available:
 
 ```bash
-uv run lolalytics_rankings.py \
+uv run projects/champion-rankings/build.py \
   --lane middle \
   --tier emerald_plus \
   --region all \
   --period 30
 ```
 
-Single-lane output contains only that lane and selects it by default.
+The script declares its `requests` and `parsel` dependencies through PEP 723
+metadata. Each successful run atomically updates:
 
-Each successful run updates:
+- `projects/champion-rankings/data/latest.json`;
+- a local timestamped snapshot under
+  `projects/champion-rankings/data/archive/`; and
+- `docs/champion-rankings/index.html`.
 
-- `index.html` — the self-contained GitHub Pages site;
-- `data/latest.json` — the latest structured dataset; and
-- `data/archive/` — timestamped snapshots.
+The existing historical snapshots remain in the repository. New timestamped
+snapshots are ignored by Git, while `latest.json` and the generated page stay
+tracked.
 
-The script declares its only dependencies, `requests` and `parsel`, through
-PEP 723 metadata. A failed or incomplete lane scrape does not replace the
-previous successful outputs.
+## Repository layout
+
+```text
+docs/                         GitHub Pages output
+  index.html                  Hextech Studies homepage
+  champion-rankings/          generated rankings page
+projects/
+  champion-rankings/
+    build.py                  scraper and generator
+    template.html             standalone page template
+    data/                     latest data and local archives
+```
+
+Projects remain vertically self-contained: each may use its own data sources,
+schema, dependencies, validation, and build process. A shared framework will
+only be introduced if multiple projects reveal a concrete need for one.
 
 ## Disclaimer
 
-This project is not affiliated with or endorsed by Lolalytics or Riot Games.
-The report links back to the Lolalytics cohort page used as its data source.
+Hextech Studies is not affiliated with or endorsed by Riot Games. Individual
+projects identify and link to their own data sources; the champion rankings
+project is also not affiliated with or endorsed by Lolalytics.

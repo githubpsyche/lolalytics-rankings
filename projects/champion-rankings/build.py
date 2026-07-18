@@ -6,7 +6,7 @@
 # ]
 # ///
 
-"""Scrape Lolalytics champion stats and build a standalone ranking table."""
+"""Scrape Lolalytics champion stats and build the rankings project page."""
 
 from __future__ import annotations
 
@@ -24,11 +24,12 @@ import requests
 from parsel import Selector
 
 
-ROOT = Path(__file__).resolve().parent
-TEMPLATE_PATH = ROOT / "report_template.html"
-LATEST_PATH = ROOT / "data" / "latest.json"
-ARCHIVE_DIR = ROOT / "data" / "archive"
-REPORT_PATH = ROOT / "index.html"
+PROJECT_ROOT = Path(__file__).resolve().parent
+REPOSITORY_ROOT = PROJECT_ROOT.parents[1]
+TEMPLATE_PATH = PROJECT_ROOT / "template.html"
+LATEST_PATH = PROJECT_ROOT / "data" / "latest.json"
+ARCHIVE_DIR = PROJECT_ROOT / "data" / "archive"
+REPORT_PATH = REPOSITORY_ROOT / "docs" / "champion-rankings" / "index.html"
 DATA_MARKER = "__LOLALYTICS_DATA__"
 
 BASE_URL = "https://lolalytics.com/lol"
@@ -508,7 +509,7 @@ def main() -> int:
     selected_lanes = LANES if args.lane == "all" else (args.lane,)
     session = requests.Session()
     session.headers["User-Agent"] = (
-        "Mozilla/5.0 (compatible; LolalyticsRankings/1.0; "
+        "Mozilla/5.0 (compatible; HextechStudies/1.0; "
         "+https://lolalytics.com/)"
     )
 
@@ -560,9 +561,9 @@ def main() -> int:
     finally:
         session.close()
 
-    print(f"Wrote {LATEST_PATH.relative_to(ROOT)}", flush=True)
-    print(f"Wrote {archive_path.relative_to(ROOT)}", flush=True)
-    print(f"Wrote {REPORT_PATH.relative_to(ROOT)}", flush=True)
+    print(f"Wrote {LATEST_PATH.relative_to(REPOSITORY_ROOT)}", flush=True)
+    print(f"Wrote {archive_path.relative_to(REPOSITORY_ROOT)}", flush=True)
+    print(f"Wrote {REPORT_PATH.relative_to(REPOSITORY_ROOT)}", flush=True)
     return 0
 
 

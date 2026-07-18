@@ -491,6 +491,8 @@
           input.placeholder = bound;
           input.dataset.filter = metric.key;
           input.setAttribute("aria-label", `${metric.label} ${bound}imum`);
+          const savedValue = filters.get(metric.key)[bound];
+          input.value = savedValue === null ? "" : String(savedValue);
           input.addEventListener("input", () => {
             const current = filters.get(metric.key);
             current[bound] =

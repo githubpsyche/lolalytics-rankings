@@ -1,0 +1,1004 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta
+    name="description"
+    content="Explore which champion most improves a League of Legends champion pool's observed counterpick coverage."
+  >
+  <link rel="icon" href="data:,">
+  <title>Counterpick Coverage · Hextech Studies</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --background: #f7f8fa;
+      --foreground: #18202a;
+      --surface: #ffffff;
+      --surface-alt: #eef1f5;
+      --muted: #5d6875;
+      --border: #cfd6de;
+      --accent: #1769aa;
+      --accent-soft: #dceeff;
+      --positive: #14783d;
+      --positive-soft: #e4f5e9;
+      --warning: #9b5b00;
+      --warning-soft: #fff1d2;
+      --focus: #1476c6;
+      --shadow: rgba(20, 30, 40, 0.1);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --background: #12171d;
+        --foreground: #e7ecf2;
+        --surface: #1a2129;
+        --surface-alt: #222b35;
+        --muted: #a7b1bd;
+        --border: #3b4653;
+        --accent: #67b7f7;
+        --accent-soft: #193d59;
+        --positive: #7bd99d;
+        --positive-soft: #183c29;
+        --warning: #f2bd68;
+        --warning-soft: #3d301b;
+        --focus: #77c4ff;
+        --shadow: rgba(0, 0, 0, 0.3);
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--foreground);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    button,
+    summary {
+      color: inherit;
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    a {
+      color: var(--accent);
+    }
+
+    button:focus-visible,
+    summary:focus-visible,
+    a:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    main {
+      width: 100%;
+      padding: 24px;
+    }
+
+    .site-nav {
+      display: inline-block;
+      margin-bottom: 10px;
+      color: var(--accent);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .site-nav:hover {
+      text-decoration: underline;
+    }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px 12px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 650;
+      letter-spacing: -0.02em;
+    }
+
+    .status-badge {
+      padding: 3px 8px;
+      border: 1px solid var(--warning);
+      border-radius: 999px;
+      background: var(--warning-soft);
+      color: var(--warning);
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .lede {
+      max-width: 72ch;
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .metadata {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 18px;
+      margin: 12px 0 18px;
+      color: var(--muted);
+    }
+
+    .method {
+      max-width: 960px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--surface);
+      box-shadow: 0 4px 12px var(--shadow);
+    }
+
+    .method summary {
+      padding: 10px 12px;
+      cursor: pointer;
+      font-weight: 650;
+    }
+
+    .method[open] summary {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .method-body {
+      display: grid;
+      grid-template-columns: minmax(220px, 0.8fr) minmax(320px, 1.5fr);
+      gap: 12px 24px;
+      padding: 12px;
+    }
+
+    .method-body p {
+      max-width: 75ch;
+      margin: 0;
+    }
+
+    .formula {
+      align-self: start;
+      padding: 10px 12px;
+      border-radius: 5px;
+      background: var(--surface-alt);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.88rem;
+      font-variant-numeric: tabular-nums;
+      text-align: center;
+    }
+
+    .method-note {
+      grid-column: 1 / -1;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .table-toolbar {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      margin-bottom: 8px;
+    }
+
+    .table-toolbar h2 {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .result-count {
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .table-wrap {
+      max-width: 100%;
+      overflow: auto;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .candidate-table {
+      width: max-content;
+      min-width: min(100%, 760px);
+      border-collapse: separate;
+      border-spacing: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .candidate-table th,
+    .candidate-table td {
+      border-bottom: 1px solid var(--border);
+      padding: 8px 8px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .candidate-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      background: var(--surface-alt);
+    }
+
+    .candidate-table tbody:last-child tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .candidate-row:hover td {
+      background: var(--accent-soft);
+    }
+
+    .rank-column {
+      width: 42px;
+      min-width: 42px;
+    }
+
+    .candidate-column {
+      position: sticky;
+      left: 0;
+      z-index: 2;
+      width: 164px;
+      min-width: 164px;
+      background: var(--surface);
+      box-shadow: 1px 0 0 var(--border);
+    }
+
+    thead .candidate-column {
+      z-index: 4;
+      background: var(--surface-alt);
+    }
+
+    .candidate-row:hover .candidate-column {
+      background: var(--accent-soft);
+    }
+
+    .score-column {
+      width: 112px;
+      min-width: 112px;
+    }
+
+    .gain-column {
+      width: 120px;
+      min-width: 120px;
+    }
+
+    .coverage-column {
+      width: 126px;
+      min-width: 126px;
+    }
+
+    .sort-button {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      padding: 2px 0;
+      font-weight: 650;
+      text-align: center;
+    }
+
+    .sort-button:hover {
+      color: var(--accent);
+    }
+
+    .sort-indicator {
+      color: var(--accent);
+    }
+
+    .sort-indicator:not(:empty) {
+      margin-left: 3px;
+    }
+
+    .candidate-identity {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .expand-button {
+      width: 24px;
+      height: 24px;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .expand-button:hover {
+      background: var(--surface-alt);
+    }
+
+    .candidate-link {
+      color: inherit;
+      font-weight: 600;
+      text-decoration-color: var(--border);
+      text-underline-offset: 3px;
+    }
+
+    .candidate-link:hover {
+      color: var(--accent);
+      text-decoration-color: currentColor;
+    }
+
+    .gain {
+      color: var(--positive);
+      font-weight: 650;
+    }
+
+    .details-row > td {
+      padding: 0;
+      background: var(--background);
+      text-align: left;
+      white-space: normal;
+    }
+
+    .candidate-details {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .details-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 4px 16px;
+      margin-bottom: 10px;
+    }
+
+    .details-heading h3 {
+      margin: 0;
+      font-size: 0.98rem;
+    }
+
+    .details-summary {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .detail-wrap {
+      max-height: 470px;
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      background: var(--surface);
+    }
+
+    .detail-table {
+      width: 100%;
+      min-width: 750px;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .detail-table th,
+    .detail-table td {
+      border-bottom: 1px solid var(--border);
+      padding: 6px 8px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .detail-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: var(--surface-alt);
+      font-size: 0.8rem;
+    }
+
+    .detail-table tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .detail-table tbody tr.positive-row td {
+      background: var(--positive-soft);
+    }
+
+    .detail-table tbody tr:hover td {
+      box-shadow: inset 0 0 0 999px rgba(80, 120, 160, 0.06);
+    }
+
+    .detail-opponent {
+      text-align: left !important;
+      font-weight: 600;
+    }
+
+    .cell-primary,
+    .cell-secondary {
+      display: block;
+    }
+
+    .cell-secondary {
+      color: var(--muted);
+      font-size: 0.76rem;
+    }
+
+    .missing {
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .detail-total td {
+      position: sticky;
+      bottom: 0;
+      border-top: 2px solid var(--border);
+      border-bottom: 0;
+      background: var(--surface-alt);
+      font-weight: 700;
+    }
+
+    .detail-total td:first-child {
+      text-align: left;
+    }
+
+    .disclaimer {
+      max-width: 82ch;
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: 0.83rem;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    @media (max-width: 700px) {
+      main {
+        padding: 14px;
+      }
+
+      .method-body {
+        grid-template-columns: 1fr;
+      }
+
+      .method-note {
+        grid-column: auto;
+      }
+
+      .candidate-details {
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <a class="site-nav" href="../">← Hextech Studies</a>
+    <div class="title-row">
+      <h1>Counterpick Coverage</h1>
+      <span class="status-badge">Exploratory</span>
+    </div>
+    <p class="lede">
+      Which additional champion most improves a pool when the opposing laner
+      is known? Candidates are ranked by one decomposable measure.
+    </p>
+    <div class="metadata" id="metadata"></div>
+
+    <details class="method" open>
+      <summary>How this ranking is calculated</summary>
+      <div class="method-body">
+        <div class="formula">
+          opponent weight × max(0, candidate WR − best displayed pool WR)
+        </div>
+        <p>
+          The contribution is calculated separately for every opponent and
+          summed. Opponent weights come from lane pick rates and are normalized
+          once over the current pool’s fixed, displayed matchup universe. When
+          a pool has multiple champions, its baseline is the best displayed
+          estimate for each opponent.
+        </p>
+        <p class="method-note" id="method-note"></p>
+      </div>
+    </details>
+
+    <div class="table-toolbar">
+      <h2>Candidate additions</h2>
+      <span class="result-count" id="result-count" aria-live="polite"></span>
+    </div>
+
+    <div class="table-wrap">
+      <table class="candidate-table" aria-describedby="method-note">
+        <caption class="visually-hidden">
+          Candidate champions ranked by marginal observed counterpick coverage
+        </caption>
+        <thead id="table-head"></thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+
+    <p class="disclaimer">
+      Population-level data assuming the opponent is known and every pool
+      champion is fully learned. Raw aggregate rates can reflect general
+      champion strength and specialist or off-meta selection as well as
+      matchup complementarity; this is not a personal or causal
+      recommendation. This project is not affiliated with or endorsed by
+      Lolalytics or Riot Games.
+    </p>
+  </main>
+
+  <script id="coverage-data" type="application/json">__COUNTERPICK_COVERAGE_DATA__</script>
+  <script>
+    (() => {
+      "use strict";
+
+      const dataset = JSON.parse(
+        document.getElementById("coverage-data").textContent
+      );
+      const metadata = document.getElementById("metadata");
+      const methodNote = document.getElementById("method-note");
+      const resultCount = document.getElementById("result-count");
+      const tableHead = document.getElementById("table-head");
+      const tableBody = document.getElementById("table-body");
+      const expandedCandidates = new Set();
+      let sort = { key: "gain", direction: "desc" };
+
+      const columns = [
+        { key: "name", label: "Candidate", className: "candidate-column" },
+        {
+          key: "pool_before",
+          label: "Pool before",
+          className: "score-column",
+          sortable: false
+        },
+        { key: "pool_after", label: "With candidate", className: "score-column" },
+        { key: "gain", label: "Marginal gain", className: "gain-column" },
+        {
+          key: "evidence_coverage",
+          label: "Evidence coverage",
+          className: "coverage-column"
+        }
+      ];
+
+      function titleCase(value) {
+        return value
+          .replaceAll("_plus", "+")
+          .replaceAll("_", " ")
+          .replace(/\b\w/g, (letter) => letter.toUpperCase());
+      }
+
+      function percent(value, digits = 2) {
+        return `${value.toFixed(digits)}%`;
+      }
+
+      function coverage(value) {
+        return `${(value * 100).toFixed(1)}%`;
+      }
+
+      function percentagePoints(value, digits = 3) {
+        const sign = value > 0 ? "+" : "";
+        return `${sign}${value.toFixed(digits)} pp`;
+      }
+
+      function games(value) {
+        return `${value.toLocaleString()} games`;
+      }
+
+      function poolNames() {
+        return dataset.pool.map((member) => member.name).join(", ");
+      }
+
+      function renderMetadata() {
+        const filters = dataset.filters;
+        const universe = dataset.opponent_universe;
+        const generated = new Date(dataset.generated_at).toLocaleString();
+        const items = [
+          `${filters.lane_label} lane`,
+          titleCase(filters.tier),
+          filters.region === "all" ? "Global" : filters.region.toUpperCase(),
+          filters.period === "current"
+            ? "Current patch"
+            : filters.period.includes(".")
+              ? `Patch ${filters.period}`
+              : `Rolling ${filters.period} days`,
+          filters.queue,
+          `Pool: ${poolNames()}`,
+          `${universe.displayed_count} weighted opponents`,
+          `Universe coverage: ${coverage(universe.pick_rate_coverage)}`,
+          `Generated ${generated}`
+        ];
+        for (const text of items) {
+          const span = document.createElement("span");
+          span.textContent = text;
+          metadata.appendChild(span);
+        }
+        const source = document.createElement("a");
+        source.href = dataset.source.tierlist_url;
+        source.target = "_blank";
+        source.rel = "noreferrer";
+        source.textContent = "Lolalytics source";
+        metadata.appendChild(source);
+      }
+
+      function renderMethodNote() {
+        const universe = dataset.opponent_universe;
+        methodNote.textContent =
+          `This first pass uses observed win rates rather than shrunk estimates ` +
+          `or uncertainty intervals. The score is conditional on the ` +
+          `${universe.displayed_count} opponents for which the current pool has ` +
+          `a displayed baseline; they cover ` +
+          `${coverage(universe.pick_rate_coverage)} of eligible opponent pick ` +
+          `weight. Lolalytics counter tables display matchups with at least ` +
+          `${dataset.source.display_threshold_games} games. A candidate matchup ` +
+          `that is not displayed contributes no demonstrated gain; its opponent ` +
+          `weight is not redistributed. A candidate cannot be selected into its ` +
+          `own mirror matchup. Evidence coverage reports the weighted share of ` +
+          `applicable opponents with a displayed row. For a multi-champion pool, ` +
+          `an unshown pool-member row cannot become its displayed baseline and ` +
+          `the detail table reports how many pool members supplied evidence.`;
+      }
+
+      function candidateValue(candidate, key) {
+        return key === "pool_before" ? dataset.pool_before : candidate[key];
+      }
+
+      function sortedCandidates() {
+        const direction = sort.direction === "desc" ? -1 : 1;
+        return [...dataset.candidates].sort((a, b) => {
+          const aValue = candidateValue(a, sort.key);
+          const bValue = candidateValue(b, sort.key);
+          let comparison;
+          if (typeof aValue === "string") {
+            comparison = aValue.localeCompare(bValue);
+          } else {
+            comparison = aValue - bValue;
+          }
+          return comparison === 0
+            ? a.source_order - b.source_order
+            : comparison * direction;
+        });
+      }
+
+      function setSort(key) {
+        if (sort.key === key) {
+          sort.direction = sort.direction === "desc" ? "asc" : "desc";
+        } else {
+          sort = {
+            key,
+            direction: key === "name" ? "asc" : "desc"
+          };
+        }
+        renderTable();
+        document.querySelector(`[data-sort-key="${key}"]`)?.focus();
+      }
+
+      function makeSortHeader(column) {
+        const th = document.createElement("th");
+        th.scope = "col";
+        th.className = column.className;
+        if (column.sortable === false) {
+          th.textContent = column.label;
+          return th;
+        }
+        th.setAttribute(
+          "aria-sort",
+          sort.key === column.key
+            ? sort.direction === "desc" ? "descending" : "ascending"
+            : "none"
+        );
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "sort-button";
+        button.dataset.sortKey = column.key;
+        button.addEventListener("click", () => setSort(column.key));
+
+        const label = document.createElement("span");
+        label.textContent = column.label;
+        const indicator = document.createElement("span");
+        indicator.className = "sort-indicator";
+        indicator.textContent =
+          sort.key === column.key
+            ? sort.direction === "desc" ? "↓" : "↑"
+            : "";
+        button.append(label, indicator);
+        th.appendChild(button);
+        return th;
+      }
+
+      function renderHead() {
+        tableHead.replaceChildren();
+        const row = document.createElement("tr");
+        const rank = document.createElement("th");
+        rank.scope = "col";
+        rank.className = "rank-column";
+        rank.textContent = "#";
+        row.appendChild(rank);
+        columns.forEach((column) => row.appendChild(makeSortHeader(column)));
+        tableHead.appendChild(row);
+      }
+
+      function appendTextCell(row, text, className = "") {
+        const cell = document.createElement("td");
+        cell.className = className;
+        cell.textContent = text;
+        row.appendChild(cell);
+        return cell;
+      }
+
+      function makeIdentityCell(candidate) {
+        const cell = document.createElement("td");
+        cell.className = "candidate-column";
+        const identity = document.createElement("div");
+        identity.className = "candidate-identity";
+
+        const button = document.createElement("button");
+        const expanded = expandedCandidates.has(candidate.slug);
+        button.type = "button";
+        button.className = "expand-button";
+        button.textContent = expanded ? "▾" : "▸";
+        button.setAttribute("aria-expanded", String(expanded));
+        button.setAttribute("aria-controls", `details-${candidate.slug}`);
+        button.setAttribute(
+          "aria-label",
+          `${expanded ? "Hide" : "Show"} calculation for ${candidate.name}`
+        );
+        button.addEventListener("click", () => {
+          if (expandedCandidates.has(candidate.slug)) {
+            expandedCandidates.delete(candidate.slug);
+          } else {
+            expandedCandidates.add(candidate.slug);
+          }
+          renderBody();
+          document
+            .querySelector(`[aria-controls="details-${candidate.slug}"]`)
+            ?.focus();
+        });
+
+        const link = document.createElement("a");
+        link.className = "candidate-link";
+        link.href = candidate.source_url;
+        link.target = "_blank";
+        link.rel = "noreferrer";
+        link.textContent = candidate.name;
+        identity.append(button, link);
+        cell.appendChild(identity);
+        return cell;
+      }
+
+      function detailRows(candidate) {
+        return dataset.opponent_universe.opponents
+          .map((opponent) => ({
+            opponent,
+            matchup: candidate.matchups[opponent.slug] ?? null,
+            unavailable: candidate.slug === opponent.slug
+          }))
+          .sort((a, b) => {
+            const contributionDifference =
+              (b.matchup?.contribution ?? 0) -
+              (a.matchup?.contribution ?? 0);
+            return contributionDifference !== 0
+              ? contributionDifference
+              : b.opponent.weight - a.opponent.weight;
+          });
+      }
+
+      function makeEstimateCell(winRate, champion, gameCount, evidenceNote = "") {
+        const cell = document.createElement("td");
+        const primary = document.createElement("span");
+        primary.className = "cell-primary";
+        primary.textContent = percent(winRate);
+        const secondary = document.createElement("span");
+        secondary.className = "cell-secondary";
+        secondary.textContent =
+          `${champion} · ${games(gameCount)}${evidenceNote}`;
+        cell.append(primary, secondary);
+        return cell;
+      }
+
+      function makeMissingCell(text) {
+        const cell = document.createElement("td");
+        const label = document.createElement("span");
+        label.className = "missing";
+        label.textContent = text;
+        cell.appendChild(label);
+        return cell;
+      }
+
+      function makeDetailsRow(candidate) {
+        const row = document.createElement("tr");
+        row.className = "details-row";
+        row.id = `details-${candidate.slug}`;
+        const cell = document.createElement("td");
+        cell.colSpan = columns.length + 1;
+
+        const details = document.createElement("section");
+        details.className = "candidate-details";
+        details.setAttribute(
+          "aria-label",
+          `${candidate.name} contribution calculation`
+        );
+
+        const heading = document.createElement("div");
+        heading.className = "details-heading";
+        const title = document.createElement("h3");
+        title.textContent =
+          `${candidate.name}: ${percentagePoints(candidate.gain)} total gain`;
+        const summary = document.createElement("span");
+        summary.className = "details-summary";
+        summary.textContent =
+          `${candidate.observed_matchups} of ${candidate.applicable_matchups} ` +
+          `applicable rows shown · ${coverage(candidate.evidence_coverage)} ` +
+          `weighted evidence coverage · row values rounded for display`;
+        heading.append(title, summary);
+
+        const wrap = document.createElement("div");
+        wrap.className = "detail-wrap";
+        const table = document.createElement("table");
+        table.className = "detail-table";
+        const caption = document.createElement("caption");
+        caption.className = "visually-hidden";
+        caption.textContent =
+          `${candidate.name} opponent-level contribution calculation`;
+        const head = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+        for (const label of [
+          "Opponent",
+          "Encounter weight",
+          "Best displayed pool estimate",
+          `${candidate.name} estimate`,
+          "Improvement",
+          "Contribution"
+        ]) {
+          const th = document.createElement("th");
+          th.scope = "col";
+          th.textContent = label;
+          headerRow.appendChild(th);
+        }
+        head.appendChild(headerRow);
+
+        const body = document.createElement("tbody");
+        for (const entry of detailRows(candidate)) {
+          const detailRow = document.createElement("tr");
+          if ((entry.matchup?.contribution ?? 0) > 0) {
+            detailRow.className = "positive-row";
+          }
+          appendTextCell(
+            detailRow,
+            entry.opponent.name,
+            "detail-opponent"
+          );
+          appendTextCell(
+            detailRow,
+            coverage(entry.opponent.weight)
+          );
+          detailRow.appendChild(
+            makeEstimateCell(
+              entry.opponent.current_best.win_rate,
+              entry.opponent.current_best.name,
+              entry.opponent.current_best.games,
+              entry.opponent.current_best.pool_size > 1
+                ? ` · ${entry.opponent.current_best.pool_evidence_count}/` +
+                  `${entry.opponent.current_best.pool_size} pool rows shown`
+                : ""
+            )
+          );
+
+          if (entry.unavailable) {
+            detailRow.appendChild(makeMissingCell("Unavailable"));
+          } else if (entry.matchup === null) {
+            detailRow.appendChild(makeMissingCell("Not shown"));
+          } else {
+            detailRow.appendChild(
+              makeEstimateCell(
+                entry.matchup.win_rate,
+                candidate.name,
+                entry.matchup.games
+              )
+            );
+          }
+          appendTextCell(
+            detailRow,
+            percentagePoints(entry.matchup?.improvement ?? 0, 2),
+            (entry.matchup?.improvement ?? 0) > 0 ? "gain" : ""
+          );
+          appendTextCell(
+            detailRow,
+            percentagePoints(entry.matchup?.contribution ?? 0, 4),
+            (entry.matchup?.contribution ?? 0) > 0 ? "gain" : ""
+          );
+          body.appendChild(detailRow);
+        }
+
+        const foot = document.createElement("tfoot");
+        const total = document.createElement("tr");
+        total.className = "detail-total";
+        const totalLabel = document.createElement("td");
+        totalLabel.colSpan = 5;
+        totalLabel.textContent = "Sum of stored-precision contributions";
+        const totalValue = document.createElement("td");
+        totalValue.textContent = percentagePoints(candidate.gain);
+        totalValue.className = "gain";
+        total.append(totalLabel, totalValue);
+        foot.appendChild(total);
+        table.append(caption, head, body, foot);
+        wrap.appendChild(table);
+        details.append(heading, wrap);
+        cell.appendChild(details);
+        row.appendChild(cell);
+        return row;
+      }
+
+      function renderBody() {
+        tableBody.replaceChildren();
+        const fragment = document.createDocumentFragment();
+        const candidates = sortedCandidates();
+        resultCount.textContent =
+          `${candidates.length} candidate${candidates.length === 1 ? "" : "s"} · ` +
+          "select a champion to inspect every contribution";
+
+        candidates.forEach((candidate, index) => {
+          const row = document.createElement("tr");
+          row.className = "candidate-row";
+          appendTextCell(row, String(index + 1), "rank-column");
+          row.appendChild(makeIdentityCell(candidate));
+          appendTextCell(
+            row,
+            percent(dataset.pool_before),
+            "score-column"
+          );
+          appendTextCell(
+            row,
+            percent(candidate.pool_after),
+            "score-column"
+          );
+          appendTextCell(
+            row,
+            percentagePoints(candidate.gain),
+            "gain gain-column"
+          );
+          appendTextCell(
+            row,
+            coverage(candidate.evidence_coverage),
+            "coverage-column"
+          );
+          fragment.appendChild(row);
+          if (expandedCandidates.has(candidate.slug)) {
+            fragment.appendChild(makeDetailsRow(candidate));
+          }
+        });
+        tableBody.appendChild(fragment);
+      }
+
+      function renderTable() {
+        renderHead();
+        renderBody();
+      }
+
+      renderMetadata();
+      renderMethodNote();
+      renderTable();
+    })();
+  </script>
+</body>
+</html>

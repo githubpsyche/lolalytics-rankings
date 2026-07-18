@@ -1,3 +1,4 @@
 __pycache__/
 .playwright-cli/
 projects/champion-rankings/data/archive/*.json
+projects/counterpick-coverage/data/archive/*.json

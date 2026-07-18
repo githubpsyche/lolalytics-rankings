@@ -46,12 +46,13 @@ tracked.
 
 ### [Counterpick Coverage](https://githubpsyche.github.io/hextech-studies/counterpick-coverage/)
 
-An exploratory table comparing additions to a champion pool by marginal
-expected counterpick coverage. The first published analysis uses Zoe in Middle
-as the current pool and weights each displayed matchup by the opposing
-champion's lane pick rate. A searchable picker defaults to Zilean and shows one
-candidate's rank, summary, and every opponent-level term that sums to its
-score.
+An exploratory table for expanding a one-champion pool to two champions.
+Choose the champion you already play and a proposed addition; the page ranks
+every valid addition by marginal observed counterpick coverage, weights the
+current champion's displayed matchup universe by opposing lane pick rate, and
+exposes every term behind the selected pair's score. The calculation table
+supports column sorting, opponent search, and inclusive numeric minimum and
+maximum filters. The page defaults to Zoe + Zilean in Middle.
 
 Refresh its data and generated page with:
 
@@ -59,13 +60,17 @@ Refresh its data and generated page with:
 uv run projects/counterpick-coverage/build.py
 ```
 
-Defaults are Zoe, Middle, Emerald+, Global, Ranked Solo/Duo, and the rolling
-30-day period. The current pool and cohort can be changed when rebuilding:
+Defaults are Zoe as the initial current champion, Zilean as the initial
+addition, Middle, Emerald+, Global, Ranked Solo/Duo, and the rolling 30-day
+period. Every scraped champion remains selectable in the generated page. Build
+flags can change the initial pair, lane, tier, or period; Global and Ranked
+Solo/Duo remain fixed:
 
 ```bash
 uv run projects/counterpick-coverage/build.py \
   --lane middle \
-  --pool zoe veigar \
+  --base zoe \
+  --candidate veigar \
   --tier emerald_plus \
   --period 30
 ```
@@ -84,20 +89,22 @@ To rebuild only the page after editing its template:
 uv run projects/counterpick-coverage/build.py --render-only
 ```
 
-Run the small hand-checkable calculation fixture with:
+Run the small hand-checkable calculation fixtures with:
 
 ```bash
 uv run projects/counterpick-coverage/test_build.py
 ```
 
-This first pass deliberately uses observed matchup win rates. Missing candidate
-rows receive no demonstrated improvement, weights are never renormalized per
-candidate, and weighted evidence coverage is reported. Scores are conditional
-on opponents for which the current pool has a displayed matchup baseline;
-universe coverage makes the omitted pick-rate weight explicit. For a
-multi-champion pool, the baseline uses the best displayed pool-member estimate
-and records how many pool members supplied evidence. Shrinkage and uncertainty
-are reserved for a later statistical milestone.
+This first pass deliberately uses observed matchup win rates. Each scrape
+stores the directed matchup rows for every champion in the selected lane,
+allowing the page to rebuild the opponent universe, weights, and addition
+rankings whenever the current champion changes. Missing addition rows receive
+no demonstrated improvement, weights are never renormalized per addition, and
+the addition's own mirror matchup is unavailable. Scores are conditional on
+opponents for which the selected current champion has a displayed matchup
+baseline; universe coverage makes the omitted pick-rate weight explicit, while
+evidence coverage reports how much applicable weight has an addition estimate.
+Shrinkage and uncertainty are reserved for a later statistical milestone.
 
 ## Repository layout
 

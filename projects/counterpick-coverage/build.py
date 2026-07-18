@@ -77,19 +77,24 @@ class ScrapeError(RuntimeError):
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Rank additions to a champion pool by observed marginal "
-            "counterpick coverage."
+            "Rank second-champion additions to any singleton pool by observed "
+            "marginal counterpick coverage."
         )
     )
     parser.add_argument("--lane", choices=LANES, default="middle")
     parser.add_argument(
+        "--base",
         "--pool",
-        nargs="+",
-        default=["zoe"],
+        dest="base",
+        default="zoe",
         metavar="SLUG",
-        help=(
-            "current champion-pool slugs, separated by spaces or commas (default: zoe)"
-        ),
+        help="initial current-champion slug (default: zoe)",
+    )
+    parser.add_argument(
+        "--candidate",
+        default="zilean",
+        metavar="SLUG",
+        help="initial champion-to-add slug (default: zilean)",
     )
     parser.add_argument("--tier", choices=TIERS, default="emerald_plus")
     parser.add_argument(
@@ -109,19 +114,15 @@ def parse_args() -> argparse.Namespace:
     ):
         parser.error("--period must be current, 7, 14, 30, or a patch such as 16.14")
 
-    pool = []
-    for value in args.pool:
-        pool.extend(part.strip().lower() for part in value.split(",") if part.strip())
-    if not pool:
-        parser.error("--pool must contain at least one champion slug")
-    invalid = [slug for slug in pool if not re.fullmatch(r"[a-z0-9]+", slug)]
-    if invalid:
-        parser.error(
-            "--pool values must be lowercase Lolalytics slugs: " + ", ".join(invalid)
-        )
-    if len(pool) != len(set(pool)):
-        parser.error("--pool contains duplicate champion slugs")
-    args.pool = pool
+    for argument in ("base", "candidate"):
+        slug = getattr(args, argument).strip().lower()
+        if not re.fullmatch(r"[a-z0-9]+", slug):
+            parser.error(
+                f"--{argument} must be one lowercase Lolalytics champion slug"
+            )
+        setattr(args, argument, slug)
+    if args.base == args.candidate:
+        parser.error("--base and --candidate must be different champions")
     return args
 
 
@@ -441,155 +442,56 @@ def build_dataset(
     tierlist_url: str,
 ) -> dict[str, Any]:
     roster_by_slug = {champion["slug"]: champion for champion in roster}
-    unknown_pool = [slug for slug in args.pool if slug not in roster_by_slug]
-    if unknown_pool:
-        raise ScrapeError(
-            "Pool champions are not in the selected lane roster: "
-            + ", ".join(unknown_pool)
-        )
-
-    baseline_by_opponent: dict[str, dict[str, Any]] = {}
-    for pool_slug in args.pool:
-        for opponent_slug, matchup in pages[pool_slug]["matchups"].items():
-            if opponent_slug not in roster_by_slug:
-                continue
-            current = baseline_by_opponent.get(opponent_slug)
-            if current is None:
-                current = {
-                    "pool_slug": pool_slug,
-                    "pool_name": pages[pool_slug]["name"],
-                    "observed_pool_slugs": [],
-                    **matchup,
-                }
-                baseline_by_opponent[opponent_slug] = current
-            current["observed_pool_slugs"].append(pool_slug)
-            if matchup["win_rate"] > current["win_rate"]:
-                current.update(
-                    {
-                        "pool_slug": pool_slug,
-                        "pool_name": pages[pool_slug]["name"],
-                        **matchup,
-                    }
-                )
-
-    if not baseline_by_opponent:
-        raise ScrapeError("The selected pool has no displayed matchup universe")
-
-    universe_pick_rate = math.fsum(
-        roster_by_slug[slug]["pick_rate"] for slug in baseline_by_opponent
-    )
-    if universe_pick_rate <= 0:
-        raise ScrapeError("The displayed opponent universe has no pick-rate weight")
-
-    eligible_opponents = [
-        champion
-        for champion in roster
-        if any(pool_slug != champion["slug"] for pool_slug in args.pool)
+    unknown_defaults = [
+        slug for slug in (args.base, args.candidate) if slug not in roster_by_slug
     ]
-    eligible_pick_rate = math.fsum(
-        champion["pick_rate"] for champion in eligible_opponents
-    )
-    if eligible_pick_rate <= 0:
-        raise ScrapeError("The eligible opponent roster has no pick-rate weight")
-
-    opponents = []
-    for opponent_slug, baseline in baseline_by_opponent.items():
-        roster_entry = roster_by_slug[opponent_slug]
-        opponents.append(
-            {
-                "slug": opponent_slug,
-                "name": pages[opponent_slug]["name"],
-                "source_order": roster_entry["source_order"],
-                "pick_rate": roster_entry["pick_rate"],
-                "weight": roster_entry["pick_rate"] / universe_pick_rate,
-                "current_best": {
-                    "slug": baseline["pool_slug"],
-                    "name": baseline["pool_name"],
-                    "win_rate": baseline["win_rate"],
-                    "games": baseline["games"],
-                    "pool_evidence_count": len(baseline["observed_pool_slugs"]),
-                    "pool_size": len(args.pool),
-                },
-            }
+    if unknown_defaults:
+        raise ScrapeError(
+            "Default champions are not in the selected lane roster: "
+            + ", ".join(unknown_defaults)
         )
-    opponents.sort(key=lambda opponent: opponent["source_order"])
 
-    pool_before = round_value(
-        math.fsum(
-            opponent["weight"] * opponent["current_best"]["win_rate"]
-            for opponent in opponents
+    missing_pages = [
+        champion["slug"] for champion in roster if champion["slug"] not in pages
+    ]
+    if missing_pages:
+        raise ScrapeError(
+            "Matchup pages are missing for: " + ", ".join(missing_pages)
         )
-    )
 
-    candidates = []
+    champions = []
     for roster_entry in roster:
-        candidate_slug = roster_entry["slug"]
-        if candidate_slug in args.pool:
-            continue
-
-        candidate_page = pages[candidate_slug]
-        candidate_matchups: dict[str, dict[str, Any]] = {}
-        observed_weight = 0.0
-        applicable_weight = 0.0
-        applicable_count = 0
-        contributions = []
-
-        for opponent in opponents:
-            opponent_slug = opponent["slug"]
-            if opponent_slug == candidate_slug:
-                continue
-            applicable_weight += opponent["weight"]
-            applicable_count += 1
-            matchup = candidate_page["matchups"].get(opponent_slug)
-            if matchup is None:
-                continue
-
-            observed_weight += opponent["weight"]
-            improvement = max(
-                0.0, matchup["win_rate"] - opponent["current_best"]["win_rate"]
-            )
-            contribution = round_value(opponent["weight"] * improvement)
-            contributions.append(contribution)
-            candidate_matchups[opponent_slug] = {
-                "win_rate": matchup["win_rate"],
-                "games": matchup["games"],
-                "all_champs_win_rate": matchup["all_champs_win_rate"],
-                "delta_1": matchup["delta_1"],
-                "delta_2": matchup["delta_2"],
-                "improvement": round_value(improvement),
-                "contribution": contribution,
+        slug = roster_entry["slug"]
+        page = pages[slug]
+        matchups = {
+            opponent_slug: {
+                key: matchup[key]
+                for key in (
+                    "win_rate",
+                    "games",
+                    "all_champs_win_rate",
+                    "delta_1",
+                    "delta_2",
+                )
             }
-
-        gain = round_value(math.fsum(contributions))
-        evidence_coverage = (
-            round_value(observed_weight / applicable_weight)
-            if applicable_weight > 0
-            else 0.0
-        )
-        candidates.append(
+            for opponent_slug, matchup in page["matchups"].items()
+            if opponent_slug in roster_by_slug and opponent_slug != slug
+        }
+        champions.append(
             {
-                "slug": candidate_slug,
-                "name": candidate_page["name"],
+                "slug": slug,
+                "name": page["name"],
                 "source_order": roster_entry["source_order"],
-                "source_url": candidate_page["source_url"],
+                "source_url": page["source_url"],
                 "overall_win_rate": roster_entry["overall_win_rate"],
                 "pick_rate": roster_entry["pick_rate"],
-                "pool_after": round_value(pool_before + gain),
-                "gain": gain,
-                "evidence_coverage": evidence_coverage,
-                "observed_matchups": len(candidate_matchups),
-                "applicable_matchups": applicable_count,
-                "matchups": candidate_matchups,
+                "matchups": matchups,
             }
         )
-
-    candidates.sort(
-        key=lambda candidate: (-candidate["gain"], candidate["source_order"])
-    )
 
     generated_at = datetime.now(UTC)
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "generated_at": generated_at.isoformat().replace("+00:00", "Z"),
         "filters": {
             "lane": args.lane,
@@ -605,135 +507,327 @@ def build_dataset(
             "display_threshold_games": 100,
         },
         "method": {
+            "question": "expand_singleton_pool_to_pair",
             "estimate": "observed_matchup_win_rate",
-            "opponent_weight": "lane_pick_rate_normalized_over_pool_universe",
+            "opponent_universe": "displayed_matchups_for_selected_base",
+            "opponent_weight": "lane_pick_rate_normalized_over_base_universe",
             "missing_candidate_matchup": "zero_demonstrated_improvement",
             "candidate_self_matchup": "unavailable",
         },
-        "pool": [
-            {
-                "slug": slug,
-                "name": pages[slug]["name"],
-                "source_url": pages[slug]["source_url"],
+        "defaults": {
+            "base_slug": args.base,
+            "candidate_slug": args.candidate,
+        },
+        "champions": champions,
+    }
+
+
+def analyze_singleton_pool(
+    dataset: dict[str, Any], base_slug: str
+) -> dict[str, Any]:
+    champion_by_slug = {
+        champion["slug"]: champion for champion in dataset["champions"]
+    }
+    base = champion_by_slug.get(base_slug)
+    if base is None:
+        raise ScrapeError(f"Unknown current champion: {base_slug}")
+
+    raw_opponents = [
+        (champion_by_slug[slug], matchup)
+        for slug, matchup in base["matchups"].items()
+        if slug in champion_by_slug and slug != base_slug
+    ]
+    raw_opponents.sort(key=lambda entry: entry[0]["source_order"])
+    if not raw_opponents:
+        raise ScrapeError(f"{base['name']} has no displayed matchup universe")
+
+    universe_pick_rate = math.fsum(
+        opponent["pick_rate"] for opponent, _ in raw_opponents
+    )
+    if universe_pick_rate <= 0:
+        raise ScrapeError(f"{base['name']} has no opponent pick-rate weight")
+
+    eligible_pick_rate = math.fsum(
+        champion["pick_rate"]
+        for champion in dataset["champions"]
+        if champion["slug"] != base_slug
+    )
+    if eligible_pick_rate <= 0:
+        raise ScrapeError("The eligible opponent roster has no pick-rate weight")
+
+    opponents = [
+        {
+            "slug": opponent["slug"],
+            "name": opponent["name"],
+            "source_order": opponent["source_order"],
+            "pick_rate": opponent["pick_rate"],
+            "weight": opponent["pick_rate"] / universe_pick_rate,
+            "base_estimate": {
+                "win_rate": matchup["win_rate"],
+                "games": matchup["games"],
+            },
+        }
+        for opponent, matchup in raw_opponents
+    ]
+    pool_before = round_value(
+        math.fsum(
+            opponent["weight"] * opponent["base_estimate"]["win_rate"]
+            for opponent in opponents
+        )
+    )
+
+    candidates = []
+    for candidate in dataset["champions"]:
+        if candidate["slug"] == base_slug:
+            continue
+        candidate_matchups: dict[str, dict[str, Any]] = {}
+        observed_weight = 0.0
+        applicable_weight = 0.0
+        applicable_count = 0
+        contributions = []
+
+        for opponent in opponents:
+            opponent_slug = opponent["slug"]
+            if opponent_slug == candidate["slug"]:
+                continue
+            applicable_weight += opponent["weight"]
+            applicable_count += 1
+            matchup = candidate["matchups"].get(opponent_slug)
+            if matchup is None:
+                continue
+
+            observed_weight += opponent["weight"]
+            improvement = round_value(
+                max(
+                    0.0,
+                    matchup["win_rate"]
+                    - opponent["base_estimate"]["win_rate"],
+                )
+            )
+            contribution = round_value(opponent["weight"] * improvement)
+            contributions.append(contribution)
+            candidate_matchups[opponent_slug] = {
+                "win_rate": matchup["win_rate"],
+                "games": matchup["games"],
+                "improvement": improvement,
+                "contribution": contribution,
             }
-            for slug in args.pool
-        ],
+
+        gain = round_value(math.fsum(contributions))
+        evidence_coverage = (
+            round_value(observed_weight / applicable_weight)
+            if applicable_weight > 0
+            else 0.0
+        )
+        candidates.append(
+            {
+                "slug": candidate["slug"],
+                "name": candidate["name"],
+                "source_order": candidate["source_order"],
+                "source_url": candidate["source_url"],
+                "pool_after": round_value(pool_before + gain),
+                "gain": gain,
+                "evidence_coverage": evidence_coverage,
+                "observed_matchups": len(candidate_matchups),
+                "applicable_matchups": applicable_count,
+                "matchups": candidate_matchups,
+            }
+        )
+
+    candidates.sort(
+        key=lambda candidate: (-candidate["gain"], candidate["source_order"])
+    )
+    return {
+        "base": {
+            key: base[key]
+            for key in ("slug", "name", "source_order", "source_url")
+        },
         "pool_before": pool_before,
         "opponent_universe": {
             "opponents": opponents,
             "displayed_count": len(opponents),
-            "eligible_count": len(eligible_opponents),
-            "pick_rate_coverage": round_value(universe_pick_rate / eligible_pick_rate),
+            "eligible_count": len(dataset["champions"]) - 1,
+            "pick_rate_coverage": round_value(
+                universe_pick_rate / eligible_pick_rate
+            ),
         },
         "candidates": candidates,
     }
 
 
 def validate_dataset(dataset: dict[str, Any]) -> None:
-    if dataset.get("schema_version") != 1:
+    if dataset.get("schema_version") != 2:
         raise ScrapeError("Dataset schema version is not supported")
-    if not dataset.get("pool"):
-        raise ScrapeError("Dataset has no current champion pool")
 
-    opponents = dataset["opponent_universe"]["opponents"]
-    if not opponents:
-        raise ScrapeError("Dataset has no opponent universe")
-    opponent_slugs = [opponent["slug"] for opponent in opponents]
-    if len(opponent_slugs) != len(set(opponent_slugs)):
-        raise ScrapeError("Dataset contains duplicate opponents")
-    weight_sum = math.fsum(opponent["weight"] for opponent in opponents)
-    if not math.isclose(weight_sum, 1.0, abs_tol=1e-9):
-        raise ScrapeError(f"Opponent weights sum to {weight_sum}, not 1")
+    champions = dataset.get("champions")
+    if not isinstance(champions, list) or len(champions) < 2:
+        raise ScrapeError("Dataset needs at least two champions")
+    champion_slugs = [champion["slug"] for champion in champions]
+    source_orders = [champion["source_order"] for champion in champions]
+    if len(champion_slugs) != len(set(champion_slugs)):
+        raise ScrapeError("Dataset contains duplicate champions")
+    if len(source_orders) != len(set(source_orders)):
+        raise ScrapeError("Dataset contains duplicate source order values")
 
-    recomputed_before = round_value(
-        math.fsum(
-            opponent["weight"] * opponent["current_best"]["win_rate"]
-            for opponent in opponents
-        )
-    )
-    if not math.isclose(recomputed_before, dataset["pool_before"], abs_tol=1e-9):
-        raise ScrapeError("Pool-before score does not match opponent contributions")
+    champion_by_slug = {champion["slug"]: champion for champion in champions}
+    defaults = dataset.get("defaults", {})
+    for key in ("base_slug", "candidate_slug"):
+        if defaults.get(key) not in champion_by_slug:
+            raise ScrapeError(f"Dataset {key} is not in the champion roster")
+    if defaults["base_slug"] == defaults["candidate_slug"]:
+        raise ScrapeError("Default current champion and candidate are identical")
 
-    opponent_by_slug = {opponent["slug"]: opponent for opponent in opponents}
-    candidate_slugs = [candidate["slug"] for candidate in dataset["candidates"]]
-    if len(candidate_slugs) != len(set(candidate_slugs)):
-        raise ScrapeError("Dataset contains duplicate candidates")
+    display_threshold = dataset["source"]["display_threshold_games"]
+    for champion in champions:
+        if (
+            not math.isfinite(champion["pick_rate"])
+            or champion["pick_rate"] < 0
+        ):
+            raise ScrapeError(f"{champion['name']}: pick rate is invalid")
+        if not 0 <= champion["overall_win_rate"] <= 100:
+            raise ScrapeError(f"{champion['name']}: overall win rate is invalid")
+        if not champion["matchups"]:
+            raise ScrapeError(f"{champion['name']}: no displayed matchups")
+        for opponent_slug, matchup in champion["matchups"].items():
+            if opponent_slug not in champion_by_slug:
+                raise ScrapeError(
+                    f"{champion['name']}: matchup endpoint is outside the roster"
+                )
+            if opponent_slug == champion["slug"]:
+                raise ScrapeError(
+                    f"{champion['name']}: matrix contains an impossible mirror row"
+                )
+            if not 0 <= matchup["win_rate"] <= 100:
+                raise ScrapeError(
+                    f"{champion['name']} vs {opponent_slug}: win rate is invalid"
+                )
+            if not 0 <= matchup["all_champs_win_rate"] <= 100:
+                raise ScrapeError(
+                    f"{champion['name']} vs {opponent_slug}: all-WR is invalid"
+                )
+            if (
+                not isinstance(matchup["games"], int)
+                or matchup["games"] < display_threshold
+            ):
+                raise ScrapeError(
+                    f"{champion['name']} vs {opponent_slug}: games are invalid"
+                )
+            expected_delta_1 = matchup["win_rate"] - matchup["all_champs_win_rate"]
+            if not math.isclose(
+                matchup["delta_1"], expected_delta_1, abs_tol=0.02
+            ):
+                raise ScrapeError(
+                    f"{champion['name']} vs {opponent_slug}: delta 1 is inconsistent"
+                )
+            if not math.isfinite(matchup["delta_2"]):
+                raise ScrapeError(
+                    f"{champion['name']} vs {opponent_slug}: delta 2 is invalid"
+                )
 
-    for candidate in dataset["candidates"]:
-        if candidate["slug"] in {member["slug"] for member in dataset["pool"]}:
-            raise ScrapeError(f"{candidate['name']} is both pool member and candidate")
-        if not set(candidate["matchups"]).issubset(opponent_by_slug):
-            raise ScrapeError(f"{candidate['name']} has matchups outside the universe")
-        if candidate["slug"] in candidate["matchups"]:
-            raise ScrapeError(f"{candidate['name']} contains an impossible mirror row")
-        if candidate["observed_matchups"] != len(candidate["matchups"]):
+    for base_slug in champion_slugs:
+        analysis = analyze_singleton_pool(dataset, base_slug)
+        opponents = analysis["opponent_universe"]["opponents"]
+        opponent_by_slug = {
+            opponent["slug"]: opponent for opponent in opponents
+        }
+        weight_sum = math.fsum(opponent["weight"] for opponent in opponents)
+        if not math.isclose(weight_sum, 1.0, abs_tol=1e-9):
             raise ScrapeError(
-                f"{candidate['name']}: observed matchup count is inconsistent"
+                f"{analysis['base']['name']}: opponent weights do not sum to 1"
             )
-        expected_applicable_count = len(opponents) - int(
-            candidate["slug"] in opponent_by_slug
-        )
-        if candidate["applicable_matchups"] != expected_applicable_count:
+        if not 0 <= analysis["opponent_universe"]["pick_rate_coverage"] <= 1:
             raise ScrapeError(
-                f"{candidate['name']}: applicable matchup count is inconsistent"
+                f"{analysis['base']['name']}: universe coverage is invalid"
             )
-
-        contributions = []
-        observed_weight = 0.0
-        applicable_weight = 0.0
-        for opponent in opponents:
-            if opponent["slug"] == candidate["slug"]:
-                continue
-            applicable_weight += opponent["weight"]
-            matchup = candidate["matchups"].get(opponent["slug"])
-            if matchup is None:
-                continue
-            observed_weight += opponent["weight"]
-            expected_improvement = round_value(
-                max(
-                    0.0,
-                    matchup["win_rate"] - opponent["current_best"]["win_rate"],
+        if len(analysis["candidates"]) != len(champions) - 1:
+            raise ScrapeError(
+                f"{analysis['base']['name']}: candidate count is inconsistent"
+            )
+        for candidate in analysis["candidates"]:
+            raw_candidate = champion_by_slug[candidate["slug"]]
+            applicable_opponents = [
+                opponent
+                for opponent in opponents
+                if opponent["slug"] != candidate["slug"]
+            ]
+            observed_opponents = [
+                opponent
+                for opponent in applicable_opponents
+                if opponent["slug"] in raw_candidate["matchups"]
+            ]
+            if candidate["applicable_matchups"] != len(applicable_opponents):
+                raise ScrapeError(
+                    f"{candidate['name']}: applicable matchup count is inconsistent"
+                )
+            if candidate["observed_matchups"] != len(observed_opponents):
+                raise ScrapeError(
+                    f"{candidate['name']}: observed matchup count is inconsistent"
+                )
+            applicable_weight = math.fsum(
+                opponent["weight"] for opponent in applicable_opponents
+            )
+            expected_coverage = (
+                round_value(
+                    math.fsum(
+                        opponent["weight"] for opponent in observed_opponents
+                    )
+                    / applicable_weight
+                )
+                if applicable_weight > 0
+                else 0.0
+            )
+            if not math.isclose(
+                expected_coverage,
+                candidate["evidence_coverage"],
+                abs_tol=1e-9,
+            ):
+                raise ScrapeError(
+                    f"{candidate['name']}: evidence coverage is inconsistent"
+                )
+            contribution_sum = round_value(
+                math.fsum(
+                    matchup["contribution"]
+                    for matchup in candidate["matchups"].values()
                 )
             )
             if not math.isclose(
-                expected_improvement, matchup["improvement"], abs_tol=1e-9
+                contribution_sum, candidate["gain"], abs_tol=1e-9
             ):
                 raise ScrapeError(
-                    f"{candidate['name']} vs {opponent['name']}: "
-                    "improvement is inconsistent"
+                    f"{candidate['name']}: contribution sum is inconsistent"
                 )
-            expected_contribution = round_value(
-                opponent["weight"] * matchup["improvement"]
+            expected_pair_score = round_value(
+                math.fsum(
+                    opponent["weight"]
+                    * max(
+                        opponent["base_estimate"]["win_rate"],
+                        (
+                            raw_candidate["matchups"][opponent["slug"]][
+                                "win_rate"
+                            ]
+                            if (
+                                opponent["slug"] != candidate["slug"]
+                                and opponent["slug"]
+                                in raw_candidate["matchups"]
+                            )
+                            else opponent["base_estimate"]["win_rate"]
+                        ),
+                    )
+                    for opponent in opponent_by_slug.values()
+                )
             )
             if not math.isclose(
-                expected_contribution, matchup["contribution"], abs_tol=1e-9
+                expected_pair_score,
+                candidate["pool_after"],
+                abs_tol=1e-9,
             ):
                 raise ScrapeError(
-                    f"{candidate['name']} vs {opponent['name']}: "
-                    "contribution is inconsistent"
+                    f"{candidate['name']}: pair score does not match the raw matrix"
                 )
-            contributions.append(matchup["contribution"])
-
-        expected_gain = round_value(math.fsum(contributions))
-        if not math.isclose(expected_gain, candidate["gain"], abs_tol=1e-9):
-            raise ScrapeError(
-                f"{candidate['name']}: contribution sum does not match gain"
-            )
-        if not math.isclose(
-            round_value(dataset["pool_before"] + candidate["gain"]),
-            candidate["pool_after"],
-            abs_tol=1e-9,
-        ):
-            raise ScrapeError(f"{candidate['name']}: pool-after score is inconsistent")
-        expected_coverage = (
-            round_value(observed_weight / applicable_weight)
-            if applicable_weight > 0
-            else 0.0
-        )
-        if not math.isclose(
-            expected_coverage, candidate["evidence_coverage"], abs_tol=1e-9
-        ):
-            raise ScrapeError(f"{candidate['name']}: evidence coverage is inconsistent")
+            if not 0 <= candidate["evidence_coverage"] <= 1:
+                raise ScrapeError(
+                    f"{candidate['name']}: evidence coverage is invalid"
+                )
 
 
 def atomic_write(path: Path, content: str) -> None:
@@ -745,59 +839,34 @@ def atomic_write(path: Path, content: str) -> None:
 
 def page_dataset(dataset: dict[str, Any]) -> dict[str, Any]:
     """Project the archived dataset to only fields used by the static page."""
-    universe = dataset["opponent_universe"]
     return {
         "schema_version": dataset["schema_version"],
         "generated_at": dataset["generated_at"],
         "filters": dataset["filters"],
         "source": dataset["source"],
         "method": dataset["method"],
-        "pool": dataset["pool"],
-        "pool_before": dataset["pool_before"],
-        "opponent_universe": {
-            "displayed_count": universe["displayed_count"],
-            "eligible_count": universe["eligible_count"],
-            "pick_rate_coverage": universe["pick_rate_coverage"],
-            "opponents": [
-                {
-                    "slug": opponent["slug"],
-                    "name": opponent["name"],
-                    "weight": opponent["weight"],
-                    "current_best": opponent["current_best"],
-                }
-                for opponent in universe["opponents"]
-            ],
-        },
-        "candidates": [
+        "defaults": dataset["defaults"],
+        "champions": [
             {
-                key: candidate[key]
+                key: champion[key]
                 for key in (
                     "slug",
                     "name",
                     "source_order",
+                    "pick_rate",
                     "source_url",
-                    "pool_after",
-                    "gain",
-                    "evidence_coverage",
-                    "observed_matchups",
-                    "applicable_matchups",
                 )
             }
             | {
                 "matchups": {
                     opponent_slug: {
                         key: matchup[key]
-                        for key in (
-                            "win_rate",
-                            "games",
-                            "improvement",
-                            "contribution",
-                        )
+                        for key in ("win_rate", "games")
                     }
-                    for opponent_slug, matchup in candidate["matchups"].items()
+                    for opponent_slug, matchup in champion["matchups"].items()
                 }
             }
-            for candidate in dataset["candidates"]
+            for champion in dataset["champions"]
         ],
     }
 
@@ -821,11 +890,10 @@ def render_report(dataset: dict[str, Any]) -> str:
 def archive_name(dataset: dict[str, Any]) -> str:
     generated = datetime.fromisoformat(dataset["generated_at"].replace("Z", "+00:00"))
     filters = dataset["filters"]
-    pool = "-".join(member["slug"] for member in dataset["pool"])
     timestamp = generated.strftime("%Y%m%dT%H%M%SZ")
     cohort = (
         f"{filters['lane']}-{filters['tier']}-{filters['region']}-"
-        f"{filters['period']}-{pool}"
+        f"{filters['period']}-singleton-matrix"
     )
     return f"{timestamp}-{cohort}.json"
 
@@ -844,21 +912,24 @@ def scrape(args: argparse.Namespace) -> dict[str, Any]:
         print(f"Found {len(roster)} {LANE_LABELS[args.lane]} champions", flush=True)
 
         roster_slugs = {champion["slug"] for champion in roster}
-        unknown_pool = [slug for slug in args.pool if slug not in roster_slugs]
-        if unknown_pool:
+        unknown_defaults = [
+            slug for slug in (args.base, args.candidate) if slug not in roster_slugs
+        ]
+        if unknown_defaults:
             raise ScrapeError(
-                "Pool champions are not in the selected lane roster: "
-                + ", ".join(unknown_pool)
+                "Default champions are not in the selected lane roster: "
+                + ", ".join(unknown_defaults)
             )
 
         roster_by_slug = {champion["slug"]: champion for champion in roster}
         roster_by_id = {champion["champion_id"]: champion for champion in roster}
         fetch_order = [
-            *args.pool,
+            args.base,
+            args.candidate,
             *(
                 champion["slug"]
                 for champion in roster
-                if champion["slug"] not in args.pool
+                if champion["slug"] not in {args.base, args.candidate}
             ),
         ]
         pages = {}

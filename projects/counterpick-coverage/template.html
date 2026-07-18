@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta
     name="description"
-    content="Explore which champion most improves a League of Legends champion pool's observed counterpick coverage."
+    content="Explore which second champion best complements a selected current champion using observed, opponent-weighted matchup data."
   >
   <link rel="icon" href="data:,">
   <title>Counterpick Coverage · Hextech Studies</title>
@@ -84,7 +84,8 @@
     }
 
     main {
-      width: 100%;
+      width: min(100%, 1008px);
+      margin: 0 auto;
       padding: 24px;
     }
 
@@ -189,7 +190,7 @@
       font-size: 0.88rem;
     }
 
-    .candidate-panel {
+    .selection-panel {
       width: fit-content;
       max-width: 100%;
       margin-bottom: 18px;
@@ -200,25 +201,25 @@
       box-shadow: 0 4px 12px var(--shadow);
     }
 
-    .candidate-controls {
+    .champion-controls {
       display: flex;
       align-items: flex-start;
       flex-wrap: wrap;
       gap: 8px 14px;
     }
 
-    .candidate-field {
+    .champion-field {
       width: 300px;
       max-width: 100%;
     }
 
-    .candidate-field label {
+    .champion-field label {
       display: block;
       margin-bottom: 5px;
       font-weight: 650;
     }
 
-    .candidate-search {
+    .champion-search {
       width: 100%;
       min-height: 38px;
       padding: 7px 10px;
@@ -227,11 +228,18 @@
       background: var(--background);
     }
 
-    .selection-help,
+    .field-meta,
     .selection-status {
       margin: 5px 0 0;
       color: var(--muted);
       font-size: 0.82rem;
+    }
+
+    .field-meta {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 3px 10px;
     }
 
     .selection-status {
@@ -242,19 +250,9 @@
       margin: 0;
     }
 
-    .candidate-source {
-      min-height: 38px;
-      margin-top: 25px;
-      padding: 8px 10px;
-      border: 1px solid var(--border);
-      border-radius: 5px;
+    .champion-source {
       font-weight: 600;
-      text-decoration: none;
-    }
-
-    .candidate-source:hover {
-      border-color: var(--accent);
-      background: var(--accent-soft);
+      white-space: nowrap;
     }
 
     .score-summary {
@@ -292,8 +290,13 @@
     }
 
     .table-toolbar {
-      width: fit-content;
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      width: min(100%, 960px);
       max-width: 100%;
+      gap: 8px 18px;
       margin-bottom: 8px;
     }
 
@@ -308,8 +311,38 @@
       font-size: 0.85rem;
     }
 
+    .table-actions {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 7px 12px;
+    }
+
+    .result-count {
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .clear-filters {
+      min-height: 32px;
+      padding: 5px 9px;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      background: var(--surface);
+    }
+
+    .clear-filters:hover:not(:disabled) {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .clear-filters:disabled {
+      cursor: default;
+      opacity: 0.5;
+    }
+
     .detail-wrap {
-      width: fit-content;
+      width: min(100%, 960px);
       max-width: 100%;
       overflow: auto;
       border: 1px solid var(--border);
@@ -318,7 +351,7 @@
     }
 
     .detail-table {
-      width: max-content;
+      width: 100%;
       min-width: 750px;
       border-collapse: separate;
       border-spacing: 0;
@@ -333,12 +366,74 @@
       white-space: nowrap;
     }
 
-    .detail-table thead th {
-      position: sticky;
-      top: 0;
-      z-index: 1;
+    .detail-table thead th,
+    .detail-table thead td {
       background: var(--surface-alt);
       font-size: 0.8rem;
+    }
+
+    .detail-table thead tr.filters td {
+      padding: 4px 5px;
+    }
+
+    .sort-button {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      padding: 2px 0;
+      color: inherit;
+      font-weight: 650;
+      text-align: center;
+    }
+
+    .sort-button:hover {
+      color: var(--accent);
+    }
+
+    .sort-indicator {
+      color: var(--accent);
+    }
+
+    .sort-indicator:not(:empty) {
+      margin-left: 3px;
+    }
+
+    .filter-pair {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(46px, 1fr));
+      gap: 4px;
+    }
+
+    .filter-input,
+    .opponent-filter {
+      min-width: 0;
+      height: 28px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--background);
+      font-size: 0.76rem;
+      text-align: center;
+    }
+
+    .filter-input {
+      width: 52px;
+      padding: 3px;
+    }
+
+    .opponent-filter {
+      width: 112px;
+      padding: 3px 6px;
+    }
+
+    .filter-input::placeholder,
+    .opponent-filter::placeholder {
+      color: var(--muted);
+    }
+
+    .filter-input::-webkit-inner-spin-button,
+    .filter-input::-webkit-outer-spin-button {
+      margin: 0;
+      appearance: none;
     }
 
     .detail-table tbody tr:last-child td {
@@ -389,6 +484,12 @@
       text-align: left;
     }
 
+    .empty-state {
+      padding: 18px !important;
+      color: var(--muted);
+      text-align: center !important;
+    }
+
     .disclaimer {
       max-width: 82ch;
       margin: 16px 0 0;
@@ -424,20 +525,18 @@
         grid-column: auto;
       }
 
-      .candidate-panel {
+      .selection-panel {
         width: 100%;
         padding: 10px;
       }
 
-      .candidate-controls,
-      .candidate-field {
+      .champion-controls,
+      .champion-field {
         width: 100%;
       }
 
-      .candidate-source {
-        width: 100%;
-        margin-top: 0;
-        text-align: center;
+      .table-toolbar {
+        align-items: flex-start;
       }
 
       .score-summary {
@@ -464,60 +563,74 @@
       <span class="status-badge">Exploratory</span>
     </div>
     <p class="lede">
-      Which additional champion most improves a pool when the opposing laner
-      is known? Select a candidate to inspect one decomposable measure.
+      Given one champion you already play, which second champion most improves
+      your observed counterpick coverage when the opposing laner is known?
     </p>
     <div class="metadata" id="metadata"></div>
 
-    <details class="method" open>
-      <summary>How this ranking is calculated</summary>
-      <div class="method-body">
-        <div class="formula">
-          opponent weight × max(0, candidate WR − best displayed pool WR)
-        </div>
-        <p>
-          The contribution is calculated separately for every opponent and
-          summed. Opponent weights come from lane pick rates and are normalized
-          once over the current pool’s fixed, displayed matchup universe. When
-          a pool has multiple champions, its baseline is the best displayed
-          estimate for each opponent.
-        </p>
-        <p class="method-note" id="method-note"></p>
-      </div>
-    </details>
-
-    <section class="candidate-panel" aria-labelledby="candidate-label">
-      <div class="candidate-controls">
-        <div class="candidate-field">
-          <label id="candidate-label" for="candidate-search">
-            Candidate champion
+    <section class="selection-panel" aria-label="Champion pair specification">
+      <div class="champion-controls">
+        <div class="champion-field">
+          <label for="base-search">
+            Current champion
           </label>
           <input
-            class="candidate-search"
+            class="champion-search"
+            id="base-search"
+            type="search"
+            list="base-options"
+            autocomplete="off"
+            spellcheck="false"
+            aria-describedby="base-help base-status"
+          >
+          <datalist id="base-options"></datalist>
+          <div class="field-meta" id="base-help">
+            <span>Type to narrow the list, then choose your champion.</span>
+            <a
+              class="champion-source"
+              id="base-source"
+              target="_blank"
+              rel="noreferrer"
+            ></a>
+          </div>
+          <p
+            class="selection-status"
+            id="base-status"
+            role="status"
+            aria-live="polite"
+          ></p>
+        </div>
+
+        <div class="champion-field">
+          <label for="candidate-search">
+            Champion to add
+          </label>
+          <input
+            class="champion-search"
             id="candidate-search"
             type="search"
             list="candidate-options"
             autocomplete="off"
             spellcheck="false"
-            aria-describedby="selection-help selection-status"
+            aria-describedby="candidate-help candidate-status"
           >
           <datalist id="candidate-options"></datalist>
-          <p class="selection-help" id="selection-help">
-            Type to narrow the list, then choose a champion.
-          </p>
+          <div class="field-meta" id="candidate-help">
+            <span>Type to narrow the list, then choose the addition.</span>
+            <a
+              class="champion-source"
+              id="candidate-source"
+              target="_blank"
+              rel="noreferrer"
+            ></a>
+          </div>
           <p
             class="selection-status"
-            id="selection-status"
+            id="candidate-status"
             role="status"
             aria-live="polite"
           ></p>
         </div>
-        <a
-          class="candidate-source"
-          id="candidate-source"
-          target="_blank"
-          rel="noreferrer"
-        ></a>
       </div>
 
       <div
@@ -530,11 +643,11 @@
           <span class="score-value" id="score-rank"></span>
         </div>
         <div class="score-item">
-          <span class="score-label">Pool before</span>
+          <span class="score-label" id="score-before-label"></span>
           <span class="score-value" id="score-before"></span>
         </div>
         <div class="score-item">
-          <span class="score-label">With candidate</span>
+          <span class="score-label" id="score-after-label"></span>
           <span class="score-value" id="score-after"></span>
         </div>
         <div class="score-item">
@@ -548,13 +661,38 @@
       </div>
     </section>
 
+    <details class="method" open>
+      <summary>How this ranking is calculated</summary>
+      <div class="method-body">
+        <div class="formula">
+          opponent weight × max(0, addition WR − current champion WR)
+        </div>
+        <p>
+          The contribution is calculated separately for every opponent and
+          summed. Opponent weights come from lane pick rates and are normalized
+          once over the current champion’s displayed matchup universe. The
+          second champion contributes only where its displayed estimate is
+          better, because the current champion remains available otherwise.
+        </p>
+        <p class="method-note" id="method-note"></p>
+      </div>
+    </details>
+
     <div class="table-toolbar">
-      <h2
-        id="calculation-heading"
-        aria-live="polite"
-        aria-atomic="true"
-      ></h2>
-      <p class="calculation-summary" id="calculation-summary"></p>
+      <div>
+        <h2
+          id="calculation-heading"
+          aria-live="polite"
+          aria-atomic="true"
+        ></h2>
+        <p class="calculation-summary" id="calculation-summary"></p>
+      </div>
+      <div class="table-actions">
+        <span class="result-count" id="result-count" aria-live="polite"></span>
+        <button class="clear-filters" id="clear-filters" type="button">
+          Clear filters
+        </button>
+      </div>
     </div>
 
     <div class="detail-wrap" id="calculation-wrap">
@@ -567,8 +705,8 @@
     </div>
 
     <p class="disclaimer">
-      Population-level data assuming the opponent is known and every pool
-      champion is fully learned. Raw aggregate rates can reflect general
+      Population-level data assuming the opponent is known and both selected
+      champions are fully learned. Raw aggregate rates can reflect general
       champion strength and specialist or off-meta selection as well as
       matchup complementarity; this is not a personal or causal
       recommendation. This project is not affiliated with or endorsed by
@@ -586,12 +724,19 @@
       );
       const metadata = document.getElementById("metadata");
       const methodNote = document.getElementById("method-note");
+      const baseSearch = document.getElementById("base-search");
+      const baseOptions = document.getElementById("base-options");
+      const baseSource = document.getElementById("base-source");
+      const baseStatus = document.getElementById("base-status");
       const candidateSearch = document.getElementById("candidate-search");
       const candidateOptions = document.getElementById("candidate-options");
       const candidateSource = document.getElementById("candidate-source");
-      const selectionStatus = document.getElementById("selection-status");
+      const candidateStatus = document.getElementById("candidate-status");
       const scoreRank = document.getElementById("score-rank");
+      const scoreBeforeLabel =
+        document.getElementById("score-before-label");
       const scoreBefore = document.getElementById("score-before");
+      const scoreAfterLabel = document.getElementById("score-after-label");
       const scoreAfter = document.getElementById("score-after");
       const scoreGain = document.getElementById("score-gain");
       const scoreCoverage = document.getElementById("score-coverage");
@@ -604,28 +749,74 @@
       const calculationHead = document.getElementById("calculation-head");
       const calculationBody = document.getElementById("calculation-body");
       const calculationFoot = document.getElementById("calculation-foot");
+      const resultCount = document.getElementById("result-count");
+      const clearFilters = document.getElementById("clear-filters");
 
-      const rankedCandidates = [...dataset.candidates].sort(
-        (a, b) => b.gain - a.gain || a.source_order - b.source_order
-      );
-      const alphabeticalCandidates = [...dataset.candidates].sort(
+      const alphabeticalChampions = [...dataset.champions].sort(
         (a, b) => a.name.localeCompare(b.name)
       );
-      const rankBySlug = new Map(
-        rankedCandidates.map((candidate, index) => [
-          candidate.slug,
-          index + 1
+      const championBySlug = new Map(
+        dataset.champions.map((champion) => [champion.slug, champion])
+      );
+      const championByName = new Map(
+        dataset.champions.map((champion) => [
+          champion.name.toLocaleLowerCase(),
+          champion
         ])
       );
-      const candidateByName = new Map(
-        dataset.candidates.map((candidate) => [
-          candidate.name.toLocaleLowerCase(),
-          candidate
-        ])
+      const analysisCache = new Map();
+      let selectedBase;
+      let selectedCandidate;
+      let currentAnalysis;
+      let opponentQuery = "";
+      let sort = { key: "contribution", direction: "desc" };
+
+      const columns = [
+        {
+          key: "opponent",
+          label: () => "Opponent",
+          value: (entry) => entry.opponent.name,
+          filterable: false
+        },
+        {
+          key: "weight",
+          label: () => "Encounter weight",
+          value: (entry) => entry.opponent.weight * 100,
+          filterable: true
+        },
+        {
+          key: "base_estimate",
+          label: () => `${selectedBase.name} estimate`,
+          value: (entry) => entry.opponent.base_estimate.win_rate,
+          filterable: true
+        },
+        {
+          key: "candidate_estimate",
+          label: () => `${selectedCandidate.name} estimate`,
+          value: (entry) =>
+            entry.unavailable || entry.matchup === null
+              ? null
+              : entry.matchup.win_rate,
+          filterable: true
+        },
+        {
+          key: "improvement",
+          label: () => "Improvement",
+          value: (entry) => entry.matchup?.improvement ?? 0,
+          filterable: true
+        },
+        {
+          key: "contribution",
+          label: () => "Contribution",
+          value: (entry) => entry.matchup?.contribution ?? 0,
+          filterable: true
+        }
+      ];
+      const filters = new Map(
+        columns
+          .filter((column) => column.filterable)
+          .map((column) => [column.key, { min: null, max: null }])
       );
-      let selectedCandidate =
-        dataset.candidates.find((candidate) => candidate.slug === "zilean") ??
-        rankedCandidates[0];
 
       function titleCase(value) {
         return value
@@ -651,17 +842,171 @@
         return `${value.toLocaleString()} games`;
       }
 
-      function poolNames() {
-        return dataset.pool.map((member) => member.name).join(", ");
+      function roundValue(value) {
+        return Number(value.toFixed(10));
+      }
+
+      function analyzeBase(baseSlug) {
+        if (analysisCache.has(baseSlug)) {
+          return analysisCache.get(baseSlug);
+        }
+        const base = championBySlug.get(baseSlug);
+        if (!base) {
+          throw new Error(`Unknown current champion: ${baseSlug}`);
+        }
+        const rawOpponents = Object.entries(base.matchups)
+          .map(([slug, matchup]) => ({
+            champion: championBySlug.get(slug),
+            matchup
+          }))
+          .filter((entry) =>
+            entry.champion && entry.champion.slug !== baseSlug
+          )
+          .sort(
+            (a, b) =>
+              a.champion.source_order - b.champion.source_order
+          );
+        const universePickRate = rawOpponents.reduce(
+          (total, entry) => total + entry.champion.pick_rate,
+          0
+        );
+        const eligiblePickRate = dataset.champions.reduce(
+          (total, champion) =>
+            total + (champion.slug === baseSlug ? 0 : champion.pick_rate),
+          0
+        );
+        if (rawOpponents.length === 0 || universePickRate <= 0) {
+          throw new Error(`${base.name} has no displayed matchup universe.`);
+        }
+
+        const opponents = rawOpponents.map(({ champion, matchup }) => ({
+          slug: champion.slug,
+          name: champion.name,
+          source_order: champion.source_order,
+          weight: champion.pick_rate / universePickRate,
+          base_estimate: {
+            win_rate: matchup.win_rate,
+            games: matchup.games
+          }
+        }));
+        const poolBefore = roundValue(
+          opponents.reduce(
+            (total, opponent) =>
+              total +
+              opponent.weight * opponent.base_estimate.win_rate,
+            0
+          )
+        );
+        const candidates = dataset.champions
+          .filter((candidate) => candidate.slug !== baseSlug)
+          .map((candidate) => {
+            const matchups = {};
+            let observedWeight = 0;
+            let applicableWeight = 0;
+            let applicableMatchups = 0;
+            const contributions = [];
+
+            for (const opponent of opponents) {
+              if (opponent.slug === candidate.slug) {
+                continue;
+              }
+              applicableWeight += opponent.weight;
+              applicableMatchups += 1;
+              const matchup = candidate.matchups[opponent.slug];
+              if (!matchup) {
+                continue;
+              }
+              observedWeight += opponent.weight;
+              const improvement = roundValue(
+                Math.max(
+                  0,
+                  matchup.win_rate - opponent.base_estimate.win_rate
+                )
+              );
+              const contribution = roundValue(
+                opponent.weight * improvement
+              );
+              contributions.push(contribution);
+              matchups[opponent.slug] = {
+                win_rate: matchup.win_rate,
+                games: matchup.games,
+                improvement,
+                contribution
+              };
+            }
+
+            const gain = roundValue(
+              contributions.reduce((total, value) => total + value, 0)
+            );
+            return {
+              slug: candidate.slug,
+              name: candidate.name,
+              source_order: candidate.source_order,
+              source_url: candidate.source_url,
+              pool_after: roundValue(poolBefore + gain),
+              gain,
+              evidence_coverage:
+                applicableWeight > 0
+                  ? roundValue(observedWeight / applicableWeight)
+                  : 0,
+              observed_matchups: Object.keys(matchups).length,
+              applicable_matchups: applicableMatchups,
+              matchups
+            };
+          })
+          .sort(
+            (a, b) => b.gain - a.gain || a.source_order - b.source_order
+          );
+        const rankBySlug = new Map();
+        let previousGain = null;
+        let sharedRank = 0;
+        candidates.forEach((candidate, index) => {
+          if (previousGain === null || candidate.gain !== previousGain) {
+            sharedRank = index + 1;
+            previousGain = candidate.gain;
+          }
+          rankBySlug.set(candidate.slug, sharedRank);
+        });
+        const analysis = {
+          base,
+          pool_before: poolBefore,
+          opponent_universe: {
+            opponents,
+            displayed_count: opponents.length,
+            eligible_count: dataset.champions.length - 1,
+            pick_rate_coverage: roundValue(
+              universePickRate / eligiblePickRate
+            )
+          },
+          candidates,
+          rank_by_slug: rankBySlug
+        };
+        analysisCache.set(baseSlug, analysis);
+        return analysis;
+      }
+
+      function populateBaseOptions() {
+        const fragment = document.createDocumentFragment();
+        for (const champion of alphabeticalChampions) {
+          const option = document.createElement("option");
+          option.value = champion.name;
+          option.label =
+            `${Object.keys(champion.matchups).length} displayed opponents`;
+          fragment.appendChild(option);
+        }
+        baseOptions.replaceChildren(fragment);
       }
 
       function populateCandidateOptions() {
+        const candidates = [...currentAnalysis.candidates].sort(
+          (a, b) => a.name.localeCompare(b.name)
+        );
         const fragment = document.createDocumentFragment();
-        for (const candidate of alphabeticalCandidates) {
+        for (const candidate of candidates) {
           const option = document.createElement("option");
           option.value = candidate.name;
           option.label =
-            `#${rankBySlug.get(candidate.slug)} · ` +
+            `#${currentAnalysis.rank_by_slug.get(candidate.slug)} · ` +
             percentagePoints(candidate.gain);
           fragment.appendChild(option);
         }
@@ -669,8 +1014,9 @@
       }
 
       function renderMetadata() {
+        metadata.replaceChildren();
         const filters = dataset.filters;
-        const universe = dataset.opponent_universe;
+        const universe = currentAnalysis.opponent_universe;
         const generated = new Date(dataset.generated_at).toLocaleString();
         const items = [
           `${filters.lane_label} lane`,
@@ -682,7 +1028,7 @@
               ? `Patch ${filters.period}`
               : `Rolling ${filters.period} days`,
           filters.queue,
-          `Pool: ${poolNames()}`,
+          `Current champion: ${selectedBase.name}`,
           `${universe.displayed_count} weighted opponents`,
           `Universe coverage: ${coverage(universe.pick_rate_coverage)}`,
           `Generated ${generated}`
@@ -701,21 +1047,22 @@
       }
 
       function renderMethodNote() {
-        const universe = dataset.opponent_universe;
+        const universe = currentAnalysis.opponent_universe;
         methodNote.textContent =
           `This first pass uses observed win rates rather than shrunk estimates ` +
-          `or uncertainty intervals. The score is conditional on the ` +
-          `${universe.displayed_count} opponents for which the current pool has ` +
-          `a displayed baseline; they cover ` +
+          `or uncertainty intervals. For ${selectedBase.name}, the score is ` +
+          `conditional on ${universe.displayed_count} displayed opponents; ` +
+          `they cover ` +
           `${coverage(universe.pick_rate_coverage)} of eligible opponent pick ` +
           `weight. Lolalytics counter tables display matchups with at least ` +
-          `${dataset.source.display_threshold_games} games. A candidate matchup ` +
-          `that is not displayed contributes no demonstrated gain; its opponent ` +
-          `weight is not redistributed. A candidate cannot be selected into its ` +
-          `own mirror matchup. Evidence coverage reports the weighted share of ` +
-          `applicable opponents with a displayed row. For a multi-champion pool, ` +
-          `an unshown pool-member row cannot become its displayed baseline and ` +
-          `the calculation table reports how many pool members supplied evidence.`;
+          `${dataset.source.display_threshold_games} games. An addition matchup ` +
+          `that is not displayed contributes no demonstrated gain, and its ` +
+          `opponent weight is not redistributed. The proposed champion is ` +
+          `unavailable into its own mirror matchup. Evidence coverage reports ` +
+          `the weighted share of applicable opponents with a displayed row. ` +
+          `Changing the current champion rebuilds the opponent universe and ` +
+          `weights, so marginal gains should only be compared within one current ` +
+          `champion. Totals use stored precision; row values are rounded for display.`;
       }
 
       function appendTextCell(row, text, className = "") {
@@ -726,32 +1073,92 @@
         return cell;
       }
 
-      function detailRows(candidate) {
-        return dataset.opponent_universe.opponents
+      function detailRows() {
+        return currentAnalysis.opponent_universe.opponents
           .map((opponent) => ({
             opponent,
-            matchup: candidate.matchups[opponent.slug] ?? null,
-            unavailable: candidate.slug === opponent.slug
-          }))
-          .sort((a, b) => {
-            const contributionDifference =
-              (b.matchup?.contribution ?? 0) -
-              (a.matchup?.contribution ?? 0);
-            return contributionDifference !== 0
-              ? contributionDifference
-              : b.opponent.weight - a.opponent.weight;
-          });
+            matchup: selectedCandidate.matchups[opponent.slug] ?? null,
+            unavailable: selectedCandidate.slug === opponent.slug
+          }));
       }
 
-      function makeEstimateCell(winRate, champion, gameCount, evidenceNote = "") {
+      function columnValue(entry, key) {
+        return columns.find((column) => column.key === key).value(entry);
+      }
+
+      function filterIsActive(key) {
+        const bounds = filters.get(key);
+        return bounds && (bounds.min !== null || bounds.max !== null);
+      }
+
+      function activeFilterCount() {
+        return (
+          [...filters.keys()].filter(filterIsActive).length +
+          (opponentQuery === "" ? 0 : 1)
+        );
+      }
+
+      function filteredRows(rows) {
+        return rows.filter((entry) => {
+          if (
+            opponentQuery &&
+            !entry.opponent.name.toLocaleLowerCase().includes(opponentQuery)
+          ) {
+            return false;
+          }
+          return [...filters].every(([key, bounds]) => {
+            const value = columnValue(entry, key);
+            if (value === null) {
+              return bounds.min === null && bounds.max === null;
+            }
+            return (
+              (bounds.min === null || value >= bounds.min) &&
+              (bounds.max === null || value <= bounds.max)
+            );
+          });
+        });
+      }
+
+      function sortRows(rows) {
+        const direction = sort.direction === "desc" ? -1 : 1;
+        return rows.sort((a, b) => {
+          const aValue = columnValue(a, sort.key);
+          const bValue = columnValue(b, sort.key);
+          if (aValue === null && bValue === null) {
+            return a.opponent.source_order - b.opponent.source_order;
+          }
+          if (aValue === null) {
+            return 1;
+          }
+          if (bValue === null) {
+            return -1;
+          }
+          const comparison =
+            typeof aValue === "string"
+              ? aValue.localeCompare(bValue)
+              : aValue - bValue;
+          if (comparison !== 0) {
+            return comparison * direction;
+          }
+          if (sort.key === "contribution") {
+            const weightDifference =
+              b.opponent.weight - a.opponent.weight;
+            if (weightDifference !== 0) {
+              return weightDifference;
+            }
+          }
+          return a.opponent.source_order - b.opponent.source_order;
+        });
+      }
+
+      function makeEstimateCell(winRate, champion, gameCount) {
         const cell = document.createElement("td");
         const primary = document.createElement("span");
         primary.className = "cell-primary";
         primary.textContent = percent(winRate);
         const secondary = document.createElement("span");
         secondary.className = "cell-secondary";
-        secondary.textContent =
-          `${champion} · ${games(gameCount)}${evidenceNote}`;
+        secondary.textContent = `${champion} · ${games(gameCount)}`;
         cell.append(primary, secondary);
         return cell;
       }
@@ -765,28 +1172,136 @@
         return cell;
       }
 
-      function renderCalculationHead(candidate) {
-        calculationHead.replaceChildren();
-        const headerRow = document.createElement("tr");
-        for (const label of [
-          "Opponent",
-          "Encounter weight",
-          "Best displayed pool estimate",
-          `${candidate.name} estimate`,
-          "Improvement",
-          "Contribution"
-        ]) {
-          const th = document.createElement("th");
-          th.scope = "col";
-          th.textContent = label;
-          headerRow.appendChild(th);
+      function setSort(key) {
+        if (sort.key === key) {
+          sort.direction = sort.direction === "desc" ? "asc" : "desc";
+        } else {
+          sort = {
+            key,
+            direction: key === "opponent" ? "asc" : "desc"
+          };
         }
-        calculationHead.appendChild(headerRow);
+        syncSortHeaders();
+        renderCalculationRows();
       }
 
-      function renderCalculationBody(candidate) {
+      function makeSortHeader(column) {
+        const th = document.createElement("th");
+        th.scope = "col";
+        th.dataset.sortKey = column.key;
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "sort-button";
+        button.dataset.sortButton = column.key;
+        button.addEventListener("click", () => setSort(column.key));
+        const label = document.createElement("span");
+        label.textContent = column.label();
+        const indicator = document.createElement("span");
+        indicator.className = "sort-indicator";
+        button.append(label, indicator);
+        th.appendChild(button);
+        return th;
+      }
+
+      function makeFilterInput(column, bound) {
+        const input = document.createElement("input");
+        input.type = "number";
+        input.step = "any";
+        input.inputMode = "decimal";
+        input.className = "filter-input";
+        input.placeholder = bound;
+        input.dataset.filterKey = column.key;
+        input.dataset.filterBound = bound;
+        input.setAttribute(
+          "aria-label",
+          `${column.label()} ${bound}imum`
+        );
+        const savedValue = filters.get(column.key)[bound];
+        input.value = savedValue === null ? "" : String(savedValue);
+        input.addEventListener("input", () => {
+          const value =
+            input.value.trim() === "" ? null : Number(input.value);
+          filters.get(column.key)[bound] =
+            value === null || Number.isFinite(value) ? value : null;
+          renderCalculationRows();
+        });
+        return input;
+      }
+
+      function makeFilterCell(column) {
+        const cell = document.createElement("td");
+        if (column.key === "opponent") {
+          const input = document.createElement("input");
+          input.type = "search";
+          input.className = "opponent-filter";
+          input.placeholder = "Search";
+          input.value = opponentQuery;
+          input.setAttribute("aria-label", "Filter opponent names");
+          input.addEventListener("input", () => {
+            opponentQuery = input.value.trim().toLocaleLowerCase();
+            renderCalculationRows();
+          });
+          cell.appendChild(input);
+          return cell;
+        }
+        const pair = document.createElement("div");
+        pair.className = "filter-pair";
+        pair.append(
+          makeFilterInput(column, "min"),
+          makeFilterInput(column, "max")
+        );
+        cell.appendChild(pair);
+        return cell;
+      }
+
+      function syncSortHeaders() {
+        calculationHead
+          .querySelectorAll("th[data-sort-key]")
+          .forEach((th) => {
+            const active = th.dataset.sortKey === sort.key;
+            th.setAttribute(
+              "aria-sort",
+              active
+                ? sort.direction === "desc"
+                  ? "descending"
+                  : "ascending"
+                : "none"
+            );
+            th.querySelector(".sort-indicator").textContent = active
+              ? sort.direction === "desc"
+                ? "↓"
+                : "↑"
+              : "";
+          });
+      }
+
+      function renderCalculationHead() {
+        const labels = document.createElement("tr");
+        const inputs = document.createElement("tr");
+        inputs.className = "filters";
+        for (const column of columns) {
+          labels.appendChild(makeSortHeader(column));
+          inputs.appendChild(makeFilterCell(column));
+        }
+        calculationHead.replaceChildren(labels, inputs);
+        syncSortHeaders();
+      }
+
+      function renderCalculationBody(rows) {
+        calculationBody.replaceChildren();
+        if (rows.length === 0) {
+          const row = document.createElement("tr");
+          const cell = document.createElement("td");
+          cell.className = "empty-state";
+          cell.colSpan = columns.length;
+          cell.textContent = "No opponents match the current filters.";
+          row.appendChild(cell);
+          calculationBody.appendChild(row);
+          return;
+        }
+
         const fragment = document.createDocumentFragment();
-        for (const entry of detailRows(candidate)) {
+        for (const entry of rows) {
           const detailRow = document.createElement("tr");
           if ((entry.matchup?.contribution ?? 0) > 0) {
             detailRow.className = "positive-row";
@@ -802,13 +1317,9 @@
           );
           detailRow.appendChild(
             makeEstimateCell(
-              entry.opponent.current_best.win_rate,
-              entry.opponent.current_best.name,
-              entry.opponent.current_best.games,
-              entry.opponent.current_best.pool_size > 1
-                ? ` · ${entry.opponent.current_best.pool_evidence_count}/` +
-                  `${entry.opponent.current_best.pool_size} pool rows shown`
-                : ""
+              entry.opponent.base_estimate.win_rate,
+              selectedBase.name,
+              entry.opponent.base_estimate.games
             )
           );
 
@@ -820,7 +1331,7 @@
             detailRow.appendChild(
               makeEstimateCell(
                 entry.matchup.win_rate,
-                candidate.name,
+                selectedCandidate.name,
                 entry.matchup.games
               )
             );
@@ -840,90 +1351,190 @@
         calculationBody.replaceChildren(fragment);
       }
 
-      function renderCalculationFoot(candidate) {
+      function renderCalculationFoot(rows) {
         const total = document.createElement("tr");
         total.className = "detail-total";
         const totalLabel = document.createElement("td");
         totalLabel.colSpan = 5;
-        totalLabel.textContent = "Sum of stored-precision contributions";
+        totalLabel.textContent =
+          activeFilterCount() === 0
+            ? "All-row total"
+            : "Visible-row subtotal";
         const totalValue = document.createElement("td");
-        totalValue.textContent = percentagePoints(candidate.gain);
+        const visibleTotal = roundValue(
+          rows.reduce(
+            (sum, entry) => sum + (entry.matchup?.contribution ?? 0),
+            0
+          )
+        );
+        totalValue.textContent = percentagePoints(visibleTotal);
         totalValue.className = "gain";
         total.append(totalLabel, totalValue);
         calculationFoot.replaceChildren(total);
+      }
+
+      function renderCalculationRows() {
+        const allRows = detailRows();
+        const rows = sortRows(filteredRows(allRows));
+        const filterCount = activeFilterCount();
+        resultCount.textContent =
+          `${rows.length} of ${allRows.length} opponents` +
+          (filterCount === 0
+            ? ""
+            : ` · ${filterCount} active ` +
+              `filter${filterCount === 1 ? "" : "s"}`);
+        clearFilters.disabled = filterCount === 0;
+        renderCalculationBody(rows);
+        renderCalculationFoot(rows);
       }
 
       function renderCandidate(candidate) {
         selectedCandidate = candidate;
         candidateSearch.value = candidate.name;
         candidateSource.href = candidate.source_url;
-        candidateSource.textContent = `${candidate.name} source ↗`;
+        candidateSource.textContent = "Source ↗";
         candidateSource.setAttribute(
           "aria-label",
           `Open ${candidate.name} matchup source in a new tab`
         );
         scoreRank.textContent =
-          `#${rankBySlug.get(candidate.slug)} of ${dataset.candidates.length}`;
-        scoreBefore.textContent = percent(dataset.pool_before);
+          `#${currentAnalysis.rank_by_slug.get(candidate.slug)} of ` +
+          `${currentAnalysis.candidates.length}`;
+        scoreBeforeLabel.textContent = `${selectedBase.name} baseline`;
+        scoreBefore.textContent = percent(currentAnalysis.pool_before);
+        scoreAfterLabel.textContent =
+          `${selectedBase.name} + ${candidate.name}`;
         scoreAfter.textContent = percent(candidate.pool_after);
         scoreGain.textContent = percentagePoints(candidate.gain);
         scoreCoverage.textContent = coverage(candidate.evidence_coverage);
         calculationHeading.textContent =
-          `${candidate.name} contribution calculation`;
+          `${selectedBase.name} + ${candidate.name} contribution calculation`;
         calculationSummary.textContent =
           `${candidate.observed_matchups} of ${candidate.applicable_matchups} ` +
-          `applicable rows displayed · ` +
+          `applicable addition estimates available · ` +
           `${coverage(candidate.evidence_coverage)} weighted evidence ` +
-          `coverage · row values rounded for display`;
+          `coverage · full gain ${percentagePoints(candidate.gain)}`;
         calculationCaption.textContent =
-          `${candidate.name} opponent-level contribution calculation`;
-        renderCalculationHead(candidate);
-        renderCalculationBody(candidate);
-        renderCalculationFoot(candidate);
+          `${selectedBase.name} plus ${candidate.name} opponent-level ` +
+          `contribution calculation`;
+        renderCalculationHead();
+        renderCalculationRows();
       }
 
       function normalizeName(value) {
         return value.trim().toLocaleLowerCase();
       }
 
-      function findCandidate(value) {
+      function findUniqueChampion(value, choices) {
         const query = normalizeName(value);
         if (!query) {
           return null;
         }
-        const exact = candidateByName.get(query);
+        const exact = choices.find(
+          (champion) => champion.name.toLocaleLowerCase() === query
+        );
         if (exact) {
           return exact;
         }
-        const matches = alphabeticalCandidates.filter((candidate) =>
-          candidate.name.toLocaleLowerCase().includes(query)
+        const matches = choices.filter((champion) =>
+          champion.name.toLocaleLowerCase().includes(query)
         );
         return matches.length === 1 ? matches[0] : null;
       }
 
-      function showSelectionStatus(message = "") {
-        selectionStatus.textContent = message;
+      function renderBase(base, preferredCandidateSlug = null) {
+        selectedBase = base;
+        baseSearch.value = base.name;
+        baseSource.href = base.source_url;
+        baseSource.textContent = "Source ↗";
+        baseSource.setAttribute(
+          "aria-label",
+          `Open ${base.name} matchup source in a new tab`
+        );
+        currentAnalysis = analyzeBase(base.slug);
+        populateCandidateOptions();
+        renderMetadata();
+        renderMethodNote();
+        const candidate =
+          currentAnalysis.candidates.find(
+            (entry) => entry.slug === preferredCandidateSlug
+          ) ??
+          currentAnalysis.candidates.find(
+            (entry) => entry.slug === dataset.defaults.candidate_slug
+          ) ??
+          currentAnalysis.candidates[0];
+        renderCandidate(candidate);
+      }
+
+      function commitBaseSearch() {
+        const requestedName = baseSearch.value.trim();
+        const base = findUniqueChampion(
+          requestedName,
+          alphabeticalChampions
+        );
+        if (base) {
+          baseStatus.textContent = "";
+          candidateStatus.textContent = "";
+          if (base.slug !== selectedBase.slug) {
+            renderBase(base, selectedCandidate?.slug);
+          } else {
+            baseSearch.value = selectedBase.name;
+          }
+          return;
+        }
+        baseSearch.value = selectedBase.name;
+        baseStatus.textContent =
+          `No unique current champion matched “${requestedName}”. ` +
+          `Restored ${selectedBase.name}.`;
       }
 
       function commitCandidateSearch() {
         const requestedName = candidateSearch.value.trim();
-        const candidate = findCandidate(requestedName);
+        const candidate = findUniqueChampion(
+          requestedName,
+          currentAnalysis.candidates
+        );
         if (candidate) {
-          showSelectionStatus();
-          renderCandidate(candidate);
+          candidateStatus.textContent = "";
+          if (candidate.slug !== selectedCandidate.slug) {
+            renderCandidate(candidate);
+          } else {
+            candidateSearch.value = selectedCandidate.name;
+          }
           return;
         }
         candidateSearch.value = selectedCandidate.name;
-        showSelectionStatus(
+        candidateStatus.textContent =
           `No unique candidate matched “${requestedName}”. ` +
-          `Restored ${selectedCandidate.name}.`
-        );
+          `Restored ${selectedCandidate.name}.`;
       }
 
+      baseSearch.addEventListener("input", () => {
+        baseStatus.textContent = "";
+        const exact = championByName.get(normalizeName(baseSearch.value));
+        if (exact && exact.slug !== selectedBase.slug) {
+          candidateStatus.textContent = "";
+          renderBase(exact, selectedCandidate?.slug);
+        }
+      });
+      baseSearch.addEventListener("change", commitBaseSearch);
+      baseSearch.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          window.setTimeout(commitBaseSearch, 0);
+        }
+      });
+      baseSearch.addEventListener("focus", () => {
+        baseSearch.select();
+      });
+
       candidateSearch.addEventListener("input", () => {
-        showSelectionStatus();
-        const exact = candidateByName.get(normalizeName(candidateSearch.value));
-        if (exact) {
+        candidateStatus.textContent = "";
+        const exact = currentAnalysis.candidates.find(
+          (candidate) =>
+            candidate.name.toLocaleLowerCase() ===
+            normalizeName(candidateSearch.value)
+        );
+        if (exact && exact.slug !== selectedCandidate.slug) {
           renderCandidate(exact);
         }
       });
@@ -937,10 +1548,20 @@
         candidateSearch.select();
       });
 
-      renderMetadata();
-      renderMethodNote();
-      populateCandidateOptions();
-      renderCandidate(selectedCandidate);
+      clearFilters.addEventListener("click", () => {
+        opponentQuery = "";
+        for (const key of filters.keys()) {
+          filters.set(key, { min: null, max: null });
+        }
+        renderCalculationHead();
+        renderCalculationRows();
+      });
+
+      populateBaseOptions();
+      const defaultBase =
+        championBySlug.get(dataset.defaults.base_slug) ??
+        alphabeticalChampions[0];
+      renderBase(defaultBase, dataset.defaults.candidate_slug);
     })();
   </script>
 </body>

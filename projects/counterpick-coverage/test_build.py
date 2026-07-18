@@ -58,9 +58,12 @@ def roster_entry(
     }
 
 
-def arguments(pool: list[str]) -> argparse.Namespace:
+def arguments(
+    base: str = "zoe", candidate: str = "veigar"
+) -> argparse.Namespace:
     return argparse.Namespace(
-        pool=pool,
+        base=base,
+        candidate=candidate,
         lane="middle",
         tier="emerald_plus",
         period="30",
@@ -68,7 +71,7 @@ def arguments(pool: list[str]) -> argparse.Namespace:
 
 
 class CoverageCalculationTests(unittest.TestCase):
-    def test_fixed_weights_missing_row_and_candidate_self(self) -> None:
+    def test_singleton_weights_missing_row_and_candidate_self(self) -> None:
         roster = [
             roster_entry("zoe", "Zoe", 40.0, 0),
             roster_entry("ahri", "Ahri", 30.0, 1),
@@ -91,7 +94,13 @@ class CoverageCalculationTests(unittest.TestCase):
                     "malzahar": matchup(60.0),
                 },
             ),
-            "malzahar": page("malzahar", "Malzahar", {}),
+            "malzahar": page(
+                "malzahar",
+                "Malzahar",
+                {
+                    "ahri": matchup(45.0),
+                },
+            ),
             "veigar": page(
                 "veigar",
                 "Veigar",
@@ -102,20 +111,21 @@ class CoverageCalculationTests(unittest.TestCase):
         }
 
         dataset = BUILD.build_dataset(
-            arguments(["zoe"]), roster, pages, "https://example.test/tierlist"
+            arguments(), roster, pages, "https://example.test/tierlist"
         )
         BUILD.validate_dataset(dataset)
+        analysis = BUILD.analyze_singleton_pool(dataset, "zoe")
         opponents = {
             opponent["slug"]: opponent
-            for opponent in dataset["opponent_universe"]["opponents"]
+            for opponent in analysis["opponent_universe"]["opponents"]
         }
         candidates = {
-            candidate["slug"]: candidate for candidate in dataset["candidates"]
+            candidate["slug"]: candidate for candidate in analysis["candidates"]
         }
 
         self.assertAlmostEqual(opponents["ahri"]["weight"], 0.6)
         self.assertAlmostEqual(opponents["malzahar"]["weight"], 0.4)
-        self.assertAlmostEqual(dataset["pool_before"], 44.0)
+        self.assertAlmostEqual(analysis["pool_before"], 44.0)
 
         # Veigar improves one observed cell; the missing Malzahar cell keeps
         # its original weight and contributes zero rather than being dropped.
@@ -130,7 +140,7 @@ class CoverageCalculationTests(unittest.TestCase):
         self.assertAlmostEqual(candidates["ahri"]["gain"], 4.0)
         self.assertNotIn("ahri", candidates["ahri"]["matchups"])
 
-    def test_multi_pool_baseline_reports_displayed_evidence(self) -> None:
+    def test_changing_base_rebuilds_the_universe_and_candidate_scores(self) -> None:
         roster = [
             roster_entry("zoe", "Zoe", 40.0, 0),
             roster_entry("veigar", "Veigar", 30.0, 1),
@@ -160,44 +170,69 @@ class CoverageCalculationTests(unittest.TestCase):
                 "annie",
                 "Annie",
                 {
-                    "ahri": matchup(46.0),
+                    "ahri": matchup(35.0),
                     "malzahar": matchup(55.0),
                 },
             ),
         }
 
         dataset = BUILD.build_dataset(
-            arguments(["zoe", "veigar"]),
+            arguments(),
             roster,
             pages,
             "https://example.test/tierlist",
         )
         BUILD.validate_dataset(dataset)
-        opponents = {
-            opponent["slug"]: opponent
-            for opponent in dataset["opponent_universe"]["opponents"]
-        }
-        annie = next(
+        zoe_analysis = BUILD.analyze_singleton_pool(dataset, "zoe")
+        veigar_analysis = BUILD.analyze_singleton_pool(dataset, "veigar")
+        zoe_annie = next(
             candidate
-            for candidate in dataset["candidates"]
+            for candidate in zoe_analysis["candidates"]
+            if candidate["slug"] == "annie"
+        )
+        veigar_annie = next(
+            candidate
+            for candidate in veigar_analysis["candidates"]
             if candidate["slug"] == "annie"
         )
 
-        ahri_best = opponents["ahri"]["current_best"]
-        self.assertEqual(ahri_best["slug"], "veigar")
-        self.assertEqual(ahri_best["pool_evidence_count"], 2)
-        self.assertEqual(ahri_best["pool_size"], 2)
+        self.assertEqual(
+            [
+                opponent["slug"]
+                for opponent in zoe_analysis["opponent_universe"]["opponents"]
+            ],
+            ["ahri", "malzahar"],
+        )
+        self.assertEqual(
+            [
+                opponent["slug"]
+                for opponent in veigar_analysis["opponent_universe"]["opponents"]
+            ],
+            ["ahri"],
+        )
+        self.assertAlmostEqual(zoe_analysis["pool_before"], 43.3333333333)
+        self.assertAlmostEqual(veigar_analysis["pool_before"], 45.0)
 
-        # Veigar has no displayed Malzahar row, so Zoe is the best displayed
-        # baseline and the 1/2 evidence count exposes that limitation.
-        malzahar_best = opponents["malzahar"]["current_best"]
-        self.assertEqual(malzahar_best["slug"], "zoe")
-        self.assertEqual(malzahar_best["pool_evidence_count"], 1)
-        self.assertEqual(malzahar_best["pool_size"], 2)
+        # Annie is observed but worse against Ahri, so that cell counts toward
+        # evidence while contributing zero. Only Malzahar improves Zoe.
+        self.assertAlmostEqual(zoe_annie["evidence_coverage"], 1.0)
+        self.assertAlmostEqual(zoe_annie["gain"], 1.6666666667)
+        self.assertAlmostEqual(zoe_annie["pool_after"], 45.0)
 
-        self.assertAlmostEqual(dataset["pool_before"], 46.6666666667)
-        self.assertAlmostEqual(annie["gain"], 2.3333333333)
-        self.assertAlmostEqual(annie["pool_after"], 49.0)
+        # Changing the base to Veigar rebuilds its one-row universe. Annie is
+        # worse in that row, so it demonstrates no marginal gain.
+        self.assertAlmostEqual(veigar_annie["evidence_coverage"], 1.0)
+        self.assertAlmostEqual(veigar_annie["gain"], 0.0)
+        self.assertAlmostEqual(veigar_annie["pool_after"], 45.0)
+
+        # The canonical matrix retains observations outside the default base's
+        # universe so another base can be analyzed without another scrape.
+        annie_matrix = next(
+            champion
+            for champion in dataset["champions"]
+            if champion["slug"] == "annie"
+        )
+        self.assertIn("malzahar", annie_matrix["matchups"])
 
 
 if __name__ == "__main__":

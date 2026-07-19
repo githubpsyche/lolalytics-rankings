@@ -263,6 +263,81 @@ class PosteriorCalculationTests(unittest.TestCase):
         )
         self.assertAlmostEqual(estimate["prior_center"], 50.0)
         self.assertAlmostEqual(estimate["adjusted_win_rate"], 50.0)
+        self.assertAlmostEqual(estimate["matchup_effect"], 0.0)
+        self.assertIsNone(estimate["raw_delta_2"])
+        self.assertAlmostEqual(estimate["data_weight"], 0.0)
+
+    def test_matchup_effect_is_shrunk_delta_2(self) -> None:
+        dataset = four_champion_fixture()
+        model = BUILD.build_prior_model(dataset, concentration=100.0)
+        zoe = next(
+            champion
+            for champion in dataset["champions"]
+            if champion["slug"] == "zoe"
+        )
+        estimate = BUILD.matchup_estimate(zoe, "ahri", model)
+
+        # Zoe's direct row is 40% with Delta 2=-10 over 100 games. With
+        # k=100, half of that normalized matchup effect remains.
+        self.assertAlmostEqual(estimate["raw_delta_2"], -10.0)
+        self.assertAlmostEqual(estimate["data_weight"], 0.5)
+        self.assertAlmostEqual(estimate["matchup_effect"], -5.0)
+        self.assertAlmostEqual(
+            estimate["adjusted_win_rate"],
+            estimate["strength_expectation"] + estimate["matchup_effect"],
+        )
+
+    def test_absolute_and_complementarity_scores_are_distinct(self) -> None:
+        base = {
+            "status": "direct",
+            "raw_win_rate": 55.0,
+            "raw_delta_2": 5.0,
+            "strength_expectation": 50.0,
+            "adjusted_win_rate": 55.0,
+            "matchup_effect": 5.0,
+        }
+        generally_strong = {
+            "status": "direct",
+            "raw_win_rate": 60.0,
+            "raw_delta_2": 0.0,
+            "strength_expectation": 60.0,
+            "adjusted_win_rate": 60.0,
+            "matchup_effect": 0.0,
+        }
+        specialist = {
+            "status": "direct",
+            "raw_win_rate": 54.0,
+            "raw_delta_2": 6.0,
+            "strength_expectation": 48.0,
+            "adjusted_win_rate": 54.0,
+            "matchup_effect": 6.0,
+        }
+
+        strong_absolute = BUILD.score_matchup_estimates(
+            base, generally_strong, 0.5, "absolute"
+        )
+        strong_complementarity = BUILD.score_matchup_estimates(
+            base, generally_strong, 0.5, "complementarity"
+        )
+        specialist_absolute = BUILD.score_matchup_estimates(
+            base, specialist, 0.5, "absolute"
+        )
+        specialist_complementarity = BUILD.score_matchup_estimates(
+            base, specialist, 0.5, "complementarity"
+        )
+
+        self.assertAlmostEqual(strong_absolute["contribution"], 2.5)
+        self.assertAlmostEqual(strong_complementarity["contribution"], 0.0)
+        self.assertAlmostEqual(specialist_absolute["contribution"], 0.0)
+        self.assertAlmostEqual(
+            specialist_complementarity["contribution"], 0.5
+        )
+        self.assertAlmostEqual(
+            strong_absolute["strength_contribution"]
+            + strong_absolute["matchup_contribution"],
+            strong_absolute["contribution"],
+        )
+        self.assertLess(strong_absolute["matchup_contribution"], 0.0)
 
     def test_global_empirical_bayes_fit_is_positive_and_order_invariant(self) -> None:
         dataset = four_champion_fixture()
@@ -393,32 +468,76 @@ class CoverageCalculationTests(unittest.TestCase):
         self.assertAlmostEqual(veigar["coverage"]["joint_direct_weight"], 0.6)
         self.assertAlmostEqual(veigar["direct_contribution_share"], 1.0)
 
-    def test_contributions_sum_to_adjusted_gain_and_drive_sort_order(self) -> None:
+    def test_both_score_modes_sum_and_drive_their_own_rank_order(self) -> None:
         dataset = four_champion_fixture()
         analysis = BUILD.analyze_singleton_pool(
             dataset, "zoe", concentration=100.0
         )
 
-        gains = [candidate["gain"] for candidate in analysis["candidates"]]
-        self.assertEqual(gains, sorted(gains, reverse=True))
+        default_ranks = [
+            candidate["scores"][BUILD.DEFAULT_SCORE_MODE]["rank"]
+            for candidate in analysis["candidates"]
+        ]
+        self.assertEqual(default_ranks, sorted(default_ranks))
         for candidate in analysis["candidates"]:
-            contribution_sum = math.fsum(
-                row["contribution"]
-                for row in candidate["matchups"].values()
-            )
-            self.assertAlmostEqual(contribution_sum, candidate["gain"])
-            raw_contribution_sum = math.fsum(
-                row["raw_contribution"]
-                for row in candidate["matchups"].values()
-                if row["raw_contribution"] is not None
-            )
+            for mode in BUILD.SCORE_MODES:
+                score = candidate["scores"][mode]
+                contribution_sum = math.fsum(
+                    row["scores"][mode]["contribution"]
+                    for row in candidate["matchups"].values()
+                )
+                self.assertAlmostEqual(contribution_sum, score["gain"])
+                raw_contribution_sum = math.fsum(
+                    row["scores"][mode]["raw_contribution"]
+                    for row in candidate["matchups"].values()
+                    if row["scores"][mode]["raw_contribution"] is not None
+                )
+                self.assertAlmostEqual(
+                    raw_contribution_sum,
+                    score["observed_only_gain"],
+                )
+                self.assertAlmostEqual(
+                    score["pool_after"],
+                    analysis["pool_before_by_mode"][mode] + score["gain"],
+                )
+                self.assertAlmostEqual(
+                    score["gain_interval"]["mean"], score["gain"]
+                )
+                self.assertEqual(
+                    score["rank"],
+                    analysis["rank_by_mode"][mode][candidate["slug"]],
+                )
+            absolute = candidate["scores"]["absolute"]
             self.assertAlmostEqual(
-                raw_contribution_sum,
-                candidate["observed_only_gain"],
+                absolute["strength_contribution"]
+                + absolute["matchup_contribution"],
+                absolute["gain"],
             )
-            self.assertAlmostEqual(
-                candidate["pool_after"],
-                analysis["pool_before"] + candidate["gain"],
+
+    def test_exact_score_ties_share_a_rank(self) -> None:
+        dataset = four_champion_fixture()
+        for champion in dataset["champions"]:
+            for row in champion["matchups"].values():
+                row.update(
+                    {
+                        "win_rate": 50.0,
+                        "all_champs_win_rate": 50.0,
+                        "delta_1": 0.0,
+                        "delta_2": 0.0,
+                    }
+                )
+
+        analysis = BUILD.analyze_singleton_pool(
+            dataset, "zoe", concentration=100.0
+        )
+
+        for mode in BUILD.SCORE_MODES:
+            self.assertEqual(
+                {
+                    candidate["scores"][mode]["rank"]
+                    for candidate in analysis["candidates"]
+                },
+                {1},
             )
 
 

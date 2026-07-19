@@ -49,6 +49,8 @@ REQUEST_TIMEOUT = 30
 REQUEST_DELAY = 0.25
 REQUEST_ATTEMPTS = 3
 INTERVAL_LEVEL = 0.90
+SCORE_MODES = ("complementarity", "absolute")
+DEFAULT_SCORE_MODE = "complementarity"
 PROBABILITY_EPSILON = 1e-6
 CONCENTRATION_MIN = 0.1
 CONCENTRATION_MAX = 1_000_000.0
@@ -93,7 +95,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
             "Rank second-champion additions to any singleton pool by "
-            "sample-adjusted marginal counterpick coverage."
+            "strength-normalized matchup complementarity or absolute "
+            "expected coverage."
         )
     )
     parser.add_argument("--lane", choices=LANES, default="middle")
@@ -715,19 +718,21 @@ def matchup_estimate(
     opponent_slug: str,
     prior_model: dict[str, Any],
 ) -> dict[str, Any]:
-    """Build a direct or explicitly prior-only adjusted matchup estimate."""
+    """Build absolute and strength-normalized estimates for one matchup."""
     matchup = champion["matchups"].get(opponent_slug)
     if matchup is None:
         prior_center = complete_prior_center(
             champion["slug"], opponent_slug, prior_model
         )
         raw_win_rate = None
+        raw_delta_2 = None
         games = 0
         status = "modeled_only"
         prior_source = "opponent_all_wr_plus_champion_strength"
     else:
         prior_center = observed_prior_center(matchup)
         raw_win_rate = matchup["win_rate"]
+        raw_delta_2 = matchup["delta_2"]
         games = matchup["games"]
         status = "direct"
         prior_source = "observed_win_rate_minus_delta_2"
@@ -738,17 +743,31 @@ def matchup_estimate(
         prior_center=prior_center,
         concentration=prior_model["concentration"],
     )
+    matchup_effect = round_value(posterior["mean"] - prior_center)
+    effect_interval = {
+        "level": posterior["interval"]["level"],
+        "lower": round_value(posterior["interval"]["lower"] - prior_center),
+        "upper": round_value(posterior["interval"]["upper"] - prior_center),
+        "method": posterior["interval"]["method"],
+    }
     return {
         "status": status,
         "raw_win_rate": raw_win_rate,
+        "raw_delta_2": raw_delta_2,
         # Retain the historical key for consumers that inspect direct rows.
         "win_rate": raw_win_rate,
         "games": games,
+        "data_weight": round_value(
+            games / (games + prior_model["concentration"])
+        ),
         "prior_center": prior_center,
+        "strength_expectation": prior_center,
         "prior_center_source": prior_source,
         "adjusted_win_rate": posterior["mean"],
+        "matchup_effect": matchup_effect,
         "posterior_variance": posterior["variance"],
         "interval_90": posterior["interval"],
+        "matchup_effect_interval_90": effect_interval,
         "approximate_wins": posterior["approximate_wins"],
     }
 
@@ -767,7 +786,10 @@ def fixed_assignment_gain_interval(
     if not 0 < interval_level < 1:
         raise ValueError("Interval level must be between zero and one")
     mean = math.fsum(
-        component["weight"] * component["improvement"]
+        component.get(
+            "contribution",
+            component["weight"] * component["improvement"],
+        )
         for component in components
         if component["improvement"] > 0
     )
@@ -790,6 +812,94 @@ def fixed_assignment_gain_interval(
         "upper": round_value(mean + margin),
         "method": "normal_fixed_posterior_mean_assignments",
     }
+
+
+def score_matchup_estimates(
+    base_estimate: dict[str, Any],
+    candidate_estimate: dict[str, Any],
+    weight: float,
+    mode: str,
+) -> dict[str, Any]:
+    """Score one candidate matchup under one disclosed ranking objective."""
+    if mode not in SCORE_MODES:
+        raise ValueError(f"Unknown score mode: {mode}")
+    unavailable = candidate_estimate["status"] == "unavailable_mirror"
+    value_key = (
+        "matchup_effect" if mode == "complementarity" else "adjusted_win_rate"
+    )
+    raw_key = "raw_delta_2" if mode == "complementarity" else "raw_win_rate"
+    base_value = base_estimate[value_key]
+    candidate_value = None if unavailable else candidate_estimate[value_key]
+    difference = (
+        0.0
+        if unavailable
+        else round_value(candidate_value - base_value)
+    )
+    improvement = round_value(max(0.0, difference))
+    contribution = round_value(weight * improvement)
+    joint_direct = (
+        base_estimate["status"] == "direct"
+        and candidate_estimate["status"] == "direct"
+    )
+    raw_improvement = (
+        round_value(
+            max(
+                0.0,
+                candidate_estimate[raw_key] - base_estimate[raw_key],
+            )
+        )
+        if joint_direct
+        else None
+    )
+    raw_contribution = (
+        round_value(weight * raw_improvement)
+        if raw_improvement is not None
+        else None
+    )
+    result = {
+        "base_value": base_value,
+        "candidate_value": candidate_value,
+        "difference": difference,
+        "improvement": improvement,
+        "contribution": contribution,
+        "raw_improvement": raw_improvement,
+        "raw_contribution": raw_contribution,
+        "pair_value": round_value(base_value + improvement),
+    }
+    if mode == "absolute":
+        strength_difference = (
+            0.0
+            if unavailable
+            else round_value(
+                candidate_estimate["strength_expectation"]
+                - base_estimate["strength_expectation"]
+            )
+        )
+        matchup_difference = (
+            0.0
+            if unavailable
+            else round_value(
+                candidate_estimate["matchup_effect"]
+                - base_estimate["matchup_effect"]
+            )
+        )
+        strength_contribution = (
+            round_value(weight * strength_difference)
+            if improvement > 0
+            else 0.0
+        )
+        result.update(
+            {
+                "strength_difference": strength_difference,
+                "matchup_difference": matchup_difference,
+                "strength_contribution": strength_contribution,
+                # Subtraction makes the displayed decomposition exact.
+                "matchup_contribution": round_value(
+                    contribution - strength_contribution
+                ),
+            }
+        )
+    return result
 
 
 def build_dataset(
@@ -867,6 +977,12 @@ def build_dataset(
             "question": "expand_singleton_pool_to_pair",
             "estimate": "beta_binomial_posterior_mean",
             "raw_estimate": "observed_matchup_win_rate",
+            "default_score_mode": DEFAULT_SCORE_MODE,
+            "score_modes": list(SCORE_MODES),
+            "complementarity_estimate": (
+                "posterior_mean_minus_strength_only_expectation"
+            ),
+            "complementarity_raw_estimate": "lolalytics_delta_2",
             "prior_center_direct": "observed_win_rate_minus_delta_2",
             "prior_center_missing": (
                 "opponent_all_wr_plus_median_champion_strength_adjustment"
@@ -950,13 +1066,6 @@ def analyze_singleton_pool(
             },
         )
 
-    pool_before = round_value(
-        math.fsum(
-            opponent["weight"]
-            * opponent["base_estimate"]["adjusted_win_rate"]
-            for opponent in opponents
-        )
-    )
     base_direct_rows = [
         opponent
         for opponent in opponents
@@ -965,6 +1074,22 @@ def analyze_singleton_pool(
     base_direct_weight = round_value(
         math.fsum(opponent["weight"] for opponent in base_direct_rows)
     )
+    pool_before_by_mode = {
+        "absolute": round_value(
+            math.fsum(
+                opponent["weight"]
+                * opponent["base_estimate"]["adjusted_win_rate"]
+                for opponent in opponents
+            )
+        ),
+        "complementarity": round_value(
+            math.fsum(
+                opponent["weight"]
+                * opponent["base_estimate"]["matchup_effect"]
+                for opponent in opponents
+            )
+        ),
+    }
 
     candidates = []
     for candidate in dataset["champions"]:
@@ -977,10 +1102,17 @@ def analyze_singleton_pool(
         candidate_direct_count = 0
         joint_direct_weight = 0.0
         joint_direct_count = 0
-        contributions = []
-        direct_contributions = []
-        raw_contributions = []
-        uncertainty_components = []
+        accumulators = {
+            mode: {
+                "contributions": [],
+                "raw_contributions": [],
+                "uncertainty_components": [],
+                "joint_direct_contributions": [],
+                "candidate_modeled_contributions": [],
+                "base_modeled_contributions": [],
+            }
+            for mode in SCORE_MODES
+        }
 
         for opponent in opponents:
             opponent_slug = opponent["slug"]
@@ -989,18 +1121,20 @@ def analyze_singleton_pool(
                 candidate_estimate = {
                     "status": "unavailable_mirror",
                     "raw_win_rate": None,
+                    "raw_delta_2": None,
                     "win_rate": None,
                     "games": 0,
+                    "data_weight": None,
                     "prior_center": None,
+                    "strength_expectation": None,
                     "prior_center_source": None,
                     "adjusted_win_rate": None,
+                    "matchup_effect": None,
                     "posterior_variance": None,
                     "interval_90": None,
+                    "matchup_effect_interval_90": None,
                     "approximate_wins": None,
                 }
-                improvement = 0.0
-                raw_improvement = None
-                raw_contribution = None
             else:
                 applicable_weight += opponent["weight"]
                 applicable_count += 1
@@ -1013,70 +1147,59 @@ def analyze_singleton_pool(
                     if base_estimate["status"] == "direct":
                         joint_direct_weight += opponent["weight"]
                         joint_direct_count += 1
-                improvement = round_value(
-                    max(
-                        0.0,
-                        candidate_estimate["adjusted_win_rate"]
-                        - base_estimate["adjusted_win_rate"],
-                    )
-                )
-                raw_improvement = (
-                    round_value(
-                        max(
-                            0.0,
-                            candidate_estimate["raw_win_rate"]
-                            - base_estimate["raw_win_rate"],
-                        )
-                    )
-                    if (
-                        base_estimate["status"] == "direct"
-                        and candidate_estimate["status"] == "direct"
-                    )
-                    else None
-                )
-                raw_contribution = (
-                    round_value(opponent["weight"] * raw_improvement)
-                    if raw_improvement is not None
-                    else None
-                )
 
-            contribution = round_value(opponent["weight"] * improvement)
-            contributions.append(contribution)
-            if raw_contribution is not None:
-                raw_contributions.append(raw_contribution)
-            if candidate_estimate["status"] != "unavailable_mirror":
-                uncertainty_components.append(
+            row_scores = {}
+            for mode in SCORE_MODES:
+                score = score_matchup_estimates(
+                    base_estimate,
+                    candidate_estimate,
+                    opponent["weight"],
+                    mode,
+                )
+                row_scores[mode] = score
+                accumulator = accumulators[mode]
+                accumulator["contributions"].append(score["contribution"])
+                if score["raw_contribution"] is not None:
+                    accumulator["raw_contributions"].append(
+                        score["raw_contribution"]
+                    )
+                if candidate_estimate["status"] == "unavailable_mirror":
+                    continue
+                accumulator["uncertainty_components"].append(
                     {
                         "weight": opponent["weight"],
-                        "improvement": improvement,
+                        "improvement": score["improvement"],
+                        "contribution": score["contribution"],
                         "base_variance": base_estimate["posterior_variance"],
                         "candidate_variance": candidate_estimate[
                             "posterior_variance"
                         ],
                     }
                 )
-            if (
-                base_estimate["status"] == "direct"
-                and candidate_estimate["status"] == "direct"
-            ):
-                direct_contributions.append(contribution)
+                if (
+                    base_estimate["status"] == "direct"
+                    and candidate_estimate["status"] == "direct"
+                ):
+                    evidence_key = "joint_direct_contributions"
+                elif candidate_estimate["status"] == "modeled_only":
+                    evidence_key = "candidate_modeled_contributions"
+                else:
+                    evidence_key = "base_modeled_contributions"
+                accumulator[evidence_key].append(score["contribution"])
+
+            absolute_score = row_scores["absolute"]
             candidate_matchups[opponent_slug] = {
                 **candidate_estimate,
                 "base_status": base_estimate["status"],
-                "improvement": improvement,
-                "raw_improvement": raw_improvement,
-                "contribution": contribution,
-                "raw_contribution": raw_contribution,
-                "pair_estimate": round_value(
-                    base_estimate["adjusted_win_rate"] + improvement
-                ),
+                "scores": row_scores,
+                # Compatibility aliases retain the historical absolute score.
+                "improvement": absolute_score["improvement"],
+                "raw_improvement": absolute_score["raw_improvement"],
+                "contribution": absolute_score["contribution"],
+                "raw_contribution": absolute_score["raw_contribution"],
+                "pair_estimate": absolute_score["pair_value"],
             }
 
-        gain = round_value(math.fsum(contributions))
-        observed_only_gain = round_value(math.fsum(raw_contributions))
-        gain_interval = fixed_assignment_gain_interval(
-            uncertainty_components
-        )
         candidate_direct_coverage = (
             round_value(candidate_direct_weight / applicable_weight)
             if applicable_weight > 0
@@ -1086,10 +1209,6 @@ def analyze_singleton_pool(
             round_value(joint_direct_weight / applicable_weight)
             if applicable_weight > 0
             else 0.0
-        )
-        direct_contribution = round_value(math.fsum(direct_contributions))
-        direct_contribution_share = (
-            round_value(direct_contribution / gain) if gain > 0 else None
         )
         base_direct_applicable_count = sum(
             opponent["slug"] != candidate["slug"]
@@ -1104,23 +1223,80 @@ def analyze_singleton_pool(
                 and opponent["base_estimate"]["status"] == "direct"
             )
         )
+        score_summaries = {}
+        for mode in SCORE_MODES:
+            accumulator = accumulators[mode]
+            gain = round_value(math.fsum(accumulator["contributions"]))
+            observed_only_gain = round_value(
+                math.fsum(accumulator["raw_contributions"])
+            )
+            joint_direct_contribution = round_value(
+                math.fsum(accumulator["joint_direct_contributions"])
+            )
+            candidate_modeled_contribution = round_value(
+                math.fsum(accumulator["candidate_modeled_contributions"])
+            )
+            base_modeled_contribution = round_value(
+                math.fsum(accumulator["base_modeled_contributions"])
+            )
+            contribution_by_evidence = {
+                "joint_direct": joint_direct_contribution,
+                "candidate_modeled": candidate_modeled_contribution,
+                "base_modeled": base_modeled_contribution,
+            }
+            score_summary = {
+                "pool_before": pool_before_by_mode[mode],
+                "pool_after": round_value(pool_before_by_mode[mode] + gain),
+                "gain": gain,
+                "gain_interval": fixed_assignment_gain_interval(
+                    accumulator["uncertainty_components"]
+                ),
+                "observed_only_gain": observed_only_gain,
+                "direct_contribution": joint_direct_contribution,
+                "direct_contribution_share": (
+                    round_value(joint_direct_contribution / gain)
+                    if gain > 0
+                    else None
+                ),
+                "contribution_by_evidence": contribution_by_evidence,
+            }
+            if mode == "absolute":
+                strength_contribution = round_value(
+                    math.fsum(
+                        row["scores"]["absolute"]["strength_contribution"]
+                        for row in candidate_matchups.values()
+                    )
+                )
+                score_summary["strength_contribution"] = strength_contribution
+                score_summary["matchup_contribution"] = round_value(
+                    gain - strength_contribution
+                )
+            score_summaries[mode] = score_summary
+
+        absolute_summary = score_summaries["absolute"]
         candidates.append(
             {
                 "slug": candidate["slug"],
                 "name": candidate["name"],
                 "source_order": candidate["source_order"],
                 "source_url": candidate["source_url"],
-                "pool_after": round_value(pool_before + gain),
-                "gain": gain,
-                "gain_interval": gain_interval,
-                "observed_only_gain": observed_only_gain,
+                "pick_rate": candidate["pick_rate"],
+                "overall_win_rate": candidate["overall_win_rate"],
+                "scores": score_summaries,
+                # Compatibility aliases retain the historical absolute score.
+                "pool_after": absolute_summary["pool_after"],
+                "gain": absolute_summary["gain"],
+                "gain_interval": absolute_summary["gain_interval"],
+                "observed_only_gain": absolute_summary["observed_only_gain"],
                 # Historical aliases now refer specifically to direct candidate data.
                 "evidence_coverage": candidate_direct_coverage,
                 "observed_matchups": candidate_direct_count,
                 "applicable_matchups": applicable_count,
                 "modeled_matchups": applicable_count - candidate_direct_count,
                 "unavailable_matchups": len(opponents) - applicable_count,
-                "direct_contribution_share": direct_contribution_share,
+                "direct_contribution_share": absolute_summary[
+                    "direct_contribution_share"
+                ],
                 "coverage": {
                     "base_direct_rows": base_direct_applicable_count,
                     "base_modeled_rows": (
@@ -1139,15 +1315,45 @@ def analyze_singleton_pool(
                     "joint_direct_rows": joint_direct_count,
                     "joint_modeled_rows": applicable_count - joint_direct_count,
                     "joint_direct_weight": joint_direct_coverage,
-                    "direct_contribution": direct_contribution,
-                    "direct_contribution_share": direct_contribution_share,
+                    "contribution_by_mode": {
+                        mode: score_summaries[mode][
+                            "contribution_by_evidence"
+                        ]
+                        for mode in SCORE_MODES
+                    },
                 },
                 "matchups": candidate_matchups,
             }
         )
 
+    rank_by_mode = {}
+    for mode in SCORE_MODES:
+        ranked = sorted(
+            candidates,
+            key=lambda candidate: (
+                -candidate["scores"][mode]["gain"],
+                candidate["source_order"],
+            ),
+        )
+        mode_ranks = {}
+        previous_gain = None
+        displayed_rank = 0
+        for index, candidate in enumerate(ranked, start=1):
+            gain = candidate["scores"][mode]["gain"]
+            if previous_gain is None or gain != previous_gain:
+                displayed_rank = index
+                previous_gain = gain
+            mode_ranks[candidate["slug"]] = displayed_rank
+        rank_by_mode[mode] = mode_ranks
+        for candidate in candidates:
+            candidate["scores"][mode]["rank"] = rank_by_mode[mode][
+                candidate["slug"]
+            ]
     candidates.sort(
-        key=lambda candidate: (-candidate["gain"], candidate["source_order"])
+        key=lambda candidate: (
+            candidate["scores"][DEFAULT_SCORE_MODE]["rank"],
+            candidate["source_order"],
+        )
     )
     return {
         "base": {
@@ -1161,7 +1367,11 @@ def analyze_singleton_pool(
                 "overall_win_rate",
             )
         },
-        "pool_before": pool_before,
+        # Compatibility alias retains the historical absolute baseline.
+        "pool_before": pool_before_by_mode["absolute"],
+        "pool_before_by_mode": pool_before_by_mode,
+        "rank_by_mode": rank_by_mode,
+        "default_score_mode": DEFAULT_SCORE_MODE,
         "prior": {
             "concentration": prior_model["concentration"],
             "interval_level": INTERVAL_LEVEL,
@@ -1303,6 +1513,29 @@ def validate_dataset(dataset: dict[str, Any]) -> None:
             raise ScrapeError(
                 f"{analysis['base']['name']}: candidate count is inconsistent"
             )
+        for mode in SCORE_MODES:
+            ranked = sorted(
+                analysis["candidates"],
+                key=lambda candidate: (
+                    -candidate["scores"][mode]["gain"],
+                    candidate["source_order"],
+                ),
+            )
+            previous_gain = None
+            expected_rank = 0
+            for index, candidate in enumerate(ranked, start=1):
+                gain = candidate["scores"][mode]["gain"]
+                if previous_gain is None or gain != previous_gain:
+                    expected_rank = index
+                    previous_gain = gain
+                if (
+                    analysis["rank_by_mode"][mode][candidate["slug"]]
+                    != expected_rank
+                ):
+                    raise ScrapeError(
+                        f"{analysis['base']['name']}: {mode} ranks "
+                        "are inconsistent"
+                    )
         for candidate in analysis["candidates"]:
             applicable_opponents = [
                 opponent
@@ -1341,6 +1574,81 @@ def validate_dataset(dataset: dict[str, Any]) -> None:
             if candidate["modeled_matchups"] != len(modeled_rows):
                 raise ScrapeError(
                     f"{candidate['name']}: modeled matchup count is inconsistent"
+                )
+            for matchup in candidate["matchups"].values():
+                if matchup["status"] == "unavailable_mirror":
+                    continue
+                if not math.isclose(
+                    matchup["adjusted_win_rate"],
+                    matchup["strength_expectation"]
+                    + matchup["matchup_effect"],
+                    abs_tol=1e-9,
+                ):
+                    raise ScrapeError(
+                        f"{candidate['name']}: estimate decomposition is inconsistent"
+                    )
+            for mode in SCORE_MODES:
+                score = candidate["scores"][mode]
+                mode_contribution_sum = round_value(
+                    math.fsum(
+                        matchup["scores"][mode]["contribution"]
+                        for matchup in candidate["matchups"].values()
+                    )
+                )
+                if not math.isclose(
+                    mode_contribution_sum, score["gain"], abs_tol=1e-9
+                ):
+                    raise ScrapeError(
+                        f"{candidate['name']}: {mode} contribution sum "
+                        "is inconsistent"
+                    )
+                evidence_sum = round_value(
+                    math.fsum(score["contribution_by_evidence"].values())
+                )
+                if not math.isclose(
+                    evidence_sum, score["gain"], abs_tol=1e-9
+                ):
+                    raise ScrapeError(
+                        f"{candidate['name']}: {mode} evidence decomposition "
+                        "is inconsistent"
+                    )
+                expected_mode_pair = round_value(
+                    analysis["pool_before_by_mode"][mode] + score["gain"]
+                )
+                if not math.isclose(
+                    expected_mode_pair, score["pool_after"], abs_tol=1e-9
+                ):
+                    raise ScrapeError(
+                        f"{candidate['name']}: {mode} pair score is inconsistent"
+                    )
+                if not math.isclose(
+                    score["gain_interval"]["mean"],
+                    score["gain"],
+                    abs_tol=1e-9,
+                ):
+                    raise ScrapeError(
+                        f"{candidate['name']}: {mode} interval center is inconsistent"
+                    )
+                if score["rank"] != analysis["rank_by_mode"][mode][
+                    candidate["slug"]
+                ]:
+                    raise ScrapeError(
+                        f"{candidate['name']}: {mode} rank is inconsistent"
+                    )
+                direct_share = score["direct_contribution_share"]
+                if direct_share is not None and not 0 <= direct_share <= 1:
+                    raise ScrapeError(
+                        f"{candidate['name']}: {mode} direct share is invalid"
+                    )
+            absolute_score = candidate["scores"]["absolute"]
+            if not math.isclose(
+                absolute_score["strength_contribution"]
+                + absolute_score["matchup_contribution"],
+                absolute_score["gain"],
+                abs_tol=1e-9,
+            ):
+                raise ScrapeError(
+                    f"{candidate['name']}: absolute decomposition is inconsistent"
                 )
             contribution_sum = round_value(
                 math.fsum(
@@ -1407,7 +1715,15 @@ def page_dataset(dataset: dict[str, Any]) -> dict[str, Any]:
         "generated_at": dataset["generated_at"],
         "filters": dataset["filters"],
         "source": dataset["source"],
-        "method": dataset["method"],
+        "method": dataset["method"]
+        | {
+            "default_score_mode": DEFAULT_SCORE_MODE,
+            "score_modes": list(SCORE_MODES),
+            "complementarity_estimate": (
+                "posterior_mean_minus_strength_only_expectation"
+            ),
+            "complementarity_raw_estimate": "lolalytics_delta_2",
+        },
         "prior_model": prior_model,
         "defaults": dataset["defaults"],
         "champions": [

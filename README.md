@@ -48,14 +48,18 @@ tracked.
 
 An exploratory table for expanding a one-champion pool to two champions.
 Choose the champion you already play; the landing page ranks every valid
-addition by sample-adjusted marginal counterpick coverage and links each result
-to a separate, shareable pair breakdown. Both tables support column sorting,
-text search, and inclusive numeric minimum and maximum filters. The pair
-breakdown exposes every opponent-level term behind the selected score,
-including the raw rate, games, strength-only expectation, adjusted estimate,
-interval, and whether a matchup has direct data. Opponent weights come from
-opposing lane pick rates over one common roster. The rankings default to Zoe in
-Middle, while a pair URL with no parameters defaults to Zoe + Zilean.
+addition under two explicit lenses and links each result to a separate,
+shareable pair breakdown. The default Matchup complementarity lens ranks
+pick-rate-weighted positive improvements in sample-adjusted Lolalytics Delta 2,
+excluding general champion strength. The Absolute expected coverage lens ranks
+improvements in adjusted matchup win rate and retains champion-wide strength.
+Both tables support column sorting, text search, and inclusive numeric minimum
+and maximum filters. The pair breakdown exposes raw win rate and Delta 2,
+games, strength-only expectation, shrunk matchup effect, adjusted win rate,
+intervals, direct/prior status, and every opponent-level contribution under the
+selected lens. Opponent weights come from opposing lane pick rates over one
+common roster. The rankings default to Zoe in Middle, while a pair URL with no
+parameters defaults to Zoe + Zilean.
 
 Refresh its data and generated pages with:
 
@@ -90,9 +94,11 @@ project. A successful scrape atomically updates:
 Generated URLs keep the current selection shareable:
 
 ```text
-https://githubpsyche.github.io/hextech-studies/counterpick-coverage/?base=zoe
-https://githubpsyche.github.io/hextech-studies/counterpick-coverage/pair/?base=zoe&candidate=zilean
+https://githubpsyche.github.io/hextech-studies/counterpick-coverage/?base=zoe&mode=complementarity
+https://githubpsyche.github.io/hextech-studies/counterpick-coverage/pair/?base=zoe&mode=complementarity&candidate=zilean
 ```
+
+Use `mode=absolute` for the absolute expected coverage lens.
 
 To rebuild only the pages after editing their shared template:
 
@@ -106,22 +112,30 @@ Run the small hand-checkable calculation fixtures with:
 uv run projects/counterpick-coverage/test_build.py
 ```
 
-Each displayed matchup rate is adjusted toward a strength-only expectation
-derived from Lolalytics Δ2. The weight assigned to that expectation is one
-globally fitted empirical-Bayes concentration, disclosed in the generated page
-as equivalent prior games. Lolalytics-suppressed rows use the opponent's
-all-champions baseline plus the focal champion's median strength adjustment
-with zero observed games and are visibly marked as prior-only. The addition's
-own mirror matchup remains unavailable.
+For a direct row, the sample-adjusted matchup effect is
+`n / (n + k) × Lolalytics Delta 2`, where `k` is one globally fitted
+empirical-Bayes concentration disclosed as equivalent prior games. A suppressed
+row uses a disclosed zero-effect matchup prior. Its absolute adjusted win rate
+is the champion's strength-only expectation plus that shrunk matchup effect;
+the strength expectation comes from Lolalytics Delta 2 for direct rows and the
+fitted snapshot model for suppressed rows. Prior-only rows remain visibly
+marked, and the addition's own mirror matchup remains unavailable.
 
-Candidates are ranked only by the sum of their positive adjusted
-opponent-level contributions. Pick rate, direct-data coverage, observed-only
-gain, and uncertainty are separate context rather than inputs to a hidden
-composite. The observed-only gain is an unrenormalized raw-rate audit subtotal
-over rows where both champions have direct data. Approximate 90% gain intervals
-use a fixed point-estimate pick rule and a normal approximation to independent
+Both lenses rank candidates by
+`Σ q_j max(0, candidate estimate − current estimate)`, where `q_j` is the
+opponent's normalized lane pick-rate weight. The estimate is matchup effect in
+the default lens and adjusted win rate in the absolute lens. Candidate pick
+rate, direct-data coverage, observed-only gain, and uncertainty are context,
+not inputs to a hidden composite. The observed-only audit uses raw Delta 2 in
+complementarity mode and raw win rate in absolute mode, only where both rows
+have direct data. In absolute mode, signed strength and matchup contributions
+sum exactly to absolute gain; the separately maximized complementarity score
+can use different opponent assignments. Approximate 90% gain intervals use a
+fixed point-estimate pick rule and a normal approximation to independent
 directional matchup posteriors. Coverage reports base, candidate, and joint
-direct data separately from modelled rows.
+direct data separately from modelled rows. These fixed-assignment intervals are
+not probabilities that a candidate ranks first and do not include
+candidate-selection or future-patch uncertainty.
 
 The results are current-snapshot, population-level evidence assuming both
 champions are fully learned and the opposing laner is known. Adjustment

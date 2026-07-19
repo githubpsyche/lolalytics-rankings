@@ -18,6 +18,7 @@ import re
 import time
 from datetime import UTC, datetime
 from pathlib import Path
+from statistics import NormalDist, median
 from typing import Any
 from urllib.parse import urlencode
 
@@ -47,6 +48,10 @@ BASE_URL = "https://lolalytics.com/lol"
 REQUEST_TIMEOUT = 30
 REQUEST_DELAY = 0.25
 REQUEST_ATTEMPTS = 3
+INTERVAL_LEVEL = 0.90
+PROBABILITY_EPSILON = 1e-6
+CONCENTRATION_MIN = 0.1
+CONCENTRATION_MAX = 1_000_000.0
 
 LANES = ("top", "jungle", "middle", "bottom", "support")
 LANE_LABELS = {
@@ -87,8 +92,8 @@ class ScrapeError(RuntimeError):
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Rank second-champion additions to any singleton pool by observed "
-            "marginal counterpick coverage."
+            "Rank second-champion additions to any singleton pool by "
+            "sample-adjusted marginal counterpick coverage."
         )
     )
     parser.add_argument("--lane", choices=LANES, default="middle")
@@ -445,6 +450,348 @@ def round_value(value: float) -> float:
     return round(value, 10)
 
 
+def probability_from_percent(value: float) -> float:
+    """Convert a percentage to a numerically safe probability."""
+    return min(
+        1.0 - PROBABILITY_EPSILON,
+        max(PROBABILITY_EPSILON, value / 100.0),
+    )
+
+
+def approximate_wins(win_rate: float, games: int) -> int:
+    """Recover an approximate integer win count from Lolalytics' rounded rate."""
+    return min(
+        games,
+        max(0, int(math.floor(games * win_rate / 100.0 + 0.5))),
+    )
+
+
+def observed_prior_center(matchup: dict[str, Any]) -> float:
+    """Return the strength-only prior center for one displayed row, in percent."""
+    return min(
+        100.0,
+        max(0.0, matchup["win_rate"] - matchup["delta_2"]),
+    )
+
+
+def champion_strength_adjustments(
+    dataset: dict[str, Any],
+) -> dict[str, float]:
+    """Estimate each champion's general-strength offset in percentage points."""
+    adjustments = {}
+    for champion in dataset["champions"]:
+        offsets = [
+            matchup["delta_1"] - matchup["delta_2"]
+            for matchup in champion["matchups"].values()
+        ]
+        if not offsets:
+            raise ScrapeError(
+                f"{champion['name']}: cannot estimate a strength adjustment"
+            )
+        adjustments[champion["slug"]] = round_value(float(median(offsets)))
+    return adjustments
+
+
+def opponent_all_champs_rates(
+    dataset: dict[str, Any],
+) -> dict[str, float]:
+    """Estimate a complete per-opponent all-champions baseline, in percent."""
+    values: dict[str, list[float]] = {
+        champion["slug"]: [] for champion in dataset["champions"]
+    }
+    for champion in dataset["champions"]:
+        for opponent_slug, matchup in champion["matchups"].items():
+            if opponent_slug in values:
+                values[opponent_slug].append(matchup["all_champs_win_rate"])
+
+    rates = {}
+    champion_by_slug = {
+        champion["slug"]: champion for champion in dataset["champions"]
+    }
+    for opponent_slug, observations in values.items():
+        if not observations:
+            opponent = champion_by_slug[opponent_slug]
+            raise ScrapeError(
+                f"{opponent['name']}: no all-champions opponent baseline is available"
+            )
+        rates[opponent_slug] = round_value(float(median(observations)))
+    return rates
+
+
+def complete_prior_center(
+    champion_slug: str,
+    opponent_slug: str,
+    prior_model: dict[str, Any],
+) -> float:
+    """Derive a strength-only center for a missing matrix cell, in percent."""
+    center = (
+        prior_model["opponent_all_champs_win_rates"][opponent_slug]
+        + prior_model["champion_strength_adjustments"][champion_slug]
+    )
+    return round_value(min(100.0, max(0.0, center)))
+
+
+def beta_binomial_log_marginal(
+    wins: int,
+    games: int,
+    prior_center: float,
+    concentration: float,
+) -> float:
+    """Beta-binomial log marginal likelihood, omitting its constant term."""
+    if concentration <= 0:
+        raise ValueError("Prior concentration must be positive")
+    if not 0 <= wins <= games:
+        raise ValueError("Wins must be between zero and games")
+    mean = probability_from_percent(prior_center)
+    alpha = concentration * mean
+    beta = concentration * (1.0 - mean)
+    losses = games - wins
+    return (
+        math.lgamma(wins + alpha)
+        + math.lgamma(losses + beta)
+        - math.lgamma(games + concentration)
+        - math.lgamma(alpha)
+        - math.lgamma(beta)
+        + math.lgamma(concentration)
+    )
+
+
+def concentration_log_likelihood(
+    dataset: dict[str, Any], concentration: float
+) -> float:
+    """Score one shared concentration against all displayed directional rows."""
+    return math.fsum(
+        beta_binomial_log_marginal(
+            approximate_wins(matchup["win_rate"], matchup["games"]),
+            matchup["games"],
+            observed_prior_center(matchup),
+            concentration,
+        )
+        for champion in dataset["champions"]
+        for matchup in champion["matchups"].values()
+    )
+
+
+def fit_global_prior_concentration(dataset: dict[str, Any]) -> float:
+    """Fit one deterministic empirical-Bayes concentration on the log scale."""
+    log_min = math.log(CONCENTRATION_MIN)
+    log_max = math.log(CONCENTRATION_MAX)
+    grid_size = 121
+    grid = [
+        log_min + index * (log_max - log_min) / (grid_size - 1)
+        for index in range(grid_size)
+    ]
+    scores = [
+        concentration_log_likelihood(dataset, math.exp(log_value))
+        for log_value in grid
+    ]
+    best_index = max(range(grid_size), key=lambda index: scores[index])
+    left = grid[max(0, best_index - 1)]
+    right = grid[min(grid_size - 1, best_index + 1)]
+
+    # Golden-section maximization within the best deterministic grid bracket.
+    inverse_phi = (math.sqrt(5.0) - 1.0) / 2.0
+    x1 = right - inverse_phi * (right - left)
+    x2 = left + inverse_phi * (right - left)
+    score1 = concentration_log_likelihood(dataset, math.exp(x1))
+    score2 = concentration_log_likelihood(dataset, math.exp(x2))
+    for _ in range(64):
+        if score1 < score2:
+            left = x1
+            x1 = x2
+            score1 = score2
+            x2 = left + inverse_phi * (right - left)
+            score2 = concentration_log_likelihood(dataset, math.exp(x2))
+        else:
+            right = x2
+            x2 = x1
+            score2 = score1
+            x1 = right - inverse_phi * (right - left)
+            score1 = concentration_log_likelihood(dataset, math.exp(x1))
+
+    concentration = math.exp((left + right) / 2.0)
+    if best_index == 0:
+        concentration = CONCENTRATION_MIN
+    elif best_index == grid_size - 1:
+        concentration = CONCENTRATION_MAX
+    return round_value(concentration)
+
+
+def beta_posterior_parameters(
+    *,
+    win_rate: float | None,
+    games: int,
+    prior_center: float,
+    concentration: float,
+) -> tuple[float, float, int | None]:
+    """Return posterior alpha, beta, and the approximate integer win count.
+
+    The posterior uses the displayed rate as fractional evidence so its mean
+    exactly matches the disclosed weighted-average formula. The rounded
+    integer count is retained only to document the approximation used while
+    fitting the shared empirical-Bayes concentration.
+    """
+    if games < 0:
+        raise ValueError("Games cannot be negative")
+    if concentration < 0:
+        raise ValueError("Prior concentration cannot be negative")
+    if concentration == 0 and games == 0:
+        raise ValueError("A prior-only estimate requires positive concentration")
+    if games > 0 and win_rate is None:
+        raise ValueError("A positive game count requires a win rate")
+    wins = approximate_wins(win_rate, games) if win_rate is not None else None
+    observed_successes = (
+        games * probability_from_percent(win_rate)
+        if win_rate is not None
+        else 0.0
+    )
+    mean = probability_from_percent(prior_center)
+    alpha = concentration * mean + observed_successes
+    beta = concentration * (1.0 - mean) + games - observed_successes
+    return alpha, beta, wins
+
+
+def beta_posterior_summary(
+    *,
+    win_rate: float | None,
+    games: int,
+    prior_center: float,
+    concentration: float,
+    interval_level: float = INTERVAL_LEVEL,
+) -> dict[str, Any]:
+    """Return a posterior mean, variance, and central normal-approximation interval."""
+    if not 0 < interval_level < 1:
+        raise ValueError("Interval level must be between zero and one")
+    alpha, beta, wins = beta_posterior_parameters(
+        win_rate=win_rate,
+        games=games,
+        prior_center=prior_center,
+        concentration=concentration,
+    )
+    total = alpha + beta
+    mean = alpha / total
+    variance = alpha * beta / (total * total * (total + 1.0))
+    quantile = NormalDist().inv_cdf(0.5 + interval_level / 2.0)
+    margin = quantile * math.sqrt(variance)
+    lower = max(0.0, mean - margin)
+    upper = min(1.0, mean + margin)
+    return {
+        "alpha": round_value(alpha),
+        "beta": round_value(beta),
+        "approximate_wins": wins,
+        "mean": round_value(mean * 100.0),
+        "variance": round_value(variance * 10_000.0),
+        "interval": {
+            "level": interval_level,
+            "lower": round_value(lower * 100.0),
+            "upper": round_value(upper * 100.0),
+            "method": "normal_approximation_to_beta_posterior",
+        },
+    }
+
+
+def build_prior_model(
+    dataset: dict[str, Any], concentration: float | None = None
+) -> dict[str, Any]:
+    """Build the complete strength-only prior model used by every base."""
+    if concentration is None:
+        configured = dataset.get("method", {}).get("prior_concentration")
+        concentration = (
+            float(configured)
+            if isinstance(configured, (int, float)) and configured > 0
+            else fit_global_prior_concentration(dataset)
+        )
+    if not math.isfinite(concentration) or concentration <= 0:
+        raise ScrapeError("Prior concentration must be finite and positive")
+    return {
+        "concentration": round_value(concentration),
+        "champion_strength_adjustments": champion_strength_adjustments(dataset),
+        "opponent_all_champs_win_rates": opponent_all_champs_rates(dataset),
+    }
+
+
+def matchup_estimate(
+    champion: dict[str, Any],
+    opponent_slug: str,
+    prior_model: dict[str, Any],
+) -> dict[str, Any]:
+    """Build a direct or explicitly prior-only adjusted matchup estimate."""
+    matchup = champion["matchups"].get(opponent_slug)
+    if matchup is None:
+        prior_center = complete_prior_center(
+            champion["slug"], opponent_slug, prior_model
+        )
+        raw_win_rate = None
+        games = 0
+        status = "modeled_only"
+        prior_source = "opponent_all_wr_plus_champion_strength"
+    else:
+        prior_center = observed_prior_center(matchup)
+        raw_win_rate = matchup["win_rate"]
+        games = matchup["games"]
+        status = "direct"
+        prior_source = "observed_win_rate_minus_delta_2"
+
+    posterior = beta_posterior_summary(
+        win_rate=raw_win_rate,
+        games=games,
+        prior_center=prior_center,
+        concentration=prior_model["concentration"],
+    )
+    return {
+        "status": status,
+        "raw_win_rate": raw_win_rate,
+        # Retain the historical key for consumers that inspect direct rows.
+        "win_rate": raw_win_rate,
+        "games": games,
+        "prior_center": prior_center,
+        "prior_center_source": prior_source,
+        "adjusted_win_rate": posterior["mean"],
+        "posterior_variance": posterior["variance"],
+        "interval_90": posterior["interval"],
+        "approximate_wins": posterior["approximate_wins"],
+    }
+
+
+def fixed_assignment_gain_interval(
+    components: list[dict[str, float]],
+    interval_level: float = INTERVAL_LEVEL,
+) -> dict[str, Any]:
+    """Approximate gain uncertainty without changing point-estimate assignments.
+
+    Only rows on which the candidate's posterior mean beats the base posterior
+    mean contribute. This keeps the interval centered on the same transparent
+    plug-in estimand used for ranking instead of introducing a Jensen uplift by
+    re-maximizing noisy posterior draws.
+    """
+    if not 0 < interval_level < 1:
+        raise ValueError("Interval level must be between zero and one")
+    mean = math.fsum(
+        component["weight"] * component["improvement"]
+        for component in components
+        if component["improvement"] > 0
+    )
+    variance = math.fsum(
+        component["weight"] ** 2
+        * (
+            component["candidate_variance"]
+            + component["base_variance"]
+        )
+        for component in components
+        if component["improvement"] > 0
+    )
+    quantile = NormalDist().inv_cdf(0.5 + interval_level / 2.0)
+    margin = quantile * math.sqrt(variance)
+    return {
+        "level": interval_level,
+        "mean": round_value(mean),
+        "variance": round_value(variance),
+        "lower": round_value(mean - margin),
+        "upper": round_value(mean + margin),
+        "method": "normal_fixed_posterior_mean_assignments",
+    }
+
+
 def build_dataset(
     args: argparse.Namespace,
     roster: list[dict[str, Any]],
@@ -500,8 +847,8 @@ def build_dataset(
         )
 
     generated_at = datetime.now(UTC)
-    return {
-        "schema_version": 2,
+    dataset = {
+        "schema_version": 3,
         "generated_at": generated_at.isoformat().replace("+00:00", "Z"),
         "filters": {
             "lane": args.lane,
@@ -518,10 +865,31 @@ def build_dataset(
         },
         "method": {
             "question": "expand_singleton_pool_to_pair",
-            "estimate": "observed_matchup_win_rate",
-            "opponent_universe": "displayed_matchups_for_selected_base",
-            "opponent_weight": "lane_pick_rate_normalized_over_base_universe",
-            "missing_candidate_matchup": "zero_demonstrated_improvement",
+            "estimate": "beta_binomial_posterior_mean",
+            "raw_estimate": "observed_matchup_win_rate",
+            "prior_center_direct": "observed_win_rate_minus_delta_2",
+            "prior_center_missing": (
+                "opponent_all_wr_plus_median_champion_strength_adjustment"
+            ),
+            "prior_fit": "global_empirical_bayes_beta_binomial",
+            "prior_fit_counts": "rounded_from_displayed_win_rate_and_games",
+            "matchup_interval": (
+                "90_percent_normal_approximation_to_beta_posterior"
+            ),
+            "gain_interval": (
+                "90_percent_normal_fixed_posterior_mean_assignments"
+            ),
+            "interval_level": INTERVAL_LEVEL,
+            "uncertainty_conditions": [
+                "fixed_opponent_pick_rate_weights",
+                "preferred_champion_fixed_by_posterior_means",
+                "independent_directional_matchup_cells",
+                "fitted_prior_treated_as_fixed",
+                "current_snapshot_only",
+            ],
+            "opponent_universe": "complete_lane_roster_except_selected_base",
+            "opponent_weight": "lane_pick_rate_normalized_over_complete_universe",
+            "missing_matchup": "prior_only_zero_observed_games",
             "candidate_self_matchup": "unavailable",
         },
         "defaults": {
@@ -530,10 +898,18 @@ def build_dataset(
         },
         "champions": champions,
     }
+    dataset["method"]["prior_concentration"] = fit_global_prior_concentration(
+        dataset
+    )
+    return dataset
 
 
 def analyze_singleton_pool(
-    dataset: dict[str, Any], base_slug: str
+    dataset: dict[str, Any],
+    base_slug: str,
+    *,
+    concentration: float | None = None,
+    prior_model: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     champion_by_slug = {
         champion["slug"]: champion for champion in dataset["champions"]
@@ -542,48 +918,52 @@ def analyze_singleton_pool(
     if base is None:
         raise ScrapeError(f"Unknown current champion: {base_slug}")
 
+    if prior_model is None:
+        prior_model = build_prior_model(dataset, concentration)
+
     raw_opponents = [
-        (champion_by_slug[slug], matchup)
-        for slug, matchup in base["matchups"].items()
-        if slug in champion_by_slug and slug != base_slug
+        champion
+        for champion in dataset["champions"]
+        if champion["slug"] != base_slug
     ]
-    raw_opponents.sort(key=lambda entry: entry[0]["source_order"])
+    raw_opponents.sort(key=lambda champion: champion["source_order"])
     if not raw_opponents:
-        raise ScrapeError(f"{base['name']} has no displayed matchup universe")
+        raise ScrapeError(f"{base['name']} has no eligible opponent universe")
 
     universe_pick_rate = math.fsum(
-        opponent["pick_rate"] for opponent, _ in raw_opponents
+        opponent["pick_rate"] for opponent in raw_opponents
     )
     if universe_pick_rate <= 0:
         raise ScrapeError(f"{base['name']} has no opponent pick-rate weight")
 
-    eligible_pick_rate = math.fsum(
-        champion["pick_rate"]
-        for champion in dataset["champions"]
-        if champion["slug"] != base_slug
-    )
-    if eligible_pick_rate <= 0:
-        raise ScrapeError("The eligible opponent roster has no pick-rate weight")
-
-    opponents = [
-        {
-            "slug": opponent["slug"],
-            "name": opponent["name"],
-            "source_order": opponent["source_order"],
-            "pick_rate": opponent["pick_rate"],
-            "weight": opponent["pick_rate"] / universe_pick_rate,
-            "base_estimate": {
-                "win_rate": matchup["win_rate"],
-                "games": matchup["games"],
+    opponents = []
+    for opponent in raw_opponents:
+        estimate = matchup_estimate(base, opponent["slug"], prior_model)
+        opponents.append(
+            {
+                "slug": opponent["slug"],
+                "name": opponent["name"],
+                "source_order": opponent["source_order"],
+                "pick_rate": opponent["pick_rate"],
+                "weight": opponent["pick_rate"] / universe_pick_rate,
+                "base_estimate": estimate,
             },
-        }
-        for opponent, matchup in raw_opponents
-    ]
+        )
+
     pool_before = round_value(
         math.fsum(
-            opponent["weight"] * opponent["base_estimate"]["win_rate"]
+            opponent["weight"]
+            * opponent["base_estimate"]["adjusted_win_rate"]
             for opponent in opponents
         )
+    )
+    base_direct_rows = [
+        opponent
+        for opponent in opponents
+        if opponent["base_estimate"]["status"] == "direct"
+    ]
+    base_direct_weight = round_value(
+        math.fsum(opponent["weight"] for opponent in base_direct_rows)
     )
 
     candidates = []
@@ -591,43 +971,138 @@ def analyze_singleton_pool(
         if candidate["slug"] == base_slug:
             continue
         candidate_matchups: dict[str, dict[str, Any]] = {}
-        observed_weight = 0.0
         applicable_weight = 0.0
         applicable_count = 0
+        candidate_direct_weight = 0.0
+        candidate_direct_count = 0
+        joint_direct_weight = 0.0
+        joint_direct_count = 0
         contributions = []
+        direct_contributions = []
+        raw_contributions = []
+        uncertainty_components = []
 
         for opponent in opponents:
             opponent_slug = opponent["slug"]
+            base_estimate = opponent["base_estimate"]
             if opponent_slug == candidate["slug"]:
-                continue
-            applicable_weight += opponent["weight"]
-            applicable_count += 1
-            matchup = candidate["matchups"].get(opponent_slug)
-            if matchup is None:
-                continue
-
-            observed_weight += opponent["weight"]
-            improvement = round_value(
-                max(
-                    0.0,
-                    matchup["win_rate"]
-                    - opponent["base_estimate"]["win_rate"],
+                candidate_estimate = {
+                    "status": "unavailable_mirror",
+                    "raw_win_rate": None,
+                    "win_rate": None,
+                    "games": 0,
+                    "prior_center": None,
+                    "prior_center_source": None,
+                    "adjusted_win_rate": None,
+                    "posterior_variance": None,
+                    "interval_90": None,
+                    "approximate_wins": None,
+                }
+                improvement = 0.0
+                raw_improvement = None
+                raw_contribution = None
+            else:
+                applicable_weight += opponent["weight"]
+                applicable_count += 1
+                candidate_estimate = matchup_estimate(
+                    candidate, opponent_slug, prior_model
                 )
-            )
+                if candidate_estimate["status"] == "direct":
+                    candidate_direct_weight += opponent["weight"]
+                    candidate_direct_count += 1
+                    if base_estimate["status"] == "direct":
+                        joint_direct_weight += opponent["weight"]
+                        joint_direct_count += 1
+                improvement = round_value(
+                    max(
+                        0.0,
+                        candidate_estimate["adjusted_win_rate"]
+                        - base_estimate["adjusted_win_rate"],
+                    )
+                )
+                raw_improvement = (
+                    round_value(
+                        max(
+                            0.0,
+                            candidate_estimate["raw_win_rate"]
+                            - base_estimate["raw_win_rate"],
+                        )
+                    )
+                    if (
+                        base_estimate["status"] == "direct"
+                        and candidate_estimate["status"] == "direct"
+                    )
+                    else None
+                )
+                raw_contribution = (
+                    round_value(opponent["weight"] * raw_improvement)
+                    if raw_improvement is not None
+                    else None
+                )
+
             contribution = round_value(opponent["weight"] * improvement)
             contributions.append(contribution)
+            if raw_contribution is not None:
+                raw_contributions.append(raw_contribution)
+            if candidate_estimate["status"] != "unavailable_mirror":
+                uncertainty_components.append(
+                    {
+                        "weight": opponent["weight"],
+                        "improvement": improvement,
+                        "base_variance": base_estimate["posterior_variance"],
+                        "candidate_variance": candidate_estimate[
+                            "posterior_variance"
+                        ],
+                    }
+                )
+            if (
+                base_estimate["status"] == "direct"
+                and candidate_estimate["status"] == "direct"
+            ):
+                direct_contributions.append(contribution)
             candidate_matchups[opponent_slug] = {
-                "win_rate": matchup["win_rate"],
-                "games": matchup["games"],
+                **candidate_estimate,
+                "base_status": base_estimate["status"],
                 "improvement": improvement,
+                "raw_improvement": raw_improvement,
                 "contribution": contribution,
+                "raw_contribution": raw_contribution,
+                "pair_estimate": round_value(
+                    base_estimate["adjusted_win_rate"] + improvement
+                ),
             }
 
         gain = round_value(math.fsum(contributions))
-        evidence_coverage = (
-            round_value(observed_weight / applicable_weight)
+        observed_only_gain = round_value(math.fsum(raw_contributions))
+        gain_interval = fixed_assignment_gain_interval(
+            uncertainty_components
+        )
+        candidate_direct_coverage = (
+            round_value(candidate_direct_weight / applicable_weight)
             if applicable_weight > 0
             else 0.0
+        )
+        joint_direct_coverage = (
+            round_value(joint_direct_weight / applicable_weight)
+            if applicable_weight > 0
+            else 0.0
+        )
+        direct_contribution = round_value(math.fsum(direct_contributions))
+        direct_contribution_share = (
+            round_value(direct_contribution / gain) if gain > 0 else None
+        )
+        base_direct_applicable_count = sum(
+            opponent["slug"] != candidate["slug"]
+            and opponent["base_estimate"]["status"] == "direct"
+            for opponent in opponents
+        )
+        base_direct_applicable_weight = math.fsum(
+            opponent["weight"]
+            for opponent in opponents
+            if (
+                opponent["slug"] != candidate["slug"]
+                and opponent["base_estimate"]["status"] == "direct"
+            )
         )
         candidates.append(
             {
@@ -637,9 +1112,36 @@ def analyze_singleton_pool(
                 "source_url": candidate["source_url"],
                 "pool_after": round_value(pool_before + gain),
                 "gain": gain,
-                "evidence_coverage": evidence_coverage,
-                "observed_matchups": len(candidate_matchups),
+                "gain_interval": gain_interval,
+                "observed_only_gain": observed_only_gain,
+                # Historical aliases now refer specifically to direct candidate data.
+                "evidence_coverage": candidate_direct_coverage,
+                "observed_matchups": candidate_direct_count,
                 "applicable_matchups": applicable_count,
+                "modeled_matchups": applicable_count - candidate_direct_count,
+                "unavailable_matchups": len(opponents) - applicable_count,
+                "direct_contribution_share": direct_contribution_share,
+                "coverage": {
+                    "base_direct_rows": base_direct_applicable_count,
+                    "base_modeled_rows": (
+                        applicable_count - base_direct_applicable_count
+                    ),
+                    "base_direct_weight": round_value(
+                        base_direct_applicable_weight / applicable_weight
+                    )
+                    if applicable_weight > 0
+                    else 0.0,
+                    "candidate_direct_rows": candidate_direct_count,
+                    "candidate_modeled_rows": (
+                        applicable_count - candidate_direct_count
+                    ),
+                    "candidate_direct_weight": candidate_direct_coverage,
+                    "joint_direct_rows": joint_direct_count,
+                    "joint_modeled_rows": applicable_count - joint_direct_count,
+                    "joint_direct_weight": joint_direct_coverage,
+                    "direct_contribution": direct_contribution,
+                    "direct_contribution_share": direct_contribution_share,
+                },
                 "matchups": candidate_matchups,
             }
         )
@@ -650,23 +1152,38 @@ def analyze_singleton_pool(
     return {
         "base": {
             key: base[key]
-            for key in ("slug", "name", "source_order", "source_url")
+            for key in (
+                "slug",
+                "name",
+                "source_order",
+                "source_url",
+                "pick_rate",
+                "overall_win_rate",
+            )
         },
         "pool_before": pool_before,
+        "prior": {
+            "concentration": prior_model["concentration"],
+            "interval_level": INTERVAL_LEVEL,
+            "interval_method": "normal_approximation_to_beta_posterior",
+        },
         "opponent_universe": {
             "opponents": opponents,
-            "displayed_count": len(opponents),
+            # Keep displayed_count as a compatibility alias for direct base rows.
+            "displayed_count": len(base_direct_rows),
+            "common_count": len(opponents),
             "eligible_count": len(dataset["champions"]) - 1,
-            "pick_rate_coverage": round_value(
-                universe_pick_rate / eligible_pick_rate
-            ),
+            "base_direct_rows": len(base_direct_rows),
+            "base_modeled_rows": len(opponents) - len(base_direct_rows),
+            "base_direct_weight": base_direct_weight,
+            "pick_rate_coverage": base_direct_weight,
         },
         "candidates": candidates,
     }
 
 
 def validate_dataset(dataset: dict[str, Any]) -> None:
-    if dataset.get("schema_version") != 2:
+    if dataset.get("schema_version") != 3:
         raise ScrapeError("Dataset schema version is not supported")
 
     champions = dataset.get("champions")
@@ -734,65 +1251,96 @@ def validate_dataset(dataset: dict[str, Any]) -> None:
                     f"{champion['name']} vs {opponent_slug}: delta 2 is invalid"
                 )
 
+    prior_model = build_prior_model(dataset)
+    if not math.isfinite(prior_model["concentration"]):
+        raise ScrapeError("Prior concentration is invalid")
+    for champion in champions:
+        for opponent_slug, matchup in champion["matchups"].items():
+            direct_center = observed_prior_center(matchup)
+            decomposed_center = complete_prior_center(
+                champion["slug"], opponent_slug, prior_model
+            )
+            if not math.isclose(
+                direct_center, decomposed_center, abs_tol=0.1
+            ):
+                raise ScrapeError(
+                    f"{champion['name']} vs {opponent_slug}: Δ2 prior center "
+                    "is inconsistent with the strength-only decomposition"
+                )
+
     for base_slug in champion_slugs:
-        analysis = analyze_singleton_pool(dataset, base_slug)
+        analysis = analyze_singleton_pool(
+            dataset, base_slug, prior_model=prior_model
+        )
         opponents = analysis["opponent_universe"]["opponents"]
-        opponent_by_slug = {
-            opponent["slug"]: opponent for opponent in opponents
-        }
         weight_sum = math.fsum(opponent["weight"] for opponent in opponents)
         if not math.isclose(weight_sum, 1.0, abs_tol=1e-9):
             raise ScrapeError(
                 f"{analysis['base']['name']}: opponent weights do not sum to 1"
             )
+        if len(opponents) != len(champions) - 1:
+            raise ScrapeError(
+                f"{analysis['base']['name']}: common opponent roster is incomplete"
+            )
         if not 0 <= analysis["opponent_universe"]["pick_rate_coverage"] <= 1:
             raise ScrapeError(
                 f"{analysis['base']['name']}: universe coverage is invalid"
+            )
+        expected_pool_before = round_value(
+            math.fsum(
+                opponent["weight"]
+                * opponent["base_estimate"]["adjusted_win_rate"]
+                for opponent in opponents
+            )
+        )
+        if not math.isclose(
+            expected_pool_before, analysis["pool_before"], abs_tol=1e-9
+        ):
+            raise ScrapeError(
+                f"{analysis['base']['name']}: adjusted base score is inconsistent"
             )
         if len(analysis["candidates"]) != len(champions) - 1:
             raise ScrapeError(
                 f"{analysis['base']['name']}: candidate count is inconsistent"
             )
         for candidate in analysis["candidates"]:
-            raw_candidate = champion_by_slug[candidate["slug"]]
             applicable_opponents = [
                 opponent
                 for opponent in opponents
                 if opponent["slug"] != candidate["slug"]
             ]
-            observed_opponents = [
-                opponent
-                for opponent in applicable_opponents
-                if opponent["slug"] in raw_candidate["matchups"]
-            ]
             if candidate["applicable_matchups"] != len(applicable_opponents):
                 raise ScrapeError(
                     f"{candidate['name']}: applicable matchup count is inconsistent"
                 )
-            if candidate["observed_matchups"] != len(observed_opponents):
+            if len(candidate["matchups"]) != len(opponents):
                 raise ScrapeError(
-                    f"{candidate['name']}: observed matchup count is inconsistent"
+                    f"{candidate['name']}: common matchup rows are incomplete"
                 )
-            applicable_weight = math.fsum(
-                opponent["weight"] for opponent in applicable_opponents
-            )
-            expected_coverage = (
-                round_value(
-                    math.fsum(
-                        opponent["weight"] for opponent in observed_opponents
-                    )
-                    / applicable_weight
-                )
-                if applicable_weight > 0
-                else 0.0
-            )
-            if not math.isclose(
-                expected_coverage,
-                candidate["evidence_coverage"],
-                abs_tol=1e-9,
-            ):
+            mirror = candidate["matchups"][candidate["slug"]]
+            if mirror["status"] != "unavailable_mirror":
                 raise ScrapeError(
-                    f"{candidate['name']}: evidence coverage is inconsistent"
+                    f"{candidate['name']}: mirror matchup must be unavailable"
+                )
+
+            direct_rows = [
+                row
+                for slug, row in candidate["matchups"].items()
+                if slug != candidate["slug"] and row["status"] == "direct"
+            ]
+            modeled_rows = [
+                row
+                for slug, row in candidate["matchups"].items()
+                if slug != candidate["slug"]
+                and row["status"] == "modeled_only"
+            ]
+            if candidate["observed_matchups"] != len(direct_rows):
+                raise ScrapeError(
+                    f"{candidate['name']}: direct matchup count is inconsistent"
+                )
+            if candidate["modeled_matchups"] != len(modeled_rows):
+                raise ScrapeError(
+                    f"{candidate['name']}: modeled matchup count is inconsistent"
                 )
             contribution_sum = round_value(
                 math.fsum(
@@ -806,25 +1354,24 @@ def validate_dataset(dataset: dict[str, Any]) -> None:
                 raise ScrapeError(
                     f"{candidate['name']}: contribution sum is inconsistent"
                 )
-            expected_pair_score = round_value(
+            raw_contribution_sum = round_value(
                 math.fsum(
-                    opponent["weight"]
-                    * max(
-                        opponent["base_estimate"]["win_rate"],
-                        (
-                            raw_candidate["matchups"][opponent["slug"]][
-                                "win_rate"
-                            ]
-                            if (
-                                opponent["slug"] != candidate["slug"]
-                                and opponent["slug"]
-                                in raw_candidate["matchups"]
-                            )
-                            else opponent["base_estimate"]["win_rate"]
-                        ),
-                    )
-                    for opponent in opponent_by_slug.values()
+                    matchup["raw_contribution"]
+                    for matchup in candidate["matchups"].values()
+                    if matchup["raw_contribution"] is not None
                 )
+            )
+            if not math.isclose(
+                raw_contribution_sum,
+                candidate["observed_only_gain"],
+                abs_tol=1e-9,
+            ):
+                raise ScrapeError(
+                    f"{candidate['name']}: observed-only contribution sum "
+                    "is inconsistent"
+                )
+            expected_pair_score = round_value(
+                analysis["pool_before"] + candidate["gain"]
             )
             if not math.isclose(
                 expected_pair_score,
@@ -838,6 +1385,11 @@ def validate_dataset(dataset: dict[str, Any]) -> None:
                 raise ScrapeError(
                     f"{candidate['name']}: evidence coverage is invalid"
                 )
+            direct_share = candidate["direct_contribution_share"]
+            if direct_share is not None and not 0 <= direct_share <= 1:
+                raise ScrapeError(
+                    f"{candidate['name']}: direct contribution share is invalid"
+                )
 
 
 def atomic_write(path: Path, content: str) -> None:
@@ -849,12 +1401,14 @@ def atomic_write(path: Path, content: str) -> None:
 
 def page_dataset(dataset: dict[str, Any]) -> dict[str, Any]:
     """Project the archived dataset to only fields used by the static page."""
+    prior_model = build_prior_model(dataset)
     return {
         "schema_version": dataset["schema_version"],
         "generated_at": dataset["generated_at"],
         "filters": dataset["filters"],
         "source": dataset["source"],
         "method": dataset["method"],
+        "prior_model": prior_model,
         "defaults": dataset["defaults"],
         "champions": [
             {
@@ -864,6 +1418,7 @@ def page_dataset(dataset: dict[str, Any]) -> dict[str, Any]:
                     "name",
                     "source_order",
                     "pick_rate",
+                    "overall_win_rate",
                     "source_url",
                 )
             }
@@ -871,7 +1426,11 @@ def page_dataset(dataset: dict[str, Any]) -> dict[str, Any]:
                 "matchups": {
                     opponent_slug: {
                         key: matchup[key]
-                        for key in ("win_rate", "games")
+                        for key in (
+                            "win_rate",
+                            "games",
+                            "delta_2",
+                        )
                     }
                     for opponent_slug, matchup in champion["matchups"].items()
                 }

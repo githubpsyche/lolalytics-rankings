@@ -48,13 +48,14 @@ tracked.
 
 An exploratory table for expanding a one-champion pool to two champions.
 Choose the champion you already play; the landing page ranks every valid
-addition by marginal observed counterpick coverage and links each result to a
-separate, shareable pair breakdown. Both tables support column sorting, text
-search, and inclusive numeric minimum and maximum filters. The pair breakdown
-exposes every opponent-level term behind the selected score. Opponent weights
-come from the current champion's displayed matchup universe and opposing lane
-pick rates. The rankings default to Zoe in Middle, while a pair URL with no
-parameters defaults to Zoe + Zilean.
+addition by sample-adjusted marginal counterpick coverage and links each result
+to a separate, shareable pair breakdown. Both tables support column sorting,
+text search, and inclusive numeric minimum and maximum filters. The pair
+breakdown exposes every opponent-level term behind the selected score,
+including the raw rate, games, strength-only expectation, adjusted estimate,
+interval, and whether a matchup has direct data. Opponent weights come from
+opposing lane pick rates over one common roster. The rankings default to Zoe in
+Middle, while a pair URL with no parameters defaults to Zoe + Zilean.
 
 Refresh its data and generated pages with:
 
@@ -105,16 +106,29 @@ Run the small hand-checkable calculation fixtures with:
 uv run projects/counterpick-coverage/test_build.py
 ```
 
-This first pass deliberately uses observed matchup win rates. Each scrape
-stores the directed matchup rows for every champion in the selected lane,
-allowing the page to rebuild the opponent universe, weights, and addition
-rankings whenever the current champion changes. Missing addition rows receive
-no demonstrated improvement, weights are never renormalized per addition, and
-the addition's own mirror matchup is unavailable. Scores are conditional on
-opponents for which the selected current champion has a displayed matchup
-baseline; universe coverage makes the omitted pick-rate weight explicit, while
-evidence coverage reports how much applicable weight has an addition estimate.
-Shrinkage and uncertainty are reserved for a later statistical milestone.
+Each displayed matchup rate is adjusted toward a strength-only expectation
+derived from Lolalytics Δ2. The weight assigned to that expectation is one
+globally fitted empirical-Bayes concentration, disclosed in the generated page
+as equivalent prior games. Lolalytics-suppressed rows use the opponent's
+all-champions baseline plus the focal champion's median strength adjustment
+with zero observed games and are visibly marked as prior-only. The addition's
+own mirror matchup remains unavailable.
+
+Candidates are ranked only by the sum of their positive adjusted
+opponent-level contributions. Pick rate, direct-data coverage, observed-only
+gain, and uncertainty are separate context rather than inputs to a hidden
+composite. The observed-only gain is an unrenormalized raw-rate audit subtotal
+over rows where both champions have direct data. Approximate 90% gain intervals
+use a fixed point-estimate pick rule and a normal approximation to independent
+directional matchup posteriors. Coverage reports base, candidate, and joint
+direct data separately from modelled rows.
+
+The results are current-snapshot, population-level evidence assuming both
+champions are fully learned and the opposing laner is known. Adjustment
+addresses binomial matchup sample size; it does not correct specialist
+selection, individual proficiency, causal effects, or future-patch stability.
+Held-out validation, stability checks, and abstention rules remain possible
+downstream work rather than claims made by this project.
 
 ## Repository layout
 

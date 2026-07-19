@@ -1,6 +1,6 @@
 {
-  "schema_version": 2,
-  "generated_at": "2026-07-18T21:24:18.207080Z",
+  "schema_version": 3,
+  "generated_at": "2026-07-18T23:52:49.645616Z",
   "filters": {
     "lane": "middle",
     "lane_label": "Middle",
@@ -16,11 +16,27 @@
   },
   "method": {
     "question": "expand_singleton_pool_to_pair",
-    "estimate": "observed_matchup_win_rate",
-    "opponent_universe": "displayed_matchups_for_selected_base",
-    "opponent_weight": "lane_pick_rate_normalized_over_base_universe",
-    "missing_candidate_matchup": "zero_demonstrated_improvement",
-    "candidate_self_matchup": "unavailable"
+    "estimate": "beta_binomial_posterior_mean",
+    "raw_estimate": "observed_matchup_win_rate",
+    "prior_center_direct": "observed_win_rate_minus_delta_2",
+    "prior_center_missing": "opponent_all_wr_plus_median_champion_strength_adjustment",
+    "prior_fit": "global_empirical_bayes_beta_binomial",
+    "prior_fit_counts": "rounded_from_displayed_win_rate_and_games",
+    "matchup_interval": "90_percent_normal_approximation_to_beta_posterior",
+    "gain_interval": "90_percent_normal_fixed_posterior_mean_assignments",
+    "interval_level": 0.9,
+    "uncertainty_conditions": [
+      "fixed_opponent_pick_rate_weights",
+      "preferred_champion_fixed_by_posterior_means",
+      "independent_directional_matchup_cells",
+      "fitted_prior_treated_as_fixed",
+      "current_snapshot_only"
+    ],
+    "opponent_universe": "complete_lane_roster_except_selected_base",
+    "opponent_weight": "lane_pick_rate_normalized_over_complete_universe",
+    "missing_matchup": "prior_only_zero_observed_games",
+    "candidate_self_matchup": "unavailable",
+    "prior_concentration": 570.3096333464
   },
   "defaults": {
     "base_slug": "zoe",

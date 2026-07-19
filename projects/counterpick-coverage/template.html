@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta
     name="description"
-    content="Explore which second champion best complements a selected current champion using observed, opponent-weighted matchup data."
+    content="Explore which second champion most improves a selected champion pool using sample-adjusted, opponent-weighted matchup data."
   >
   <link rel="icon" href="data:,">
   <title>Counterpick Coverage · Hextech Studies</title>
@@ -265,6 +265,22 @@
       border-left: 1px solid var(--border);
     }
 
+    #pair-score-summary {
+      display: grid;
+      grid-template-columns:
+        minmax(112px, 0.8fr)
+        minmax(130px, 1fr)
+        minmax(140px, 1fr)
+        minmax(250px, 2.25fr)
+        minmax(150px, 1.2fr);
+      width: 100%;
+    }
+
+    #ranking-score-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(135px, 1fr));
+    }
+
     .score-item {
       min-width: 118px;
       padding: 8px 10px;
@@ -273,7 +289,8 @@
     }
 
     .score-label,
-    .score-value {
+    .score-value,
+    .score-subvalue {
       display: block;
     }
 
@@ -287,6 +304,13 @@
       font-size: 0.98rem;
       font-variant-numeric: tabular-nums;
       font-weight: 700;
+    }
+
+    .score-subvalue {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-variant-numeric: tabular-nums;
     }
 
     .table-toolbar {
@@ -352,9 +376,10 @@
 
     .detail-table {
       width: 100%;
-      min-width: 750px;
+      min-width: 930px;
       border-collapse: separate;
       border-spacing: 0;
+      table-layout: fixed;
       font-variant-numeric: tabular-nums;
     }
 
@@ -448,19 +473,58 @@
       box-shadow: inset 0 0 0 999px rgba(80, 120, 160, 0.06);
     }
 
+    .detail-table th:nth-child(1),
+    .detail-table td:nth-child(1) {
+      width: 120px;
+    }
+
+    .detail-table th:nth-child(2),
+    .detail-table td:nth-child(2) {
+      width: 105px;
+    }
+
+    .detail-table th:nth-child(3),
+    .detail-table td:nth-child(3),
+    .detail-table th:nth-child(4),
+    .detail-table td:nth-child(4) {
+      width: 235px;
+    }
+
+    .detail-table th:nth-child(5),
+    .detail-table td:nth-child(5) {
+      width: 115px;
+    }
+
+    .detail-table th:nth-child(6),
+    .detail-table td:nth-child(6) {
+      width: 120px;
+    }
+
     .detail-opponent {
       text-align: left !important;
       font-weight: 600;
     }
 
+    .estimate-cell,
+    .metric-cell {
+      white-space: normal !important;
+    }
+
     .cell-primary,
-    .cell-secondary {
+    .cell-secondary,
+    .cell-tertiary {
       display: block;
     }
 
-    .cell-secondary {
+    .cell-secondary,
+    .cell-tertiary,
+    .candidate-context {
       color: var(--muted);
       font-size: 0.76rem;
+    }
+
+    .cell-tertiary {
+      font-size: 0.7rem;
     }
 
     .missing {
@@ -495,7 +559,7 @@
 
     .rankings-table {
       width: 100%;
-      min-width: 760px;
+      min-width: 900px;
       border-collapse: separate;
       border-spacing: 0;
       table-layout: fixed;
@@ -528,7 +592,7 @@
     }
 
     .rankings-table .rank-column {
-      width: 112px;
+      width: 92px;
     }
 
     .rankings-table .candidate-column {
@@ -536,8 +600,16 @@
       text-align: left;
     }
 
-    .rankings-table .estimate-column {
-      width: 130px;
+    .rankings-table .pick-column {
+      width: 100px;
+    }
+
+    .rankings-table .gain-column {
+      width: 210px;
+    }
+
+    .rankings-table .evidence-column {
+      width: 155px;
     }
 
     .candidate-link {
@@ -545,6 +617,12 @@
       padding: 3px 4px;
       font-weight: 700;
       text-underline-offset: 2px;
+    }
+
+    .candidate-context {
+      display: block;
+      padding: 0 4px 3px;
+      white-space: nowrap;
     }
 
     .candidate-filter {
@@ -612,11 +690,18 @@
         width: 100%;
       }
 
+      #pair-score-summary,
+      #ranking-score-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+      }
+
       .score-item {
         min-width: 0;
       }
 
-      .score-item:last-child {
+      #pair-score-summary .score-item:last-child,
+      #ranking-score-summary .score-item:last-child {
         grid-column: 1 / -1;
       }
     }
@@ -631,7 +716,7 @@
     </div>
     <p class="lede" id="page-lede">
       Given one champion you already play, which second champion most improves
-      your observed counterpick coverage when the opposing laner is known?
+      your sample-adjusted counterpick coverage when the opposing laner is known?
     </p>
     <div class="metadata" id="metadata"></div>
 
@@ -711,7 +796,7 @@
         aria-label="Selected candidate summary"
       >
         <div class="score-item">
-          <span class="score-label">Observed gain rank</span>
+          <span class="score-label">Adjusted gain rank</span>
           <span class="score-value" id="score-rank"></span>
         </div>
         <div class="score-item">
@@ -723,12 +808,14 @@
           <span class="score-value" id="score-after"></span>
         </div>
         <div class="score-item">
-          <span class="score-label">Marginal gain</span>
+          <span class="score-label">Adjusted marginal gain</span>
           <span class="score-value gain" id="score-gain"></span>
+          <span class="score-subvalue" id="score-gain-interval"></span>
         </div>
         <div class="score-item">
-          <span class="score-label">Evidence coverage</span>
+          <span class="score-label">Joint direct evidence (% applicable)</span>
           <span class="score-value" id="score-coverage"></span>
+          <span class="score-subvalue" id="score-coverage-detail"></span>
         </div>
       </div>
 
@@ -748,7 +835,7 @@
           <span class="score-value" id="ranking-addition-count"></span>
         </div>
         <div class="score-item">
-          <span class="score-label">Universe coverage</span>
+          <span class="score-label">Base direct evidence</span>
           <span class="score-value" id="ranking-universe-coverage"></span>
         </div>
       </div>
@@ -758,14 +845,14 @@
       <summary id="method-summary">How this ranking is calculated</summary>
       <div class="method-body">
         <div class="formula">
-          opponent weight × max(0, addition WR − current champion WR)
+          opponent weight × max(0, adjusted addition WR − adjusted current WR)
         </div>
         <p>
           The contribution is calculated separately for every opponent and
           summed. Opponent weights come from lane pick rates and are normalized
-          once over the current champion’s displayed matchup universe. The
-          second champion contributes only where its displayed estimate is
-          better, because the current champion remains available otherwise.
+          once over the complete eligible roster. The second champion
+          contributes only where its adjusted estimate is better, because the
+          current champion remains available otherwise.
         </p>
         <p class="method-note" id="method-note"></p>
       </div>
@@ -844,11 +931,11 @@
 
     <p class="disclaimer">
       Population-level data assuming the opponent is known and both selected
-      champions are fully learned. Raw aggregate rates can reflect general
-      champion strength and specialist or off-meta selection as well as
-      matchup complementarity; this is not a personal or causal
-      recommendation. This project is not affiliated with or endorsed by
-      Lolalytics or Riot Games.
+      champions are fully learned. Adjustment addresses matchup sample size,
+      not specialist or off-meta selection, player proficiency, future-patch
+      stability, or causal effects. This is an evidence-based shortlist, not a
+      personal recommendation. This project is not affiliated with or endorsed
+      by Lolalytics or Riot Games.
     </p>
   </main>
 
@@ -898,7 +985,11 @@
       const scoreAfterLabel = document.getElementById("score-after-label");
       const scoreAfter = document.getElementById("score-after");
       const scoreGain = document.getElementById("score-gain");
+      const scoreGainInterval =
+        document.getElementById("score-gain-interval");
       const scoreCoverage = document.getElementById("score-coverage");
+      const scoreCoverageDetail =
+        document.getElementById("score-coverage-detail");
       const calculationHeading =
         document.getElementById("calculation-heading");
       const calculationSummary =
@@ -933,6 +1024,16 @@
           champion
         ])
       );
+      const priorModel = dataset.prior_model;
+      const priorConcentration = priorModel.concentration;
+      const intervalLevel = dataset.method.interval_level;
+      if (intervalLevel !== 0.9) {
+        throw new Error(
+          "This page currently supports only 90% uncertainty intervals."
+        );
+      }
+      const intervalPercent = Math.round(intervalLevel * 100);
+      const intervalQuantile = 1.6448536269514722;
       const analysisCache = new Map();
       let selectedBase;
       let selectedCandidate;
@@ -957,17 +1058,18 @@
         },
         {
           key: "base_estimate",
-          label: () => `${selectedBase.name} estimate`,
-          value: (entry) => entry.opponent.base_estimate.win_rate,
+          label: () => `${selectedBase.name} adjusted`,
+          value: (entry) =>
+            entry.opponent.base_estimate.adjusted_win_rate,
           filterable: true
         },
         {
           key: "candidate_estimate",
-          label: () => `${selectedCandidate.name} estimate`,
+          label: () => `${selectedCandidate.name} adjusted`,
           value: (entry) =>
-            entry.unavailable || entry.matchup === null
+            entry.unavailable
               ? null
-              : entry.matchup.win_rate,
+              : entry.matchup.adjusted_win_rate,
           filterable: true
         },
         {
@@ -1005,29 +1107,32 @@
           className: "candidate-column"
         },
         {
+          key: "pick_rate",
+          label: "Lane pick rate",
+          value: (candidate) => candidate.pick_rate,
+          filterable: true,
+          className: "pick-column"
+        },
+        {
           key: "pool_after",
-          label: "Pair score",
+          label: "Adjusted pair score",
           value: (candidate) => candidate.pool_after,
           filterable: true
         },
         {
           key: "gain",
-          label: "Marginal gain",
+          label: "Adjusted marginal gain",
           value: (candidate) => candidate.gain,
-          filterable: true
+          filterable: true,
+          className: "gain-column"
         },
         {
           key: "evidence_coverage",
-          label: "Evidence coverage",
-          value: (candidate) => candidate.evidence_coverage * 100,
-          filterable: true
-        },
-        {
-          key: "observed_matchups",
-          label: "Displayed estimates",
-          value: (candidate) => candidate.observed_matchups,
+          label: "Joint direct evidence (% applicable)",
+          value: (candidate) =>
+            candidate.coverage.joint_direct_weight * 100,
           filterable: true,
-          className: "estimate-column"
+          className: "evidence-column"
         }
       ];
       const rankingFilters = new Map(
@@ -1064,6 +1169,99 @@
         return Number(value.toFixed(10));
       }
 
+      function clamp(value, minimum, maximum) {
+        return Math.min(maximum, Math.max(minimum, value));
+      }
+
+      function matchupEstimate(champion, opponentSlug) {
+        const direct = champion.matchups[opponentSlug] ?? null;
+        const priorCenter = direct
+          ? clamp(direct.win_rate - direct.delta_2, 0, 100)
+          : clamp(
+              priorModel.opponent_all_champs_win_rates[opponentSlug] +
+                priorModel.champion_strength_adjustments[champion.slug],
+              0,
+              100
+            );
+        const gamesPlayed = direct?.games ?? 0;
+        const rawWinRate = direct?.win_rate ?? null;
+        const observedSuccesses =
+          rawWinRate === null ? 0 : gamesPlayed * rawWinRate / 100;
+        const priorProbability = clamp(
+          priorCenter / 100,
+          0.000001,
+          0.999999
+        );
+        const alpha =
+          priorConcentration * priorProbability + observedSuccesses;
+        const beta =
+          priorConcentration * (1 - priorProbability) +
+          gamesPlayed -
+          observedSuccesses;
+        const posteriorTotal = alpha + beta;
+        const adjustedWinRate = 100 * alpha / posteriorTotal;
+        const posteriorVariance =
+          adjustedWinRate * (100 - adjustedWinRate) /
+          (posteriorTotal + 1);
+        const intervalMargin =
+          intervalQuantile * Math.sqrt(posteriorVariance);
+
+        return {
+          status: direct ? "direct" : "modeled_only",
+          raw_win_rate: rawWinRate,
+          games: gamesPlayed,
+          prior_center: roundValue(priorCenter),
+          data_weight: roundValue(
+            gamesPlayed / (gamesPlayed + priorConcentration)
+          ),
+          adjusted_win_rate: roundValue(adjustedWinRate),
+          posterior_variance: roundValue(posteriorVariance),
+          interval_90: {
+            level: intervalLevel,
+            lower: roundValue(
+              clamp(adjustedWinRate - intervalMargin, 0, 100)
+            ),
+            upper: roundValue(
+              clamp(adjustedWinRate + intervalMargin, 0, 100)
+            )
+          }
+        };
+      }
+
+      function conditionalGainInterval(components) {
+        const active = components.filter(
+          (component) => component.improvement > 0
+        );
+        const mean = roundValue(
+          active.reduce(
+            (total, component) =>
+              total + component.weight * component.improvement,
+            0
+          )
+        );
+        const variance = roundValue(
+          active.reduce(
+            (total, component) =>
+              total +
+              component.weight ** 2 *
+                (
+                  component.base_variance +
+                  component.candidate_variance
+                ),
+            0
+          )
+        );
+        const margin = intervalQuantile * Math.sqrt(variance);
+        return {
+          level: intervalLevel,
+          mean,
+          variance,
+          lower: roundValue(mean - margin),
+          upper: roundValue(mean + margin),
+          method: "normal_fixed_posterior_mean_assignments"
+        };
+      }
+
       function configurePage() {
         if (pageKind === "rankings") {
           document.title =
@@ -1071,7 +1269,8 @@
           pageTitle.textContent = "Counterpick Coverage Rankings";
           pageLede.textContent =
             "Choose one champion you already play, then rank every possible " +
-            "second champion by its observed, opponent-weighted marginal gain.";
+            "second champion by its sample-adjusted, opponent-weighted " +
+            "marginal gain.";
           siteNav.href = "../";
           siteNav.textContent = "← Hextech Studies";
           selectionPanel.setAttribute(
@@ -1140,46 +1339,43 @@
         if (!base) {
           throw new Error(`Unknown current champion: ${baseSlug}`);
         }
-        const rawOpponents = Object.entries(base.matchups)
-          .map(([slug, matchup]) => ({
-            champion: championBySlug.get(slug),
-            matchup
-          }))
-          .filter((entry) =>
-            entry.champion && entry.champion.slug !== baseSlug
-          )
+        const rawOpponents = dataset.champions
+          .filter((champion) => champion.slug !== baseSlug)
           .sort(
             (a, b) =>
-              a.champion.source_order - b.champion.source_order
+              a.source_order - b.source_order
           );
         const universePickRate = rawOpponents.reduce(
-          (total, entry) => total + entry.champion.pick_rate,
-          0
-        );
-        const eligiblePickRate = dataset.champions.reduce(
-          (total, champion) =>
-            total + (champion.slug === baseSlug ? 0 : champion.pick_rate),
+          (total, champion) => total + champion.pick_rate,
           0
         );
         if (rawOpponents.length === 0 || universePickRate <= 0) {
-          throw new Error(`${base.name} has no displayed matchup universe.`);
+          throw new Error(`${base.name} has no eligible opponent universe.`);
         }
 
-        const opponents = rawOpponents.map(({ champion, matchup }) => ({
+        const opponents = rawOpponents.map((champion) => ({
           slug: champion.slug,
           name: champion.name,
           source_order: champion.source_order,
+          pick_rate: champion.pick_rate,
           weight: champion.pick_rate / universePickRate,
-          base_estimate: {
-            win_rate: matchup.win_rate,
-            games: matchup.games
-          }
+          base_estimate: matchupEstimate(base, champion.slug)
         }));
         const poolBefore = roundValue(
           opponents.reduce(
             (total, opponent) =>
               total +
-              opponent.weight * opponent.base_estimate.win_rate,
+              opponent.weight *
+                opponent.base_estimate.adjusted_win_rate,
+            0
+          )
+        );
+        const baseDirectRows = opponents.filter(
+          (opponent) => opponent.base_estimate.status === "direct"
+        );
+        const baseDirectWeight = roundValue(
+          baseDirectRows.reduce(
+            (total, opponent) => total + opponent.weight,
             0
           )
         );
@@ -1187,56 +1383,184 @@
           .filter((candidate) => candidate.slug !== baseSlug)
           .map((candidate) => {
             const matchups = {};
-            let observedWeight = 0;
             let applicableWeight = 0;
             let applicableMatchups = 0;
+            let candidateDirectWeight = 0;
+            let candidateDirectMatchups = 0;
+            let jointDirectWeight = 0;
+            let jointDirectMatchups = 0;
             const contributions = [];
+            const directContributions = [];
+            const rawContributions = [];
+            const uncertaintyComponents = [];
 
             for (const opponent of opponents) {
+              const baseEstimate = opponent.base_estimate;
               if (opponent.slug === candidate.slug) {
+                matchups[opponent.slug] = {
+                  status: "unavailable_mirror",
+                  raw_win_rate: null,
+                  games: 0,
+                  prior_center: null,
+                  data_weight: null,
+                  adjusted_win_rate: null,
+                  posterior_variance: null,
+                  interval_90: null,
+                  base_status: baseEstimate.status,
+                  improvement: 0,
+                  raw_improvement: null,
+                  contribution: 0,
+                  raw_contribution: null,
+                  pair_estimate: baseEstimate.adjusted_win_rate
+                };
                 continue;
               }
+
               applicableWeight += opponent.weight;
               applicableMatchups += 1;
-              const matchup = candidate.matchups[opponent.slug];
-              if (!matchup) {
-                continue;
+              const estimate = matchupEstimate(
+                candidate,
+                opponent.slug
+              );
+              if (estimate.status === "direct") {
+                candidateDirectWeight += opponent.weight;
+                candidateDirectMatchups += 1;
+                if (baseEstimate.status === "direct") {
+                  jointDirectWeight += opponent.weight;
+                  jointDirectMatchups += 1;
+                }
               }
-              observedWeight += opponent.weight;
               const improvement = roundValue(
                 Math.max(
                   0,
-                  matchup.win_rate - opponent.base_estimate.win_rate
+                  estimate.adjusted_win_rate -
+                    baseEstimate.adjusted_win_rate
                 )
               );
               const contribution = roundValue(
                 opponent.weight * improvement
               );
               contributions.push(contribution);
-              matchups[opponent.slug] = {
-                win_rate: matchup.win_rate,
-                games: matchup.games,
+              uncertaintyComponents.push({
+                weight: opponent.weight,
                 improvement,
-                contribution
+                base_variance: baseEstimate.posterior_variance,
+                candidate_variance: estimate.posterior_variance
+              });
+              const rawImprovement =
+                estimate.status === "direct" &&
+                baseEstimate.status === "direct"
+                  ? roundValue(
+                      Math.max(
+                        0,
+                        estimate.raw_win_rate -
+                          baseEstimate.raw_win_rate
+                      )
+                    )
+                  : null;
+              const rawContribution =
+                rawImprovement === null
+                  ? null
+                  : roundValue(opponent.weight * rawImprovement);
+              if (rawContribution !== null) {
+                rawContributions.push(rawContribution);
+                directContributions.push(contribution);
+              }
+              matchups[opponent.slug] = {
+                ...estimate,
+                base_status: baseEstimate.status,
+                improvement,
+                raw_improvement: rawImprovement,
+                contribution,
+                raw_contribution: rawContribution,
+                pair_estimate: roundValue(
+                  baseEstimate.adjusted_win_rate + improvement
+                )
               };
             }
 
             const gain = roundValue(
               contributions.reduce((total, value) => total + value, 0)
             );
+            const observedOnlyGain = roundValue(
+              rawContributions.reduce(
+                (total, value) => total + value,
+                0
+              )
+            );
+            const gainInterval =
+              conditionalGainInterval(uncertaintyComponents);
+            const candidateDirectCoverage =
+              applicableWeight > 0
+                ? roundValue(candidateDirectWeight / applicableWeight)
+                : 0;
+            const jointDirectCoverage =
+              applicableWeight > 0
+                ? roundValue(jointDirectWeight / applicableWeight)
+                : 0;
+            const directContribution = roundValue(
+              directContributions.reduce(
+                (total, value) => total + value,
+                0
+              )
+            );
+            const baseDirectApplicableRows = opponents.filter(
+              (opponent) =>
+                opponent.slug !== candidate.slug &&
+                opponent.base_estimate.status === "direct"
+            );
+            const baseDirectApplicableWeight =
+              baseDirectApplicableRows.reduce(
+                (total, opponent) => total + opponent.weight,
+                0
+              );
             return {
               slug: candidate.slug,
               name: candidate.name,
               source_order: candidate.source_order,
               source_url: candidate.source_url,
+              pick_rate: candidate.pick_rate,
+              overall_win_rate: candidate.overall_win_rate,
               pool_after: roundValue(poolBefore + gain),
               gain,
-              evidence_coverage:
-                applicableWeight > 0
-                  ? roundValue(observedWeight / applicableWeight)
-                  : 0,
-              observed_matchups: Object.keys(matchups).length,
+              gain_interval: gainInterval,
+              observed_only_gain: observedOnlyGain,
+              evidence_coverage: candidateDirectCoverage,
+              observed_matchups: candidateDirectMatchups,
+              modeled_matchups:
+                applicableMatchups - candidateDirectMatchups,
+              unavailable_matchups:
+                opponents.length - applicableMatchups,
               applicable_matchups: applicableMatchups,
+              direct_contribution_share:
+                gain > 0
+                  ? roundValue(directContribution / gain)
+                  : null,
+              coverage: {
+                base_direct_rows: baseDirectApplicableRows.length,
+                base_modeled_rows:
+                  applicableMatchups -
+                  baseDirectApplicableRows.length,
+                base_direct_weight:
+                  applicableWeight > 0
+                    ? roundValue(
+                        baseDirectApplicableWeight / applicableWeight
+                      )
+                    : 0,
+                candidate_direct_rows: candidateDirectMatchups,
+                candidate_modeled_rows:
+                  applicableMatchups - candidateDirectMatchups,
+                candidate_direct_weight: candidateDirectCoverage,
+                joint_direct_rows: jointDirectMatchups,
+                joint_modeled_rows:
+                  applicableMatchups - jointDirectMatchups,
+                joint_direct_weight: jointDirectCoverage,
+                direct_contribution: directContribution,
+                direct_contribution_share:
+                  gain > 0
+                    ? roundValue(directContribution / gain)
+                    : null
+              },
               matchups
             };
           })
@@ -1256,13 +1580,22 @@
         const analysis = {
           base,
           pool_before: poolBefore,
+          prior: {
+            concentration: priorConcentration,
+            interval_level: intervalLevel,
+            interval_method:
+              "normal_approximation_to_beta_posterior"
+          },
           opponent_universe: {
             opponents,
-            displayed_count: opponents.length,
+            displayed_count: baseDirectRows.length,
+            common_count: opponents.length,
             eligible_count: dataset.champions.length - 1,
-            pick_rate_coverage: roundValue(
-              universePickRate / eligiblePickRate
-            )
+            base_direct_rows: baseDirectRows.length,
+            base_modeled_rows:
+              opponents.length - baseDirectRows.length,
+            base_direct_weight: baseDirectWeight,
+            pick_rate_coverage: baseDirectWeight
           },
           candidates,
           rank_by_slug: rankBySlug
@@ -1315,8 +1648,9 @@
               : `Rolling ${filters.period} days`,
           filters.queue,
           `Current champion: ${selectedBase.name}`,
-          `${universe.displayed_count} weighted opponents`,
-          `Universe coverage: ${coverage(universe.pick_rate_coverage)}`,
+          `${universe.common_count} weighted opponents`,
+          `Base direct evidence: ${coverage(universe.base_direct_weight)}`,
+          `Prior: ${priorConcentration.toFixed(1)} equivalent games`,
           `Generated ${generated}`
         ];
         for (const text of items) {
@@ -1335,30 +1669,40 @@
       function renderMethodNote() {
         const universe = currentAnalysis.opponent_universe;
         methodNote.textContent =
-          `This first pass uses observed win rates rather than shrunk estimates ` +
-          `or uncertainty intervals. For ${selectedBase.name}, the score is ` +
-          `conditional on ${universe.displayed_count} displayed opponents; ` +
-          `they cover ` +
-          `${coverage(universe.pick_rate_coverage)} of eligible opponent pick ` +
-          `weight. Lolalytics counter tables display matchups with at least ` +
-          `${dataset.source.display_threshold_games} games. An addition matchup ` +
-          `that is not displayed contributes no demonstrated gain, and its ` +
-          `opponent weight is not redistributed. The proposed champion is ` +
-          `unavailable into its own mirror matchup. Evidence coverage reports ` +
-          `the weighted share of applicable opponents with a displayed row. ` +
-          `Changing the current champion rebuilds the opponent universe and ` +
-          `weights, so marginal gains should only be compared within one current ` +
-          `champion. Totals use stored precision; row values are rounded for display.`;
+          `Candidates are ranked only by adjusted marginal expected coverage; ` +
+          `pick rate, direct-data coverage, observed-only gain, and uncertainty ` +
+          `do not vote in the ordering. A displayed matchup rate is adjusted ` +
+          `toward its strength-only expectation (observed WR − Lolalytics Δ2) ` +
+          `using ${priorConcentration.toFixed(1)} equivalent prior games, fitted ` +
+          `once across the current snapshot. A row below Lolalytics’ ` +
+          `${dataset.source.display_threshold_games}-game display threshold uses ` +
+          `that champion’s general-strength adjustment plus the opponent’s ` +
+          `all-champions baseline and is marked prior only. ${selectedBase.name} ` +
+          `has direct rows for ${universe.base_direct_rows} of ` +
+          `${universe.common_count} opponents, covering ` +
+          `${coverage(universe.base_direct_weight)} of encounter weight. The ` +
+          `candidate and joint direct-evidence percentages use only that ` +
+          `candidate’s applicable encounter weight, excluding its unavailable ` +
+          `mirror matchup. The ` +
+          `observed-only figure is an unrenormalized raw-rate audit subtotal ` +
+          `over rows where both champions have direct data. The ` +
+          `${intervalPercent}% ` +
+          `gain interval is a normal approximation conditional on fixed opponent ` +
+          `weights, independent directional cells, a fixed fitted prior, and the ` +
+          `champion preferred by the adjusted point estimates. It may cross zero. ` +
+          `It describes this snapshot, not future-patch stability. Totals use ` +
+          `stored precision; displayed values are rounded.`;
       }
 
       function renderRankingSummary() {
         const universe = currentAnalysis.opponent_universe;
-        rankingBaselineLabel.textContent = `${selectedBase.name} baseline`;
+        rankingBaselineLabel.textContent =
+          `${selectedBase.name} adjusted baseline`;
         rankingBaseline.textContent = percent(currentAnalysis.pool_before);
         rankingAdditionCount.textContent =
           String(currentAnalysis.candidates.length);
         rankingUniverseCoverage.textContent =
-          coverage(universe.pick_rate_coverage);
+          coverage(universe.base_direct_weight);
         rankingsHeading.textContent =
           `Champions to add alongside ${selectedBase.name}`;
         rankingsCaption.textContent =
@@ -1578,25 +1922,63 @@
             `View ${selectedBase.name} plus ${candidate.name} ` +
             `contribution breakdown`
           );
-          championCell.appendChild(link);
+          const context = document.createElement("span");
+          context.className = "candidate-context";
+          context.textContent =
+            `${percent(candidate.overall_win_rate)} overall WR`;
+          championCell.append(link, context);
           row.appendChild(championCell);
 
+          appendRankingTextCell(
+            row,
+            percent(candidate.pick_rate),
+            "pick-column"
+          );
           appendRankingTextCell(row, percent(candidate.pool_after));
-          appendRankingTextCell(
-            row,
-            percentagePoints(candidate.gain),
-            "gain"
+
+          const gainCell = document.createElement("td");
+          gainCell.className = "gain gain-column";
+          const gainPrimary = document.createElement("span");
+          gainPrimary.className = "cell-primary";
+          gainPrimary.textContent = percentagePoints(candidate.gain);
+          const gainInterval = document.createElement("span");
+          gainInterval.className = "cell-secondary";
+          gainInterval.textContent =
+            `90%: ${percentagePoints(candidate.gain_interval.lower)} to ` +
+            `${percentagePoints(candidate.gain_interval.upper)}`;
+          const rawGain = document.createElement("span");
+          rawGain.className = "cell-tertiary";
+          rawGain.textContent =
+            `observed-only ${percentagePoints(candidate.observed_only_gain)}`;
+          gainCell.append(gainPrimary, gainInterval, rawGain);
+          row.appendChild(gainCell);
+
+          const evidenceCell = document.createElement("td");
+          evidenceCell.className = "evidence-column";
+          const evidencePrimary = document.createElement("span");
+          evidencePrimary.className = "cell-primary";
+          evidencePrimary.textContent =
+            coverage(candidate.coverage.joint_direct_weight);
+          const evidenceRows = document.createElement("span");
+          evidenceRows.className = "cell-secondary";
+          evidenceRows.textContent =
+            `candidate ${coverage(candidate.coverage.candidate_direct_weight)} · ` +
+            `${candidate.coverage.joint_direct_rows} joint / ` +
+            `${candidate.coverage.candidate_direct_rows} candidate rows`;
+          const evidenceContribution = document.createElement("span");
+          evidenceContribution.className = "cell-tertiary";
+          evidenceContribution.textContent =
+            candidate.direct_contribution_share === null
+              ? `${candidate.coverage.joint_modeled_rows} modelled · ` +
+                "no positive contribution"
+              : `${candidate.coverage.joint_modeled_rows} modelled · ` +
+                `${coverage(candidate.direct_contribution_share)} of gain direct`;
+          evidenceCell.append(
+            evidencePrimary,
+            evidenceRows,
+            evidenceContribution
           );
-          appendRankingTextCell(
-            row,
-            coverage(candidate.evidence_coverage)
-          );
-          appendRankingTextCell(
-            row,
-            `${candidate.observed_matchups} / ` +
-              `${candidate.applicable_matchups}`,
-            "estimate-column"
-          );
+          row.appendChild(evidenceCell);
           fragment.appendChild(row);
         }
         rankingsBody.replaceChildren(fragment);
@@ -1620,7 +2002,7 @@
         return currentAnalysis.opponent_universe.opponents
           .map((opponent) => ({
             opponent,
-            matchup: selectedCandidate.matchups[opponent.slug] ?? null,
+            matchup: selectedCandidate.matchups[opponent.slug],
             unavailable: selectedCandidate.slug === opponent.slug
           }));
       }
@@ -1694,14 +2076,41 @@
         });
       }
 
-      function makeEstimateCell(winRate, champion, gameCount) {
+      function makeEstimateCell(estimate, champion) {
         const cell = document.createElement("td");
+        cell.className = "estimate-cell";
         const primary = document.createElement("span");
         primary.className = "cell-primary";
-        primary.textContent = percent(winRate);
+        primary.textContent =
+          `${percent(estimate.adjusted_win_rate)} adjusted`;
         const secondary = document.createElement("span");
         secondary.className = "cell-secondary";
-        secondary.textContent = `${champion} · ${games(gameCount)}`;
+        secondary.textContent =
+          `90%: ${percent(estimate.interval_90.lower)}–` +
+          `${percent(estimate.interval_90.upper)}`;
+        const tertiary = document.createElement("span");
+        tertiary.className = "cell-tertiary";
+        tertiary.textContent =
+          estimate.status === "direct"
+            ? `${champion} direct · raw ${percent(estimate.raw_win_rate)} · ` +
+              `expected ${percent(estimate.prior_center)} · ` +
+              `${games(estimate.games)} · ` +
+              `${coverage(estimate.data_weight)} data weight`
+            : `${champion} prior only · expected ` +
+              `${percent(estimate.prior_center)} · 0 games`;
+        cell.append(primary, secondary, tertiary);
+        return cell;
+      }
+
+      function makeMetricCell(primaryText, secondaryText, className = "") {
+        const cell = document.createElement("td");
+        cell.className = `metric-cell ${className}`.trim();
+        const primary = document.createElement("span");
+        primary.className = "cell-primary";
+        primary.textContent = primaryText;
+        const secondary = document.createElement("span");
+        secondary.className = "cell-secondary";
+        secondary.textContent = secondaryText;
         cell.append(primary, secondary);
         return cell;
       }
@@ -1860,34 +2269,48 @@
           );
           detailRow.appendChild(
             makeEstimateCell(
-              entry.opponent.base_estimate.win_rate,
-              selectedBase.name,
-              entry.opponent.base_estimate.games
+              entry.opponent.base_estimate,
+              selectedBase.name
             )
           );
 
           if (entry.unavailable) {
-            detailRow.appendChild(makeMissingCell("Unavailable"));
-          } else if (entry.matchup === null) {
-            detailRow.appendChild(makeMissingCell("Not shown"));
+            detailRow.appendChild(
+              makeMissingCell("Unavailable in mirror matchup")
+            );
           } else {
             detailRow.appendChild(
               makeEstimateCell(
-                entry.matchup.win_rate,
-                selectedCandidate.name,
-                entry.matchup.games
+                entry.matchup,
+                selectedCandidate.name
               )
             );
           }
-          appendTextCell(
-            detailRow,
-            percentagePoints(entry.matchup?.improvement ?? 0, 2),
-            (entry.matchup?.improvement ?? 0) > 0 ? "gain" : ""
+          const improvement = entry.matchup?.improvement ?? 0;
+          const rawImprovement = entry.matchup?.raw_improvement;
+          detailRow.appendChild(
+            makeMetricCell(
+              percentagePoints(improvement, 2),
+              entry.unavailable
+                ? "candidate unavailable"
+                : rawImprovement === null
+                  ? "no joint direct comparison"
+                  : `observed-only ${percentagePoints(rawImprovement, 2)}`,
+              improvement > 0 ? "gain" : ""
+            )
           );
-          appendTextCell(
-            detailRow,
-            percentagePoints(entry.matchup?.contribution ?? 0, 4),
-            (entry.matchup?.contribution ?? 0) > 0 ? "gain" : ""
+          const contribution = entry.matchup?.contribution ?? 0;
+          const rawContribution = entry.matchup?.raw_contribution;
+          detailRow.appendChild(
+            makeMetricCell(
+              percentagePoints(contribution, 4),
+              entry.unavailable
+                ? "candidate unavailable"
+                : rawContribution === null
+                  ? "no joint direct comparison"
+                  : `observed-only ${percentagePoints(rawContribution, 4)}`,
+              contribution > 0 ? "gain" : ""
+            )
           );
           fragment.appendChild(detailRow);
         }
@@ -1903,15 +2326,24 @@
           activeFilterCount() === 0
             ? "All-row total"
             : "Visible-row subtotal";
-        const totalValue = document.createElement("td");
         const visibleTotal = roundValue(
           rows.reduce(
             (sum, entry) => sum + (entry.matchup?.contribution ?? 0),
             0
           )
         );
-        totalValue.textContent = percentagePoints(visibleTotal);
-        totalValue.className = "gain";
+        const visibleRawTotal = roundValue(
+          rows.reduce(
+            (sum, entry) =>
+              sum + (entry.matchup?.raw_contribution ?? 0),
+            0
+          )
+        );
+        const totalValue = makeMetricCell(
+          percentagePoints(visibleTotal),
+          `observed-only ${percentagePoints(visibleRawTotal)}`,
+          "gain"
+        );
         total.append(totalLabel, totalValue);
         calculationFoot.replaceChildren(total);
       }
@@ -1943,20 +2375,37 @@
         scoreRank.textContent =
           `#${currentAnalysis.rank_by_slug.get(candidate.slug)} of ` +
           `${currentAnalysis.candidates.length}`;
-        scoreBeforeLabel.textContent = `${selectedBase.name} baseline`;
+        scoreBeforeLabel.textContent =
+          `${selectedBase.name} adjusted baseline`;
         scoreBefore.textContent = percent(currentAnalysis.pool_before);
         scoreAfterLabel.textContent =
-          `${selectedBase.name} + ${candidate.name}`;
+          `${selectedBase.name} + ${candidate.name} adjusted`;
         scoreAfter.textContent = percent(candidate.pool_after);
         scoreGain.textContent = percentagePoints(candidate.gain);
-        scoreCoverage.textContent = coverage(candidate.evidence_coverage);
+        scoreGainInterval.textContent =
+          `${intervalPercent}% conditional interval ` +
+          `${percentagePoints(candidate.gain_interval.lower)} to ` +
+          `${percentagePoints(candidate.gain_interval.upper)} · ` +
+          `observed-only ${percentagePoints(candidate.observed_only_gain)}`;
+        scoreCoverage.textContent =
+          coverage(candidate.coverage.joint_direct_weight);
+        scoreCoverageDetail.textContent =
+          `candidate direct ` +
+          `${coverage(candidate.coverage.candidate_direct_weight)} · ` +
+          `${candidate.coverage.joint_direct_rows} joint / ` +
+          `${candidate.coverage.candidate_direct_rows} candidate rows`;
         calculationHeading.textContent =
           `${selectedBase.name} + ${candidate.name} contribution calculation`;
         calculationSummary.textContent =
-          `${candidate.observed_matchups} of ${candidate.applicable_matchups} ` +
-          `applicable addition estimates available · ` +
-          `${coverage(candidate.evidence_coverage)} weighted evidence ` +
-          `coverage · full gain ${percentagePoints(candidate.gain)}`;
+          `${candidate.coverage.joint_direct_rows} of ` +
+          `${candidate.applicable_matchups} applicable rows have direct data ` +
+          `for both champions · ` +
+          `${coverage(candidate.coverage.joint_direct_weight)} applicable ` +
+          `encounter ` +
+          `weight · ${candidate.coverage.candidate_direct_rows} candidate rows ` +
+          `are direct · ${candidate.coverage.joint_modeled_rows} rows use at ` +
+          `least one prior-only estimate · adjusted gain ` +
+          `${percentagePoints(candidate.gain)}`;
         calculationCaption.textContent =
           `${selectedBase.name} plus ${candidate.name} opponent-level ` +
           `contribution calculation`;

@@ -478,8 +478,10 @@
 
     .filter-pair {
       display: grid;
-      grid-template-columns: repeat(2, minmax(46px, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 4px;
+      width: min(100%, 108px);
+      margin-inline: auto;
     }
 
     .filter-input,
@@ -494,7 +496,7 @@
     }
 
     .filter-input {
-      width: 52px;
+      width: 100%;
       padding: 3px;
     }
 
